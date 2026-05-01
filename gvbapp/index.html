@@ -539,41 +539,45 @@
     <!-- Linie / Station auswählen -->
     <div id="rb-setup" style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid var(--input-border);">
         <div class="section-title" style="margin-bottom:10px;">Fahrt einrichten</div>
-        <div style="margin-bottom:10px;">
-            <div class="route-label">Ich sitze in</div>
-            <select class="route-input" id="rb-line" style="margin-top:5px;" onchange="rbUpdateStations()">
-                <option value="">Linie wählen…</option>
-                <option value="S11">S11</option>
-                <option value="14">Linie 14</option>
-                <option value="15">Linie 15</option>
-                <option value="16">Linie 16 (Premium)</option>
-                <option value="17">Linie 17</option>
-            </select>
+        <div style="margin-bottom:10px;position:relative;">
+            <div class="route-label">Ich bin gerade an</div>
+            <div class="autocomplete-wrap" style="margin-top:5px;">
+                <input class="route-input" id="rb-from-input" type="text" placeholder="Aktuelle Haltestelle…"
+                    oninput="rbAcSearch('from',this.value)" autocomplete="off">
+                <div class="autocomplete-list" id="rb-ac-from"></div>
+            </div>
         </div>
-        <div style="margin-bottom:10px;">
-            <div class="route-label">Aktuelle Haltestelle</div>
-            <select class="route-input" id="rb-current" style="margin-top:5px;"></select>
+        <div style="margin-bottom:14px;position:relative;">
+            <div class="route-label">Mein Ziel</div>
+            <div class="autocomplete-wrap" style="margin-top:5px;">
+                <input class="route-input" id="rb-to-input" type="text" placeholder="Ziel eingeben…"
+                    oninput="rbAcSearch('to',this.value)" autocomplete="off">
+                <div class="autocomplete-list" id="rb-ac-to"></div>
+            </div>
         </div>
-        <div style="margin-bottom:14px;">
-            <div class="route-label">Ziel</div>
-            <select class="route-input" id="rb-dest" style="margin-top:5px;"></select>
-        </div>
-        <button class="route-go-btn" onclick="rbStart()">Reisebegleiter starten</button>
+        <button class="route-go-btn" onclick="rbStart()">Reisebegleiter starten ›</button>
     </div>
 
     <!-- Aktive Anweisung -->
     <div id="rb-guidance" style="display:none;">
-        <div id="rb-instruction-card" style="background:var(--card);border-radius:16px;padding:20px;border:2px solid var(--accent);margin-bottom:12px;text-align:center;box-shadow:0 4px 20px rgba(192,57,43,.18);">
-            <div id="rb-icon" style="font-size:40px;margin-bottom:10px;">🚇</div>
-            <div id="rb-main" style="font-family:'Barlow',sans-serif;font-size:18px;font-weight:800;text-transform:uppercase;line-height:1.3;"></div>
-            <div id="rb-sub" style="font-size:12px;color:var(--text-dim);margin-top:7px;line-height:1.5;"></div>
+        <!-- Current instruction card -->
+        <div id="rb-instruction-card" style="border-radius:16px;padding:18px 20px;border:2px solid var(--accent);margin-bottom:12px;text-align:center;box-shadow:0 4px 20px rgba(192,57,43,.18);">
+            <div id="rb-icon" style="font-size:36px;margin-bottom:8px;">🚇</div>
+            <div id="rb-main" style="font-family:'Barlow',sans-serif;font-size:17px;font-weight:800;text-transform:uppercase;line-height:1.3;"></div>
+            <div id="rb-sub" style="font-size:12px;color:var(--text-dim);margin-top:7px;line-height:1.6;"></div>
         </div>
-        <!-- Progress stops -->
+
+        <!-- Leg tabs -->
+        <div id="rb-leg-tabs" style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px;"></div>
+
+        <!-- Stop list for active leg -->
         <div style="background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--input-border);">
-            <div style="padding:10px 14px;background:var(--fp-header-bg);font-size:10px;color:var(--text-dim);font-weight:bold;text-transform:uppercase;letter-spacing:.8px;">Streckenverlauf</div>
+            <div id="rb-leg-header" style="padding:10px 14px;font-size:10px;color:var(--text-dim);font-weight:bold;text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:8px;"></div>
             <div id="rb-stops-list"></div>
         </div>
-        <button onclick="rbStop()" style="width:100%;margin-top:12px;padding:12px;border-radius:10px;border:1.5px solid var(--input-border);background:var(--card);color:var(--text-dim);font-weight:bold;cursor:pointer;font-size:13px;">Reise beenden</button>
+
+        <button onclick="rbStop()" style="width:100%;margin-top:12px;padding:12px;border-radius:10px;border:1.5px solid var(--input-border);background:var(--card);color:var(--text-dim);font-weight:bold;cursor:pointer;font-size:13px;">✕ Reise beenden</button>
+        <button id="rb-next-leg-btn" onclick="rbNextLeg()" style="display:none;width:100%;margin-top:8px;padding:12px;border-radius:10px;border:none;background:var(--warn);color:#fff;font-weight:800;font-family:'Barlow',sans-serif;text-transform:uppercase;cursor:pointer;font-size:13px;letter-spacing:.5px;">Umstieg durchgeführt – Weiter →</button>
     </div>
 </section>
 
@@ -612,6 +616,11 @@
                 <div style="width:28px;height:6px;background:#7b3fa0;border-radius:3px;flex-shrink:0;"></div>
                 <div style="font-size:12px;font-weight:bold;">L17</div>
                 <div style="font-size:11px;color:var(--text-dim);margin-left:auto;">Güntringen Hbf ↔ Oktratal</div>
+            </div>
+            <div style="background:var(--card);border:1px dashed #b8860b44;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;opacity:.75;">
+                <div style="width:28px;height:4px;background:repeating-linear-gradient(90deg,#b8860b 0,#b8860b 5px,transparent 5px,transparent 10px);border-radius:2px;flex-shrink:0;"></div>
+                <div style="font-size:12px;font-weight:bold;color:#b8860b;">OS11</div>
+                <div style="font-size:10px;color:var(--text-dim);margin-left:auto;text-align:right;">OctoSpeed · Fernverkehr<br><span style="color:#b8860b;font-style:italic;">Demnächst</span></div>
             </div>
         </div>
         <div style="margin-top:6px;font-size:10px;color:var(--text-dim);text-align:center;opacity:.6;">PNG-Platzhalter · Vektorkarte in Entwicklung</div>
@@ -900,6 +909,7 @@ const STATION_FIS = {
         { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[4,34], gleis:'11', delay:true, delayMin:6 },
         { id:'S11', dest:'Lixen',        col:'#c0392b', m:[19,49], gleis:'12' },
         { id:'17',  dest:'Oktratal',     col:'#7b3fa0', m:[3,18,33,48], gleis:'7' },
+        { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'–', preview:true },
     ],
     'Altgün Dreieck': [
         { id:'S11', dest:'Villotal Hbf',    col:'#c0392b', m:[10,40], gleis:'11', delay:true, delayMin:6 },
@@ -916,7 +926,10 @@ const STATION_FIS = {
         { id:'15',  dest:'Altgün Dreieck', col:'#6b1e1e', m:[9,19,29,39,49,59], gleis:'4' },
     ],
     'Lixen':       [{ id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[4,34], gleis:'1' }],
-    'Villotal Hbf':[{ id:'S11', dest:'Lixen', col:'#c0392b', m:[19,49], gleis:'1' }],
+    'Villotal Hbf':[
+        { id:'S11', dest:'Lixen', col:'#c0392b', m:[19,49], gleis:'1' },
+        { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'–', preview:true },
+    ],
     'Villotal Süd':[
         { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[13,43], gleis:'1' },
         { id:'S11', dest:'Lixen',        col:'#c0392b', m:[28,58], gleis:'2' },
@@ -941,7 +954,7 @@ const ALL_STATIONS = [
 
 const STATION_INFO = {
     'Altgün Dreieck': { typ:'Knotenpunkt', linien:'14, 15, 16, S11', aufzug:'Ja', fahrrad:'Ja', park:'Nein', info:'Zentraler Umsteigeknoten im GÜN-Netz.' },
-    'Güntringen Hbf': { typ:'Hauptbahnhof', linien:'S11, L17', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Fernverkehrsanbindung. S11 nach Villotal Hbf und Lixen. L17 Gleis 7 nach Oktratal.' },
+    'Güntringen Hbf': { typ:'Hauptbahnhof', linien:'S11, L17 · OS11 (geplant)', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'S11 nach Villotal Hbf und Lixen. L17 Gleis 7 nach Oktratal. Zukünftiger OctoSpeed-Halt OS11 (Glücksburg ↔ Lixen).' },
     'Technopolis': { typ:'Haltestelle', linien:'L14, L17', aufzug:'Ja', fahrrad:'Ja', park:'Nein', info:'Umstieg L14 ↔ L17 möglich.' },
     'Südstern': { typ:'Haltestelle', linien:'L17', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Haltestelle Linie 17 · Stadtrand.' },
     'Südtor': { typ:'Haltestelle', linien:'L17', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Haltestelle Linie 17.' },
@@ -949,7 +962,7 @@ const STATION_INFO = {
     'Lixen': { typ:'Endstation', linien:'S11', aufzug:'Nein', fahrrad:'Ja', park:'Ja', info:'P+R-Parkplatz mit 120 Stellplätzen.' },
     'Güntratal Süd': { typ:'Haltestelle', linien:'S11, L14, L15', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Umstieg auf Linien 14 und 15 möglich.' },
     'Villotal Süd': { typ:'Haltestelle', linien:'S11', aufzug:'Ja', fahrrad:'Nein', park:'Nein', info:'Anschluss an Regionalbusse Richtung Villotal-West.' },
-    'Villotal Hbf': { typ:'Fernbahnhof', linien:'S11', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Anbindung an Fernverkehr + Villotal-U-Bahn.' },
+    'Villotal Hbf': { typ:'Fernbahnhof', linien:'S11 · OS11 (geplant)', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Anbindung an Fernverkehr + Villotal-U-Bahn. Zukünftiger OctoSpeed-Halt OS11 Richtung Glücksburg Hbf und Lixen.' },
     'Sonnenstadt': { typ:'Endstation', linien:'14', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Stadteingang Sonnenstadt, Bushaltestellen 3–8.' },
     'Falkenberg': { typ:'Endstation', linien:'14, 15', aufzug:'Nein', fahrrad:'Ja', park:'Ja', info:'P+R-Parkplatz mit 80 Stellplätzen.' },
     'Westende': { typ:'Endstation', linien:'15', aufzug:'Nein', fahrrad:'Nein', park:'Nein', info:'Nahe Hafenpromenade.' },
@@ -1259,6 +1272,9 @@ function renderUserUI(user, data) {
     document.getElementById('fis-station-label').textContent    = data.homeStation||'Güntringen Hbf';
     document.getElementById('route-from-input').value           = data.homeStation||'Güntringen Hbf';
     routeFromVal = data.homeStation||'Güntringen Hbf';
+    // Pre-fill Reisebegleiter start from homeStation
+    const rbFromEl = document.getElementById('rb-from-input');
+    if (rbFromEl && !rbFromVal) { rbFromEl.value = data.homeStation||'Güntringen Hbf'; rbFromVal = data.homeStation||'Güntringen Hbf'; }
 
     const qrData = `GVB-${uid4}-${initials}`;
     document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
@@ -1394,6 +1410,20 @@ function updateFIS(stationId) {
     const nowM = now.getMinutes(), nowH = now.getHours(), nowSec = now.getSeconds();
     let html = '';
     fisData.forEach(l => {
+        // Preview lines (e.g. OS11) – show as teaser, not interactive
+        if (l.preview) {
+            html+=`
+            <div class="fis-row" style="opacity:.55;cursor:default;border:1px dashed ${l.col}33;background:${l.col}08;">
+                <div class="line-badge" style="background:${l.col};font-size:9px;letter-spacing:.5px;">${l.id}</div>
+                <div>
+                    <div style="font-weight:bold;font-size:13px;">Richtung ${l.dest}</div>
+                    <div style="font-size:10px;color:var(--text-dim);">Gleis ${l.gleis} · OctoSpeed Fernverkehr</div>
+                    <span style="font-size:9px;color:${l.col};font-weight:bold;letter-spacing:.5px;">DEMNÄCHST · Noch nicht in Betrieb</span>
+                </div>
+                <div class="eta-col"><div class="eta" style="color:${l.col};font-size:10px;">bald</div></div>
+            </div>`;
+            return;
+        }
         const delayMins = liveDelays[l.id] || 0;
         let next = l.m.find(min=>min>nowM) ?? l.m[0];
         let diff = next - nowM; if(diff<0) diff+=60;
@@ -2010,97 +2040,210 @@ function buildGraph() {
 const LINE_GRAPH = buildGraph();
 
 let rbState = null;
+let rbFromVal = '', rbToVal = '';
 
-function rbUpdateStations() {
-    const line = document.getElementById('rb-line').value;
-    const stops = RB_LINE_STOPS[line] || [];
-    const makeOpts = (id, placeholder) => {
-        document.getElementById(id).innerHTML = `<option value="">– wählen –</option>` +
-            stops.map(s=>`<option value="${s}">${s}</option>`).join('');
-    };
-    makeOpts('rb-current');
-    makeOpts('rb-dest');
+// ── Autocomplete ──────────────────────────────────────────────
+function rbAcSearch(field, q) {
+    const listId = field==='from' ? 'rb-ac-from' : 'rb-ac-to';
+    const list = document.getElementById(listId);
+    if (!q || q.length < 1) { list.classList.remove('open'); return; }
+    const matches = ALL_STATIONS.filter(s=>s.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+    if (!matches.length) { list.classList.remove('open'); return; }
+    list.innerHTML = matches.map(s=>{
+        const hl = s.replace(new RegExp(q,'gi'), m=>`<mark>${m}</mark>`);
+        return `<div class="ac-item" onclick="rbAcSelect('${field}','${s}')">${hl}</div>`;
+    }).join('');
+    list.classList.add('open');
+}
+function rbAcSelect(field, value) {
+    if (field==='from') {
+        rbFromVal = value;
+        document.getElementById('rb-from-input').value = value;
+        document.getElementById('rb-ac-from').classList.remove('open');
+    } else {
+        rbToVal = value;
+        document.getElementById('rb-to-input').value = value;
+        document.getElementById('rb-ac-to').classList.remove('open');
+    }
 }
 
+// ── Build legs from Dijkstra path ────────────────────────────
+function rbBuildLegs(from, to) {
+    const result = dijkstra(from, to);
+    if (!result) return null;
+    const legs = []; let i = 1;
+    while (i < result.path.length) {
+        const seg = result.path[i];
+        const startStn = result.path[i-1].station;
+        let endStn = seg.station, lineMins = seg.mins, j = i+1;
+        while (j < result.path.length && result.path[j].line === seg.line) {
+            lineMins += result.path[j].mins;
+            endStn = result.path[j].station;
+            j++;
+        }
+        // Collect all stops on this line segment
+        const lineStops = rbGetLegStops(seg.line, startStn, endStn);
+        legs.push({ line: String(seg.line), color: seg.color, from: startStn, to: endStn, mins: lineMins, stops: lineStops });
+        i = j;
+    }
+    return legs;
+}
+
+function rbGetLegStops(lineId, fromStn, toStn) {
+    const lid = String(lineId);
+    const key = lid==='S11'?'S11':lid;
+    const stops = RB_LINE_STOPS[key] || [];
+    const fi = stops.indexOf(fromStn), ti = stops.indexOf(toStn);
+    if (fi < 0 || ti < 0) return [fromStn, toStn];
+    return ti >= fi ? stops.slice(fi, ti+1) : stops.slice(ti, fi+1).reverse();
+}
+
+// ── Start ────────────────────────────────────────────────────
 function rbStart() {
-    const line = document.getElementById('rb-line').value;
-    const current = document.getElementById('rb-current').value;
-    const dest = document.getElementById('rb-dest').value;
-    if(!line||!current||!dest) { showToast('Bitte alle Felder ausfüllen','warn'); return; }
-    if(current===dest) { showToast('Start = Ziel!','warn'); return; }
-    const stops = RB_LINE_STOPS[line];
-    const fromIdx = stops.indexOf(current);
-    const toIdx = stops.indexOf(dest);
-    if(fromIdx<0||toIdx<0) { showToast('Ungültige Strecke','warn'); return; }
-    const forward = toIdx > fromIdx;
-    const routeStops = forward ? stops.slice(fromIdx, toIdx+1) : stops.slice(toIdx, fromIdx+1).reverse();
-    rbState = { line, routeStops, currentIdx: 0 };
-    document.getElementById('rb-guidance').style.display='block';
-    document.getElementById('rb-setup').style.display='none';
+    const from = rbFromVal || document.getElementById('rb-from-input').value.trim();
+    const to   = rbToVal   || document.getElementById('rb-to-input').value.trim();
+    if (!from || !to) { showToast('Bitte Start und Ziel eingeben','warn'); return; }
+    if (from === to)  { showToast('Start = Ziel!','warn'); return; }
+    const legs = rbBuildLegs(from, to);
+    if (!legs) { showToast('Keine Verbindung gefunden','warn'); return; }
+    rbState = {
+        legs,
+        activeLeg: 0,       // which leg we're on
+        stopIdx: 0,         // which stop in active leg
+    };
+    document.getElementById('rb-setup').style.display = 'none';
+    document.getElementById('rb-guidance').style.display = 'block';
     rbRender();
 }
 
+// ── Render ───────────────────────────────────────────────────
 function rbRender() {
-    if(!rbState) return;
-    const { line, routeStops, currentIdx } = rbState;
-    const stops = routeStops;
-    const isLast = currentIdx >= stops.length - 1;
-    const currentStop = stops[currentIdx];
-    const nextStop = isLast ? null : stops[currentIdx + 1];
-    const remaining = stops.length - currentIdx - 1;
+    if (!rbState) return;
+    const { legs, activeLeg, stopIdx } = rbState;
+    const leg = legs[activeLeg];
     const lineColors = {'S11':'#c0392b','14':'#003f8a','15':'#8b2020','16':'#174f17','17':'#7b3fa0'};
-    const col = lineColors[line] || '#555';
+    const col = leg.color || lineColors[leg.line] || '#555';
+    const stops = leg.stops;
+    const isLastLeg = activeLeg >= legs.length - 1;
+    const isLastStop = stopIdx >= stops.length - 1;
+    const atFinalDest = isLastLeg && isLastStop;
+    const currentStop = stops[stopIdx];
+    const nextStop = isLastStop ? null : stops[stopIdx + 1];
+    const stopsLeft = stops.length - stopIdx - 1;
+    const needsTransfer = isLastStop && !isLastLeg;
 
-    // Transfer hints
-    const transfers = nextStop ? (RB_TRANSFERS[nextStop]||[]).filter(l=>l!==line) : [];
-    const transferHint = transfers.length ? `· Umstieg auf ${transfers.map(t=>`<strong style="color:var(--accent)">${t}</strong>`).join(', ')} möglich` : '';
-
-    let icon='🚇', main='', sub='';
-    if(isLast) {
-        icon='🏁'; main='Ziel erreicht!'; sub=`Du bist an ${currentStop} angekommen.`;
-    } else if(currentIdx===0) {
-        icon='▶️'; main=`Einsteigen · ${line}`; sub=`Fahre bis ${stops[stops.length-1]}. Nächster Halt: <strong>${nextStop}</strong> ${transferHint}`;
+    // Instruction card
+    let icon, main, sub, cardBorder = col;
+    if (atFinalDest) {
+        icon = '🏁'; main = 'Ziel erreicht!';
+        sub = `Du bist an <strong>${currentStop}</strong> angekommen.`;
+        cardBorder = 'var(--success)';
+    } else if (needsTransfer) {
+        const nextLeg = legs[activeLeg + 1];
+        icon = '🔀'; main = `Umstieg · ${currentStop}`;
+        sub = `Steige auf <strong>Linie ${nextLeg.line}</strong> um → Richtung ${nextLeg.to}`;
+        cardBorder = lineColors[nextLeg.line] || '#e67e22';
+    } else if (stopsLeft === 1) {
+        icon = '⚠️'; main = 'Nächste Station aussteigen!';
+        sub = `Dein ${isLastLeg ? 'Ziel' : 'Umstieg'}: <strong>${nextStop}</strong>`;
+        cardBorder = 'var(--warn)';
+    } else if (stopIdx === 0 && activeLeg === 0) {
+        icon = '▶️'; main = `Einsteigen · Linie ${leg.line}`;
+        sub = `Fahre Richtung <strong>${leg.to}</strong><br>Nächster Halt: <strong>${nextStop}</strong>`;
     } else {
-        icon='📍'; main=`Jetzt: ${currentStop}`; sub=`Nächster Halt: <strong>${nextStop}</strong> ${transferHint}<br>${remaining} Halt${remaining!==1?'e':''} bis Ziel`;
-        // Ausstieg-Warnung
-        if(remaining===1) { icon='⚠️'; main=`Nächste Station aussteigen!`; sub=`Dein Ziel <strong>${nextStop}</strong> ist der nächste Halt.`; }
-        // Transfer instructions
-        if(transfers.length && remaining > 1) { icon='🔀'; main=`An ${nextStop} umsteigen`; sub=`Wechsle dort auf Linie ${transfers[0]}. Noch ${remaining} Halt${remaining!==1?'e':''} bis Umstieg.`; }
+        icon = '📍'; main = currentStop;
+        sub = `Nächster Halt: <strong>${nextStop}</strong><br>${stopsLeft} Halt${stopsLeft!==1?'e':''} bis ${needsTransfer?'Umstieg':'Ziel'}`;
     }
 
-    document.getElementById('rb-icon').textContent=icon;
-    document.getElementById('rb-main').textContent=main;
-    document.getElementById('rb-sub').innerHTML=sub;
+    document.getElementById('rb-icon').textContent = icon;
+    document.getElementById('rb-main').textContent = main;
+    document.getElementById('rb-sub').innerHTML = sub;
+    document.getElementById('rb-instruction-card').style.borderColor = cardBorder;
+    document.getElementById('rb-instruction-card').style.boxShadow = `0 4px 20px ${cardBorder}30`;
 
-    // Stops list
-    document.getElementById('rb-stops-list').innerHTML = stops.map((s,i)=>{
-        const cls = i<currentIdx?'done':i===currentIdx?'current':'';
-        const dotCls = i<currentIdx?'done':i===currentIdx?'current':'';
-        return `<div class="rb-stop-row ${cls}" onclick="rbAdvanceTo(${i})">
-            <div class="rb-stop-dot ${dotCls}"></div>
-            <div style="flex:1"><div style="font-weight:${i===currentIdx?'bold':'normal'};font-size:13px;">${s}</div>
-            ${i===currentIdx?'<div style="font-size:10px;color:var(--accent);">← Du bist hier</div>':''}</div>
-            ${i===stops.length-1?`<div style="font-size:9px;background:rgba(192,57,43,.1);color:var(--accent);border:1px solid rgba(192,57,43,.25);padding:2px 6px;border-radius:10px;">Ziel</div>`:''}
+    // Show "Umstieg" button only when at a transfer stop
+    const nextLegBtn = document.getElementById('rb-next-leg-btn');
+    if (nextLegBtn) nextLegBtn.style.display = needsTransfer ? 'block' : 'none';
+
+    // Leg tabs
+    document.getElementById('rb-leg-tabs').innerHTML = legs.map((l, li) => {
+        const lCol = l.color || lineColors[l.line] || '#555';
+        const isActive = li === activeLeg;
+        const isDone = li < activeLeg;
+        return `<div style="display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:8px;border:1.5px solid ${isActive?lCol:isDone?lCol+'66':'var(--input-border)'};background:${isActive?lCol+'18':isDone?lCol+'0a':'var(--card)'};white-space:nowrap;cursor:${isDone?'pointer':'default'};" onclick="${isDone?`rbJumpToLeg(${li})`:''}">
+            <div style="width:20px;height:13px;border-radius:3px;background:${isDone?lCol+'77':isActive?lCol:'var(--input-border)'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:bold;color:#fff;">${l.line}</div>
+            <span style="font-size:11px;font-weight:${isActive?'bold':'normal'};color:${isActive?lCol:isDone?'var(--text-dim)':'var(--text-dim)'};">${isDone?'✓ ':isActive?'→ ':''}${l.from.split(' ')[0]}…</span>
+        </div>`;
+    }).join('');
+
+    // Leg header
+    document.getElementById('rb-leg-header').innerHTML = `
+        <div style="width:28px;height:16px;border-radius:4px;background:${col};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;color:#fff;flex-shrink:0;">L${leg.line}</div>
+        <span style="font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);">Linie ${leg.line} · Richtung ${leg.to} · ${stopsLeft} Halt${stopsLeft!==1?'e':''} verbleibend</span>`;
+
+    // Stop list
+    document.getElementById('rb-stops-list').innerHTML = stops.map((s, si) => {
+        const done = si < stopIdx;
+        const active = si === stopIdx;
+        const isXfer = si === stops.length-1 && !isLastLeg;
+        const isFinal = si === stops.length-1 && isLastLeg;
+        return `<div class="rb-stop-row ${done?'done':active?'current':''}" onclick="rbAdvanceTo(${si})" style="cursor:${si>stopIdx?'pointer':'default'};">
+            <div class="rb-stop-dot ${done?'done':active?'current':''}"></div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:${active||isFinal?'bold':'normal'};font-size:13px;color:${done?'var(--text-dim)':active?col:'var(--text)'};">${s}</div>
+                ${active ? `<div style="font-size:10px;color:${col};">← Du bist hier</div>` : ''}
+                ${isXfer ? `<div style="font-size:10px;color:var(--warn);">🔀 Umstieg → Linie ${legs[activeLeg+1]?.line}</div>` : ''}
+            </div>
+            ${isFinal ? `<div style="font-size:9px;background:rgba(39,174,96,.1);color:var(--success);border:1px solid rgba(39,174,96,.3);padding:2px 7px;border-radius:10px;flex-shrink:0;">Ziel</div>` : ''}
+            ${isXfer ? `<div style="font-size:9px;background:rgba(230,126,34,.1);color:var(--warn);border:1px solid rgba(230,126,34,.3);padding:2px 7px;border-radius:10px;flex-shrink:0;">Umstieg</div>` : ''}
+            ${done ? `<div style="font-size:11px;color:var(--text-dim);">✓</div>` : ''}
         </div>`;
     }).join('');
 }
 
-function rbAdvanceTo(idx) {
-    if(!rbState) return;
-    if(idx > rbState.currentIdx) {
-        rbState.currentIdx = idx;
+function rbAdvanceTo(si) {
+    if (!rbState) return;
+    const { legs, activeLeg, stopIdx } = rbState;
+    if (si <= stopIdx) return; // can't go backwards
+    const leg = legs[activeLeg];
+    rbState.stopIdx = si;
+    // If reached end of this leg's stops
+    if (si >= leg.stops.length - 1 && activeLeg < legs.length - 1) {
+        // Show transfer state first, then auto-advance on next tap
         rbRender();
-        const remaining = rbState.routeStops.length - idx - 1;
-        if(idx===rbState.routeStops.length-1) showToast('🏁 Ziel erreicht!');
-        else if(remaining===1) showToast('⚠️ Nächste Station aussteigen!','warn');
-        else showToast(`📍 ${rbState.routeStops[idx]}`);
+        showToast(`🔀 Umstieg auf Linie ${legs[activeLeg+1].line}`,'warn');
+        return;
+    }
+    rbRender();
+    const remaining = leg.stops.length - si - 1;
+    const atFinalDest = activeLeg >= legs.length-1 && si >= leg.stops.length-1;
+    if (atFinalDest) showToast('🏁 Ziel erreicht!');
+    else if (remaining===1) showToast(`⚠️ Nächste Station: ${leg.stops[si+1]} — Aussteigen!`,'warn');
+    else showToast(`📍 ${leg.stops[si]}`);
+}
+
+function rbNextLeg() {
+    if (!rbState) return;
+    if (rbState.activeLeg < rbState.legs.length - 1) {
+        rbState.activeLeg++;
+        rbState.stopIdx = 0;
+        rbRender();
+        showToast(`▶️ Linie ${rbState.legs[rbState.activeLeg].line} — Einsteigen!`);
     }
 }
 
+function rbJumpToLeg(li) {
+    // Only allow jumping back to already-done legs (for review)
+    if (!rbState || li >= rbState.activeLeg) return;
+    // Just re-render with a peek; don't change state
+}
+
 function rbStop() {
-    rbState = null;
-    document.getElementById('rb-guidance').style.display='none';
-    document.getElementById('rb-setup').style.display='block';
+    rbState = null; rbFromVal = ''; rbToVal = '';
+    document.getElementById('rb-guidance').style.display = 'none';
+    document.getElementById('rb-setup').style.display = 'block';
+    document.getElementById('rb-from-input').value = '';
+    document.getElementById('rb-to-input').value = '';
     showToast('Reise beendet');
 }
 
