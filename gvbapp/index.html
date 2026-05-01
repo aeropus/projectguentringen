@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GÜN App – v8</title>
+    <title>GÜN App – v9</title>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,700;0,800;1,700&family=DM+Sans:wght@400;500;700&family=B612+Mono&display=swap" rel="stylesheet">
 
     <!-- ═══ FIREBASE ═══ -->
@@ -60,6 +60,7 @@
             --premium: #e74c3c;
             --warn: #e67e22;
             --s11-color: #c0392b;
+            --s12-color: #1a6b9a;
             --l14-color: #003f8a;
             --l15-color: #6b1e1e;
             --l16-color: #174f17;
@@ -476,8 +477,8 @@
         <div class="s11-route">
             <div class="s11-stop"><div class="s11-dot terminal"></div><div class="s11-stop-info"><div class="s11-stop-name">Lixen</div><div class="s11-stop-sub">Endstation · Bstg. 1</div></div></div>
             <div class="s11-stop"><div class="s11-dot mid"></div><div class="s11-stop-info"><div class="s11-stop-name">Güntratal Süd</div><div class="s11-stop-sub">Umstieg L14/L15</div></div></div>
-            <div class="s11-stop"><div class="s11-dot mid" style="background:var(--accent);border-color:var(--accent)"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:var(--accent)">Altgün Dreieck ★</div><div class="s11-stop-sub">Knotenpunkt · L14, L15, L16</div></div></div>
-            <div class="s11-stop"><div class="s11-dot mid" style="background:var(--accent);border-color:var(--accent)"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:var(--accent)">Güntringen Hbf ★</div><div class="s11-stop-sub">Hauptbahnhof · Fernverkehr</div></div></div>
+            <div class="s11-stop"><div class="s11-dot mid" style="background:var(--accent);border-color:var(--accent)"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:var(--accent)">Altgün Dreieck ★</div><div class="s11-stop-sub">S-Bahn Gl. 4/5 · Hochbahn nebenan: L14 E+1, L15 E+2, L16 E+3</div></div></div>
+            <div class="s11-stop"><div class="s11-dot mid" style="background:var(--accent);border-color:var(--accent)"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:var(--accent)">Güntringen Hbf ★</div><div class="s11-stop-sub">Gl.11 → Lixen · Gl.12 → Villotal · S12 Gl.9/10 · L17 Gl.7/8</div></div></div>
             <div class="s11-stop"><div class="s11-dot mid"></div><div class="s11-stop-info"><div class="s11-stop-name">Villotal Süd</div><div class="s11-stop-sub">Umstieg Regionalbus</div></div></div>
             <div class="s11-stop"><div class="s11-dot terminal"></div><div class="s11-stop-info"><div class="s11-stop-name">Villotal Hbf</div><div class="s11-stop-sub">Endstation · Fernverkehr + U-Bahn</div></div></div>
         </div>
@@ -493,7 +494,8 @@
         <div class="fp-btn" onclick="selectLine(15,this)">Linie 15</div>
         <div class="fp-btn" onclick="selectLine(16,this)">Linie 16</div>
         <div class="fp-btn" onclick="selectLine(17,this)">Linie 17</div>
-        <div class="fp-btn active" onclick="selectLine('S11',this)">S11</div>
+        <div class="fp-btn" onclick="selectLine('S11',this)">S11</div>
+        <div class="fp-btn" onclick="selectLine('S12',this)">S12</div>
     </div>
     <div class="fp-direction" id="fp-directions"></div>
     <div class="fp-search-wrap">
@@ -596,6 +598,11 @@
                 <div style="width:28px;height:6px;background:#c0392b;border-radius:3px;flex-shrink:0;"></div>
                 <div style="font-size:12px;font-weight:bold;">S11</div>
                 <div style="font-size:11px;color:var(--text-dim);margin-left:auto;">Lixen ↔ Villotal Hbf</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:6px;background:#1a6b9a;border-radius:3px;flex-shrink:0;"></div>
+                <div style="font-size:12px;font-weight:bold;">S12</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-left:auto;">Güntringen Hbf ↔ Möhlen Nord</div>
             </div>
             <div style="background:var(--card);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
                 <div style="width:28px;height:6px;background:#003f8a;border-radius:3px;flex-shrink:0;"></div>
@@ -704,6 +711,7 @@
             <div class="admin-row">
                 <select class="admin-select" id="admin-line">
                     <option value="S11">S11</option>
+                    <option value="S12">S12</option>
                     <option value="14">Linie 14</option>
                     <option value="15">Linie 15</option>
                     <option value="16">Linie 16</option>
@@ -740,13 +748,14 @@
     <div class="setting-group">
         <h2>Benachrichtigungen</h2>
         <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Verspätungen (S11)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Verspätungen (S12)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
         <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Verspätungen (L14)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
         <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Angebote &amp; Aktionen</div><p>Junior-Specials und Rabatte</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
         <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Ticket läuft ab</div><p>3 Tage vor Ablauf erinnern</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
     </div>
     <div class="setting-group">
         <h2>App-Info</h2>
-        <div class="setting-row"><div><div style="font-weight:bold;">Version</div></div><span class="val">8.0.0 (Firebase)</span></div>
+        <div class="setting-row"><div><div style="font-weight:bold;">Version</div></div><span class="val">9.0.0 (Firebase)</span></div>
         <div class="setting-row" onclick="doLogout()" style="border-left:2px solid var(--premium);">
             <div><div style="font-weight:bold;color:var(--premium);">Abmelden</div><p>Session beenden</p></div>
             <span class="arrow" style="color:var(--premium);">›</span>
@@ -872,7 +881,13 @@ const HOME_STATIONS = [
     { id:'Altgün Dreieck',      label:'Altgün Dreieck',      sub:'S11, L14, L15, L16' },
     { id:'Güntringen Hbf',      label:'Güntringen Hbf',      sub:'S11, L17 · Hauptbahnhof' },
     { id:'Villotal Süd',        label:'Villotal Süd',        sub:'S11' },
-    { id:'Villotal Hbf',        label:'Villotal Hbf',        sub:'S11 · Fernbahnhof' },
+    { id:'Villotal Hbf',        label:'Villotal Hbf',        sub:'S11, S12 · Fernbahnhof' },
+    // S12
+    { id:'Lünberg',             label:'Lünberg',             sub:'S12' },
+    { id:'Gemberg',             label:'Gemberg',             sub:'S12' },
+    { id:'Sternberg',           label:'Sternberg',           sub:'S12' },
+    { id:'Möhlen Hbf',          label:'Möhlen Hbf',          sub:'S12 · Hauptbahnhof Möhlen' },
+    { id:'Möhlen Nord',         label:'Möhlen Nord',         sub:'S12 · Endstation' },
     // L14
     { id:'Falkenberg',          label:'Falkenberg',          sub:'L14, L15 · Endstation' },
     { id:'Neuer Ring',          label:'Neuer Ring',          sub:'L14' },
@@ -906,33 +921,56 @@ const HOME_STATIONS = [
 
 const STATION_FIS = {
     'Güntringen Hbf': [
-        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[4,34], gleis:'11', delay:true, delayMin:6 },
-        { id:'S11', dest:'Lixen',        col:'#c0392b', m:[19,49], gleis:'12' },
+        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[4,34], gleis:'12', delay:true, delayMin:6 },
+        { id:'S11', dest:'Lixen',        col:'#c0392b', m:[19,49], gleis:'11' },
+        { id:'S12', dest:'Möhlen Nord',  col:'#1a6b9a', m:[7,37], gleis:'10' },
+        { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[9,39], gleis:'9', note:'Ankunft' },
         { id:'17',  dest:'Oktratal',     col:'#7b3fa0', m:[3,18,33,48], gleis:'7' },
         { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'–', preview:true },
     ],
     'Altgün Dreieck': [
-        { id:'S11', dest:'Villotal Hbf',    col:'#c0392b', m:[10,40], gleis:'11', delay:true, delayMin:6 },
-        { id:'S11', dest:'Lixen',           col:'#c0392b', m:[25,55], gleis:'12' },
-        { id:'14',  dest:'Sonnenstadt',     col:'#003f8a', m:[0,10,20,30,40,50], gleis:'2' },
-        { id:'14',  dest:'Falkenberg',      col:'#003f8a', m:[5,15,25,35,45,55], gleis:'3' },
-        { id:'15',  dest:'Westende',        col:'#6b1e1e', m:[1,9,11,19,21,29,31,39,41,49,51,59], gleis:'4' },
-        { id:'16',  dest:'Hügelbezirk Süd', col:'#174f17', m:[2,8,12,18,22,28,32,38,42,48,52,58], gleis:'5' },
+        { id:'S11', dest:'Villotal Hbf',    col:'#c0392b', m:[10,40], gleis:'4' },
+        { id:'S11', dest:'Lixen',           col:'#c0392b', m:[25,55], gleis:'5' },
+        { id:'14',  dest:'Sonnenstadt',     col:'#003f8a', m:[0,10,20,30,40,50], gleis:'Etage +1' },
+        { id:'14',  dest:'Falkenberg',      col:'#003f8a', m:[5,15,25,35,45,55], gleis:'Etage +1' },
+        { id:'15',  dest:'Westende',        col:'#6b1e1e', m:[1,9,11,19,21,29,31,39,41,49,51,59], gleis:'Etage +2' },
+        { id:'16',  dest:'Hügelbezirk Süd', col:'#174f17', m:[2,8,12,18,22,28,32,38,42,48,52,58], gleis:'Etage +3' },
     ],
     'Güntratal Süd': [
-        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[18,48], gleis:'1', delay:true, delayMin:6 },
+        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[18,48], gleis:'1' },
         { id:'S11', dest:'Lixen',        col:'#c0392b', m:[11,41], gleis:'2' },
         { id:'14',  dest:'Sonnenstadt',  col:'#003f8a', m:[10,20,30,40,50,0], gleis:'3' },
         { id:'15',  dest:'Altgün Dreieck', col:'#6b1e1e', m:[9,19,29,39,49,59], gleis:'4' },
     ],
     'Lixen':       [{ id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[4,34], gleis:'1' }],
+    'Lünberg':     [
+        { id:'S12', dest:'Möhlen Nord',    col:'#1a6b9a', m:[27,57], gleis:'1' },
+        { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[42,12], gleis:'2' },
+    ],
+    'Gemberg':     [
+        { id:'S12', dest:'Möhlen Nord',    col:'#1a6b9a', m:[46,16], gleis:'1' },
+        { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[23,53], gleis:'2' },
+    ],
+    'Sternberg':   [
+        { id:'S12', dest:'Möhlen Nord',    col:'#1a6b9a', m:[54,24], gleis:'1' },
+        { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[15,45], gleis:'2' },
+    ],
+    'Möhlen Hbf':  [
+        { id:'S12', dest:'Möhlen Nord',    col:'#1a6b9a', m:[2,32], gleis:'1' },
+        { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[7,37], gleis:'2' },
+    ],
+    'Möhlen Nord': [{ id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[9,39], gleis:'1' }],
     'Villotal Hbf':[
-        { id:'S11', dest:'Lixen', col:'#c0392b', m:[19,49], gleis:'1' },
+        { id:'S11', dest:'Lixen',        col:'#c0392b', m:[19,49], gleis:'1' },
+        { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[3,33], gleis:'6' },
+        { id:'S12', dest:'Möhlen Nord',  col:'#1a6b9a', m:[36,6],  gleis:'5' },
         { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'–', preview:true },
     ],
     'Villotal Süd':[
         { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[13,43], gleis:'1' },
         { id:'S11', dest:'Lixen',        col:'#c0392b', m:[28,58], gleis:'2' },
+        { id:'S12', dest:'Möhlen Nord',  col:'#1a6b9a', m:[18,48], gleis:'3' },
+        { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[51,21], gleis:'4' },
     ],
     'Falkenberg':  [
         { id:'14', dest:'Sonnenstadt', col:'#003f8a', m:[0,10,20,30,40,50], gleis:'1' },
@@ -949,6 +987,7 @@ const ALL_STATIONS = [
     'Krakingerallee','Burg','Vélicherring','Osttal',
     'Villenviertel','Hügelbezirk Süd',
     'Lixen','Güntratal Süd','Güntringen Hbf','Villotal Süd','Villotal Hbf',
+    'Lünberg','Gemberg','Sternberg','Möhlen Hbf','Möhlen Nord',
     'Südstern','Südtor','Oktratal'
 ];
 
@@ -962,7 +1001,12 @@ const STATION_INFO = {
     'Lixen': { typ:'Endstation', linien:'S11', aufzug:'Nein', fahrrad:'Ja', park:'Ja', info:'P+R-Parkplatz mit 120 Stellplätzen.' },
     'Güntratal Süd': { typ:'Haltestelle', linien:'S11, L14, L15', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Umstieg auf Linien 14 und 15 möglich.' },
     'Villotal Süd': { typ:'Haltestelle', linien:'S11', aufzug:'Ja', fahrrad:'Nein', park:'Nein', info:'Anschluss an Regionalbusse Richtung Villotal-West.' },
-    'Villotal Hbf': { typ:'Fernbahnhof', linien:'S11 · OS11 (geplant)', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Anbindung an Fernverkehr + Villotal-U-Bahn. Zukünftiger OctoSpeed-Halt OS11 Richtung Glücksburg Hbf und Lixen.' },
+    'Villotal Hbf': { typ:'Fernbahnhof', linien:'S11, S12 · OS11 (geplant)', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Anbindung an Fernverkehr + Villotal-U-Bahn. Umstieg S11 ↔ S12. Zukünftiger OctoSpeed-Halt OS11 Richtung Glücksburg Hbf und Lixen.' },
+    'Lünberg': { typ:'Haltestelle', linien:'S12', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Haltestelle der S12 zwischen Villotal Süd und Villotal Hbf.' },
+    'Gemberg': { typ:'Haltestelle', linien:'S12', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Haltestelle der S12 östlich von Villotal Hbf.' },
+    'Sternberg': { typ:'Haltestelle', linien:'S12', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Haltestelle der S12.' },
+    'Möhlen Hbf': { typ:'Hauptbahnhof', linien:'S12', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Hauptbahnhof Möhlen. Anschluss an Möhlen-Stadtbahn. P+R mit 200 Stellplätzen.' },
+    'Möhlen Nord': { typ:'Endstation', linien:'S12', aufzug:'Nein', fahrrad:'Ja', park:'Ja', info:'Nördliche Endstation der S12. P+R mit 80 Stellplätzen.' },
     'Sonnenstadt': { typ:'Endstation', linien:'14', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Stadteingang Sonnenstadt, Bushaltestellen 3–8.' },
     'Falkenberg': { typ:'Endstation', linien:'14, 15', aufzug:'Nein', fahrrad:'Ja', park:'Ja', info:'P+R-Parkplatz mit 80 Stellplätzen.' },
     'Westende': { typ:'Endstation', linien:'15', aufzug:'Nein', fahrrad:'Nein', park:'Nein', info:'Nahe Hafenpromenade.' },
@@ -972,50 +1016,62 @@ const STATION_INFO = {
 const LINE_FULL_STOPS = {
     'S11_Villotal': [
         {name:'Lixen',gleis:'1',transfer:null},{name:'Güntratal Süd',gleis:'2',transfer:'L14/L15 Umstieg'},
-        {name:'Altgün Dreieck',gleis:'11',transfer:'L14,L15,L16 Umstieg'},{name:'Güntringen Hbf',gleis:'11',transfer:null},
+        {name:'Altgün Dreieck',gleis:'5',transfer:'L14,L15,L16 Umstieg (Hochbahn)'},{name:'Güntringen Hbf',gleis:'12',transfer:'S12 Gl.9/10, L17 Gl.7'},
         {name:'Villotal Süd',gleis:'1',transfer:'Regionalbus'},{name:'Villotal Hbf',gleis:'3',transfer:'Fernverkehr, U-Bahn'},
     ],
     'S11_Lixen': [
         {name:'Villotal Hbf',gleis:'4',transfer:'Fernverkehr, U-Bahn'},{name:'Villotal Süd',gleis:'1',transfer:null},
-        {name:'Güntringen Hbf',gleis:'12',transfer:null},{name:'Altgün Dreieck',gleis:'12',transfer:'L14,L15,L16 Umstieg'},
+        {name:'Güntringen Hbf',gleis:'11',transfer:'S12 Gl.9/10, L17 Gl.7'},{name:'Altgün Dreieck',gleis:'4',transfer:'L14,L15,L16 Umstieg (Hochbahn)'},
         {name:'Güntratal Süd',gleis:'2',transfer:'L14/L15 Umstieg'},{name:'Lixen',gleis:'1',transfer:null},
     ],
     '14_Sonnenstadt': [
         {name:'Falkenberg',gleis:'1',transfer:null},{name:'Neuer Ring',gleis:'1',transfer:null},
         {name:'Regierungsviertel',gleis:'2',transfer:'L15 Umstieg'},{name:'Altgüner Vorstadt',gleis:'2',transfer:null},
-        {name:'Altgün Mitte',gleis:'2',transfer:null},{name:'Altgün Dreieck',gleis:'2',transfer:'S11,L15,L16 Umstieg'},
+        {name:'Altgün Mitte',gleis:'2',transfer:null},{name:'Altgün Dreieck',gleis:'Etage +1',transfer:'S11 Bahnhof nebenan, L15 Etage +2, L16 Etage +3'},
         {name:'Seenring',gleis:'1',transfer:null},{name:'Sonnenwald',gleis:'1',transfer:null},
         {name:'Technopolis',gleis:'1',transfer:null},{name:'Sonnenstadt',gleis:'2',transfer:'Bushalt 3–8'},
     ],
     '14_Falkenberg': [
         {name:'Sonnenstadt',gleis:'1',transfer:null},{name:'Technopolis',gleis:'1',transfer:null},
         {name:'Sonnenwald',gleis:'1',transfer:null},{name:'Seenring',gleis:'1',transfer:null},
-        {name:'Altgün Dreieck',gleis:'3',transfer:'S11,L15,L16 Umstieg'},{name:'Altgün Mitte',gleis:'2',transfer:null},
+        {name:'Altgün Dreieck',gleis:'Etage +1',transfer:'S11 Bahnhof nebenan, L15 Etage +2, L16 Etage +3'},{name:'Altgün Mitte',gleis:'2',transfer:null},
         {name:'Altgüner Vorstadt',gleis:'2',transfer:'L15 Umstieg'},{name:'Regierungsviertel',gleis:'2',transfer:'L15 Umstieg'},
         {name:'Neuer Ring',gleis:'1',transfer:null},{name:'Falkenberg',gleis:'1',transfer:null},
     ],
     '15_Westende': [
-        {name:'Altgün Dreieck',gleis:'4',transfer:'S11,L14,L16 Umstieg'},{name:'Altgün-Center',gleis:'1',transfer:null},
+        {name:'Altgün Dreieck',gleis:'Etage +2',transfer:'S11 Bahnhof nebenan, L14 Etage +1, L16 Etage +3'},{name:'Altgün-Center',gleis:'1',transfer:null},
         {name:'Altgün-Markt',gleis:'1',transfer:null},{name:'Vûlfja-Hüpel-Allee',gleis:'1',transfer:null},
         {name:'Sâscha-Okto-Ring',gleis:'1',transfer:null},{name:'Altgüner Vorstadt',gleis:'1',transfer:'L14 Umstieg'},
         {name:'Regierungsviertel',gleis:'1',transfer:'L14 Umstieg'},{name:'Falkenberger Allee',gleis:'1',transfer:null},
         {name:'ZOB Flussbezirk',gleis:'1',transfer:null},{name:'Westende',gleis:'2',transfer:'Hafenpromenade'},
     ],
     '16_Hügelbezirk': [
-        {name:'Altgün Dreieck',gleis:'5',transfer:'S11,L14,L15 Umstieg'},{name:'Krakingerallee',gleis:'1',transfer:null},
+        {name:'Altgün Dreieck',gleis:'Etage +3',transfer:'S11 Bahnhof nebenan, L14 Etage +1, L15 Etage +2'},{name:'Krakingerallee',gleis:'1',transfer:null},
         {name:'Burg',gleis:'1',transfer:null},{name:'Vélicherring',gleis:'1',transfer:null},
         {name:'Osttal',gleis:'1',transfer:null},{name:'Villenviertel',gleis:'1',transfer:null},
         {name:'Hügelbezirk Süd',gleis:'1',transfer:'Fußweg Villenviertel 5 Min.'},
     ],
+    'S12_Moehlen': [
+        {name:'Güntringen Hbf',gleis:'10',transfer:'S11 Gl.11/12, L17 Gl.7'},{name:'Villotal Süd',gleis:'2',transfer:'Regionalbus'},
+        {name:'Lünberg',gleis:'1',transfer:null},{name:'Villotal Hbf',gleis:'5',transfer:'Fernverkehr, U-Bahn'},
+        {name:'Gemberg',gleis:'1',transfer:null},{name:'Sternberg',gleis:'1',transfer:null},
+        {name:'Möhlen Hbf',gleis:'1',transfer:'Möhlen-Stadtbahn'},{name:'Möhlen Nord',gleis:'1',transfer:null},
+    ],
+    'S12_Guentringen': [
+        {name:'Möhlen Nord',gleis:'1',transfer:null},{name:'Möhlen Hbf',gleis:'2',transfer:'Möhlen-Stadtbahn'},
+        {name:'Sternberg',gleis:'1',transfer:null},{name:'Gemberg',gleis:'1',transfer:null},
+        {name:'Villotal Hbf',gleis:'6',transfer:'Fernverkehr, U-Bahn'},{name:'Lünberg',gleis:'1',transfer:null},
+        {name:'Villotal Süd',gleis:'2',transfer:'Regionalbus'},{name:'Güntringen Hbf',gleis:'10',transfer:'S11 Gl.11/12, L17 Gl.7, S12 Gl.9/10'},
+    ],
     '17_Oktratal': [
-        {name:'Güntringen Hbf',gleis:'7',transfer:'S11 Umstieg'},{name:'Südstern',gleis:'1',transfer:null},
+        {name:'Güntringen Hbf',gleis:'7',transfer:'S11 Gl.11/12, S12 Gl.9/10'},{name:'Südstern',gleis:'1',transfer:null},
         {name:'Südtor',gleis:'1',transfer:null},{name:'Technopolis',gleis:'2',transfer:'L14 Umstieg'},
         {name:'Oktratal',gleis:'1',transfer:'Vorort-Endstation'},
     ],
     '17_Hbf': [
         {name:'Oktratal',gleis:'1',transfer:null},{name:'Technopolis',gleis:'2',transfer:'L14 Umstieg'},
         {name:'Südtor',gleis:'1',transfer:null},{name:'Südstern',gleis:'1',transfer:null},
-        {name:'Güntringen Hbf',gleis:'7',transfer:'S11 Umstieg'},
+        {name:'Güntringen Hbf',gleis:'8',transfer:'S11 Gl.11/12, S12 Gl.9/10'},
     ],
 };
 
@@ -1093,6 +1149,24 @@ const SCHEDULES = {
             ]}
         ],
         departures:[4,34]
+    },
+    'S12': {
+        name:'S12', color:'#1a6b9a',
+        directions:[
+            { label:'Richtung Möhlen Nord', stopKey:'S12_Moehlen', stations:[
+                {name:'Güntringen Hbf',skip:false,offset:0},{name:'Villotal Süd',skip:false,offset:11},
+                {name:'Lünberg',skip:false,offset:20},{name:'Villotal Hbf',skip:false,offset:29},
+                {name:'Gemberg',skip:false,offset:39},{name:'Sternberg',skip:false,offset:47},
+                {name:'Möhlen Hbf',skip:false,offset:55},{name:'Möhlen Nord',skip:false,offset:62},
+            ]},
+            { label:'Richtung Güntringen Hbf', stopKey:'S12_Guentringen', stations:[
+                {name:'Möhlen Nord',skip:false,offset:0},{name:'Möhlen Hbf',skip:false,offset:7},
+                {name:'Sternberg',skip:false,offset:15},{name:'Gemberg',skip:false,offset:23},
+                {name:'Villotal Hbf',skip:false,offset:33},{name:'Lünberg',skip:false,offset:42},
+                {name:'Villotal Süd',skip:false,offset:51},{name:'Güntringen Hbf',skip:false,offset:62},
+            ]}
+        ],
+        departures:[7,37]
     },
     17: {
         name:'Linie 17', color:'#7b3fa0',
@@ -1439,7 +1513,9 @@ function updateFIS(stationId) {
         const cdMin=Math.floor(totalSec/60), cdSec=Math.max(0,totalSec%60);
         const cdStr = diff===0?'🚉 Jetzt':`${cdMin}:${String(cdSec).padStart(2,'0')} min`;
         const isS11=l.id==='S11';
+        const isS12=l.id==='S12';
         const stopKey=isS11?(l.dest.includes('Villotal')?'S11_Villotal':'S11_Lixen')
+                     :isS12?(l.dest.includes('Möhlen')?'S12_Moehlen':'S12_Guentringen')
                      :l.id==='14'?(l.dest==='Sonnenstadt'?'14_Sonnenstadt':'14_Falkenberg')
                      :l.id==='15'?'15_Westende'
                      :l.id==='17'?(l.dest==='Oktratal'?'17_Oktratal':'17_Hbf')
@@ -1527,9 +1603,9 @@ function openTripDrawer(lineId,dest,color,stopKey,delayMin,depH,depM) {
             <div class="section-title" style="margin-bottom:8px;">Fahrzeuginfo</div>
             <div style="background:var(--card);border-radius:10px;padding:12px;border:1px solid var(--input-border);">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
-                    <div><span style="color:var(--text-dim);">Typ</span><br><strong>${lineId==='S11'?'Triebzug 422':'Niederflurbus NF12'}</strong></div>
+                    <div><span style="color:var(--text-dim);">Typ</span><br><strong>${lineId==='S11'||lineId==='S12'?'Triebzug 422':'Niederflurbus NF12'}</strong></div>
                     <div><span style="color:var(--text-dim);">Klima</span><br><strong>✓ Ja</strong></div>
-                    ${lineId==='S11'?'<div><span style="color:var(--text-dim);">WLAN</span><br><strong>✓ An Bord</strong></div><div><span style="color:var(--text-dim);">Fahrrad</span><br><strong>✓ Erlaubt</strong></div>':''}
+                    ${lineId==='S11'||lineId==='S12'?'<div><span style="color:var(--text-dim);">WLAN</span><br><strong>✓ An Bord</strong></div><div><span style="color:var(--text-dim);">Fahrrad</span><br><strong>✓ Erlaubt</strong></div>':''}
                 </div>
             </div>
         </div>`;
@@ -1670,16 +1746,16 @@ function calcRoute() {
     const finalArr=`${String(Math.floor((depH*60+depM+totalMins)/60)%24).padStart(2,'0')}:${String((depH*60+depM+totalMins)%60).padStart(2,'0')}`;
 
     // Price calculation
-    const lineZones = {'S11':2,'14':1,'15':1,'16':2,'17':1};
+    const lineZones = {'S11':2,'S12':2,'14':1,'15':1,'16':2,'17':1};
     let totalZones = 0;
     legs.forEach(leg=>{ totalZones += lineZones[String(leg.line)]||1; });
     const uniqueLines = [...new Set(legs.map(l=>String(l.line)))];
     let price, ticketName, ticketBadge;
     if(totalMins<=60) {
-        price = uniqueLines.includes('S11')||uniqueLines.includes('16') ? 2.30 : 1.20;
+        price = uniqueLines.includes('S11')||uniqueLines.includes('S12')||uniqueLines.includes('16') ? 2.30 : 1.20;
         ticketName = 'Kurzzeit-Ticket'; ticketBadge = '60 Min';
     } else if(totalMins<=120) {
-        price = uniqueLines.includes('S11')||uniqueLines.includes('16') ? (legs.length>1?3.30:4.30) : 2.30;
+        price = uniqueLines.includes('S11')||uniqueLines.includes('S12')||uniqueLines.includes('16') ? (legs.length>1?3.30:4.30) : 2.30;
         ticketName = legs.length>1?'Basis Kombi':'Basis-Ticket'; ticketBadge = '120 Min';
     } else {
         price = legs.length>1 ? 10.00 : 5.00;
@@ -1690,6 +1766,8 @@ function calcRoute() {
     const LINE_STOP_DATA = {
         'S11_Villotal': LINE_FULL_STOPS['S11_Villotal'],
         'S11_Lixen':    LINE_FULL_STOPS['S11_Lixen'],
+        'S12_Moehlen':      LINE_FULL_STOPS['S12_Moehlen'],
+        'S12_Guentringen':  LINE_FULL_STOPS['S12_Guentringen'],
         '14_Sonnenstadt': LINE_FULL_STOPS['14_Sonnenstadt'],
         '14_Falkenberg':  LINE_FULL_STOPS['14_Falkenberg'],
         '15_Westende':    LINE_FULL_STOPS['15_Westende'],
@@ -1705,6 +1783,7 @@ function calcRoute() {
         const fi = stops.indexOf(fromStn), ti = stops.indexOf(toStn);
         const forward = ti >= fi;
         if (lid === 'S11') return forward ? 'S11_Villotal' : 'S11_Lixen';
+        if (lid === 'S12') return forward ? 'S12_Moehlen' : 'S12_Guentringen';
         if (lid === '14')  return forward ? '14_Sonnenstadt' : '14_Falkenberg';
         // L15, L16, L17: only one full-stops entry; use it in either direction
         if (lid === '15')  return '15_Westende';
@@ -1735,7 +1814,7 @@ function calcRoute() {
         }
 
         // Compute stop times using LINE_META absolute offsets; Math.abs handles reverse direction
-        const metaOffsets = LINE_META[String(leg.line)==='S11'?'S11':String(leg.line)]?.stopMins || {};
+        const metaOffsets = LINE_META[String(leg.line)==='S11'?'S11':String(leg.line)==='S12'?'S12':String(leg.line)]?.stopMins || {};
         const firstMetaOff = metaOffsets[legStops[0]?.name] ?? 0;
 
         // Build stop timeline
@@ -1854,7 +1933,7 @@ function renderJourneyHistory() {
         const raw=snap.val();
         if(!raw){ el.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Noch keine Fahrten aufgezeichnet.</div>'; return; }
         const entries=Object.values(raw).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,10);
-        const lineColors={'S11':'#c0392b','14':'#003f8a','15':'#6b1e1e','16':'#174f17','17':'#7b3fa0'};
+        const lineColors={'S11':'#c0392b','S12':'#1a6b9a','14':'#003f8a','15':'#6b1e1e','16':'#174f17','17':'#7b3fa0'};
         el.innerHTML=entries.map(j=>`
             <div class="journey-item">
                 <div class="ji-line" style="background:${lineColors[String(j.line)]||'#555'}">${j.line}</div>
@@ -1995,6 +2074,7 @@ function showView(id,el) {
 // ====== REISEBEGLEITER ======
 const RB_LINE_STOPS = {
     'S11':  ['Lixen','Güntratal Süd','Altgün Dreieck','Güntringen Hbf','Villotal Süd','Villotal Hbf'],
+    'S12':  ['Güntringen Hbf','Villotal Süd','Lünberg','Villotal Hbf','Gemberg','Sternberg','Möhlen Hbf','Möhlen Nord'],
     '14':   ['Falkenberg','Neuer Ring','Regierungsviertel','Altgüner Vorstadt','Altgün Mitte','Altgün Dreieck','Seenring','Sonnenwald','Technopolis','Sonnenstadt'],
     '15':   ['Altgün Dreieck','Altgün-Center','Altgün-Markt','Vûlfja-Hüpel-Allee','Sâscha-Okto-Ring','Altgüner Vorstadt','Regierungsviertel','Falkenberger Allee','ZOB Flussbezirk','Westende'],
     '16':   ['Altgün Dreieck','Krakingerallee','Burg','Vélicherring','Osttal','Villenviertel','Hügelbezirk Süd'],
@@ -2003,7 +2083,9 @@ const RB_LINE_STOPS = {
 const RB_TRANSFERS = {
     'Altgün Dreieck': ['S11','14','15','16'],
     'Güntratal Süd':  ['S11','14','15'],
-    'Güntringen Hbf': ['S11','17'],
+    'Güntringen Hbf': ['S11','S12','17'],
+    'Villotal Süd':   ['S11','S12'],
+    'Villotal Hbf':   ['S11','S12'],
     'Altgüner Vorstadt': ['14','15'],
     'Regierungsviertel': ['14','15'],
     'Falkenberg': ['14','15'],
@@ -2013,6 +2095,7 @@ const RB_TRANSFERS = {
 // ====== LINE_GRAPH – automatisch bidirektional aus RB_LINE_STOPS ======
 const LINE_META = {
     'S11': { color:'#c0392b', stopMins:{ 'Lixen':0,'Güntratal Süd':8,'Altgün Dreieck':18,'Güntringen Hbf':24,'Villotal Süd':35,'Villotal Hbf':44 } },
+    'S12': { color:'#1a6b9a', stopMins:{ 'Güntringen Hbf':0,'Villotal Süd':11,'Lünberg':20,'Villotal Hbf':29,'Gemberg':39,'Sternberg':47,'Möhlen Hbf':55,'Möhlen Nord':62 } },
     '14':  { color:'#003f8a', stopMins:{ 'Falkenberg':0,'Neuer Ring':2,'Regierungsviertel':4,'Altgüner Vorstadt':6,'Altgün Mitte':8,'Altgün Dreieck':10,'Seenring':12,'Sonnenwald':14,'Technopolis':16,'Sonnenstadt':18 } },
     '15':  { color:'#6b1e1e', stopMins:{ 'Altgün Dreieck':0,'Altgün-Center':2,'Altgün-Markt':4,'Vûlfja-Hüpel-Allee':6,'Sâscha-Okto-Ring':8,'Altgüner Vorstadt':10,'Regierungsviertel':12,'Falkenberger Allee':14,'ZOB Flussbezirk':16,'Westende':18 } },
     '16':  { color:'#174f17', stopMins:{ 'Altgün Dreieck':0,'Krakingerallee':4,'Burg':6,'Vélicherring':8,'Osttal':10,'Villenviertel':12,'Hügelbezirk Süd':16 } },
