@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GÜN App – v5</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;700;800&family=DM+Sans:wght@400;500;700&family=B612+Mono&display=swap" rel="stylesheet">
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile }
+            from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getDatabase, ref, onValue, set, get, update, push, serverTimestamp }
+            from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC48nhhA47984Uq1wmP7rLTNA3VG1T2xOg",
+            authDomain: "projektguentringen.firebaseapp.com",
+            projectId: "projektguentringen",
+            storageBucket: "projektguentringen.firebasestorage.app",
+            messagingSenderId: "614050838153",
+            appId: "1:614050838153:web:f3725e0b5c4840d5107858",
+            databaseURL: "https://projektguentringen-default-rtdb.europe-west1.firebasedatabase.app"
+        };
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getDatabase(app);
+
+        // ── expose to global ──
+        window._fb = { auth, db, ref, onValue, set, get, update, push, serverTimestamp,
+            createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile };
+
+        // ── auth state listener ──
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                window._fbUser = user;
+                window._onLogin(user);
+            } else {
+                window._fbUser = null;
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('app-shell').classList.add('hidden');
+            }
+        });
+    </script>
+
+    <style>
+        :root {
+            --accent:#c0392b; --success:#27ae60; --premium:#e74c3c; --warn:#e67e22;
+            --vil-color:#c0392b; --eur-color:#27ae60;
+        }
+        [data-theme="dark"] {
+            --bg:#0e0e0e; --card:#191919;
+            --header-bg:linear-gradient(to bottom,#1c1c1c,#0e0e0e);
+            --header-border:#252525; --tab-bg:#111; --tab-active-bg:#222;
+            --text:#f0f0f0; --text-dim:#888; --input-bg:#191919;
+            --input-border:#2a2a2a; --modal-bg:#1e1e1e;
+            --overlay-bg:rgba(0,0,0,0.92);
+            --row-hover:#1f1f1f; --setting-row-bg:#191919;
+            --notif-drawer-bg:#141414; --toggle-off:#333;
+            --stat-box-bg:#191919; --fp-header-bg:#1a1a1a;
+            --fp-border:#1f1f1f; --section-title:#888;
+            --shadow:rgba(0,0,0,0.5); --login-bg:#0e0e0e;
+            --drawer-border:#222;
+        }
+        [data-theme="light"] {
+            --bg:#f2f2f2; --card:#fff;
+            --header-bg:linear-gradient(to bottom,#fff,#f2f2f2);
+            --header-border:#ddd; --tab-bg:#e8e8e8; --tab-active-bg:#fff;
+            --text:#111; --text-dim:#666; --input-bg:#fff;
+            --input-border:#ccc; --modal-bg:#fff;
+            --overlay-bg:rgba(0,0,0,0.5);
+            --row-hover:#f7f7f7; --setting-row-bg:#fff;
+            --notif-drawer-bg:#fafafa; --toggle-off:#bbb;
+            --stat-box-bg:#fff; --fp-header-bg:#f0f0f0;
+            --fp-border:#e8e8e8; --section-title:#888;
+            --shadow:rgba(0,0,0,0.12); --login-bg:#f2f2f2;
+            --drawer-border:#ddd;
+        }
+
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; transition:background .3s,color .3s; }
+        h1,h2,h3 { font-family:'Barlow',sans-serif; font-weight:800; text-transform:uppercase; }
+
+        /* ── LOGIN ── */
+        #login-screen {
+            position:fixed; inset:0; background:var(--login-bg);
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            z-index:9999; padding:28px; animation:fadeIn .35s ease;
+        }
+        #login-screen.hidden { display:none; }
+        .login-logo { width:76px; height:76px; border-radius:20px; background:linear-gradient(135deg,var(--accent),#8b0000); display:flex; align-items:center; justify-content:center; font-family:'Barlow',sans-serif; font-size:26px; font-weight:800; color:#fff; margin-bottom:22px; box-shadow:0 8px 30px rgba(192,57,43,.35); }
+        .login-title { font-size:24px; font-weight:800; font-family:'Barlow',sans-serif; text-transform:uppercase; margin-bottom:4px; }
+        .login-subtitle { font-size:12px; color:var(--text-dim); margin-bottom:28px; text-align:center; line-height:1.5; }
+        .login-tabs { display:flex; gap:0; width:100%; max-width:320px; background:var(--input-bg); border-radius:10px; border:1px solid var(--input-border); margin-bottom:20px; overflow:hidden; }
+        .login-tab { flex:1; padding:10px; text-align:center; font-size:12px; font-weight:700; font-family:'Barlow',sans-serif; text-transform:uppercase; cursor:pointer; color:var(--text-dim); transition:.2s; }
+        .login-tab.active { background:var(--accent); color:#fff; }
+        .login-field { width:100%; max-width:320px; margin-bottom:12px; }
+        .login-label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
+        .login-input { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:13px 15px; border-radius:11px; font-size:14px; font-family:'DM Sans',sans-serif; transition:border-color .2s; }
+        .login-input:focus { outline:none; border-color:var(--accent); }
+        .login-btn { width:100%; max-width:320px; background:var(--accent); color:#fff; border:none; padding:14px; border-radius:11px; font-weight:800; font-size:15px; font-family:'Barlow',sans-serif; text-transform:uppercase; cursor:pointer; letter-spacing:1px; margin-top:6px; box-shadow:0 4px 16px rgba(192,57,43,.3); transition:opacity .2s; }
+        .login-btn:active { opacity:.8; }
+        .login-err { font-size:11px; color:var(--premium); margin-top:10px; text-align:center; min-height:16px; }
+        #login-register-fields { display:none; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+        /* ── APP SHELL ── */
+        #app-shell { display:flex; flex-direction:column; flex:1; overflow:hidden; }
+        #app-shell.hidden { display:none; }
+
+        /* ── HEADER ── */
+        header { padding:11px 15px; background:var(--header-bg); border-bottom:1px solid var(--header-border); display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+        .user-info { display:flex; align-items:center; gap:9px; cursor:pointer; }
+        .avatar { width:38px; height:38px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:13px; flex-shrink:0; }
+        .header-right { display:flex; align-items:center; gap:6px; }
+        .theme-btn { background:var(--card); border:1px solid var(--input-border); color:var(--text); border-radius:9px; padding:7px 9px; font-size:15px; cursor:pointer; }
+        .notif-bell { position:relative; cursor:pointer; background:var(--card); border:1px solid var(--input-border); border-radius:9px; padding:7px 9px; font-size:15px; }
+        .notif-dot { position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--premium); border-radius:50%; display:none; }
+        .notif-dot.active { display:block; }
+        .balance-display { text-align:right; }
+        .vil-val { color:var(--vil-color); font-size:1rem; font-weight:bold; font-family:'B612 Mono',monospace; }
+        .eur-val { color:var(--eur-color); font-size:.75rem; opacity:.85; }
+
+        /* ── TABS ── */
+        .tab-bar { display:flex; background:var(--tab-bg); padding:4px; gap:4px; flex-shrink:0; overflow-x:auto; }
+        .tab-bar::-webkit-scrollbar { display:none; }
+        .tab { flex:1; min-width:50px; padding:9px 4px; text-align:center; font-size:.58rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; cursor:pointer; border-radius:7px; transition:.2s; white-space:nowrap; }
+        .tab.active { background:var(--tab-active-bg); color:var(--accent); box-shadow:0 1px 6px var(--shadow); }
+
+        /* ── MAIN ── */
+        main { flex:1; overflow-y:auto; padding:14px; padding-bottom:20px; }
+        .view { display:none; }
+        .view.active { display:block; animation:slideUp .2s ease-out; }
+        @keyframes slideUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        .section-title { font-size:10px; color:var(--section-title); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+
+        /* ── FIS ── */
+        .fis-station-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .fis-station-name { font-size:17px; font-weight:800; font-family:'Barlow',sans-serif; text-transform:uppercase; }
+        .fis-change-btn { font-size:11px; color:var(--accent); cursor:pointer; background:rgba(192,57,43,.08); border:1px solid rgba(192,57,43,.2); padding:5px 10px; border-radius:20px; font-weight:bold; }
+        .fis-card { background:var(--card); border-radius:13px; overflow:hidden; margin-bottom:13px; box-shadow:0 2px 10px var(--shadow); }
+        .fis-row { display:grid; grid-template-columns:46px 1fr 90px; padding:13px; border-bottom:1px solid var(--fp-border); align-items:center; cursor:pointer; transition:background .15s; }
+        .fis-row:last-child { border-bottom:none; }
+        .fis-row:hover { background:var(--row-hover); }
+        .line-badge { width:34px; height:21px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:bold; }
+        .eta-col { text-align:right; }
+        .eta { font-family:'B612 Mono',monospace; color:var(--success); font-weight:bold; font-size:14px; }
+        .eta-cd { font-family:'B612 Mono',monospace; font-size:10px; color:var(--text-dim); margin-top:1px; }
+        .delay-tag { background:rgba(231,76,60,.12); color:var(--premium); border:1px solid rgba(231,76,60,.25); font-size:9px; padding:2px 5px; border-radius:4px; margin-top:3px; display:inline-block; }
+        /* delay badge in FIS – live from Firebase */
+        .delay-live { background:rgba(231,76,60,.18); color:var(--premium); border:1px solid rgba(231,76,60,.35); font-size:9px; padding:2px 6px; border-radius:4px; display:inline-block; margin-top:3px; }
+
+        /* ── S11 line strip ── */
+        .s11-map { background:var(--card); border-radius:13px; padding:16px; margin-bottom:13px; border:1px solid var(--input-border); }
+        .s11-map h3 { font-size:10px; color:var(--accent); letter-spacing:1px; margin-bottom:13px; }
+        .s11-route { display:flex; flex-direction:column; }
+        .s11-stop { display:flex; align-items:center; gap:11px; position:relative; }
+        .s11-stop:not(:last-child)::after { content:''; position:absolute; left:10px; top:21px; width:2px; height:24px; background:#c0392b; opacity:.4; }
+        .s11-dot { width:22px; height:22px; border-radius:50%; border:2.5px solid #c0392b; background:var(--card); display:flex; align-items:center; justify-content:center; flex-shrink:0; z-index:1; }
+        .s11-dot.terminal { background:#c0392b; }
+        .s11-dot.terminal::after { content:''; width:7px; height:7px; border-radius:50%; background:#fff; }
+        .s11-dot.mid::after { content:''; width:6px; height:6px; border-radius:50%; background:#c0392b; }
+        .s11-stop-info { padding:7px 0; }
+        .s11-stop-name { font-size:12px; font-weight:bold; }
+        .s11-stop-sub { font-size:10px; color:var(--text-dim); margin-top:1px; }
+
+        /* ── FAHRPLAN ── */
+        .fp-selector { display:flex; gap:7px; margin-bottom:13px; flex-wrap:wrap; }
+        .fp-btn { padding:7px 12px; border-radius:8px; border:1px solid var(--input-border); background:var(--card); color:var(--text-dim); font-size:11px; font-weight:bold; cursor:pointer; transition:.2s; }
+        .fp-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(192,57,43,.08); }
+        .fp-direction { display:flex; gap:6px; margin-bottom:10px; }
+        .dir-btn { flex:1; padding:9px; border-radius:8px; border:1px solid var(--input-border); background:var(--card); color:var(--text-dim); font-size:11px; cursor:pointer; text-align:center; transition:.2s; }
+        .dir-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(192,57,43,.06); }
+        .fp-search-wrap { position:relative; margin-bottom:10px; }
+        .fp-search { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:10px 13px 10px 34px; border-radius:10px; font-size:13px; font-family:'DM Sans',sans-serif; }
+        .fp-search:focus { outline:none; border-color:var(--accent); }
+        .fp-search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:13px; pointer-events:none; }
+        .fp-table { background:var(--card); border-radius:12px; overflow:hidden; box-shadow:0 2px 8px var(--shadow); }
+        .fp-header { display:grid; grid-template-columns:1fr 70px 70px; padding:10px 13px; background:var(--fp-header-bg); font-size:10px; color:var(--text-dim); font-weight:bold; text-transform:uppercase; }
+        .fp-station-row { display:grid; grid-template-columns:1fr 70px 70px; padding:11px 13px; border-bottom:1px solid var(--fp-border); font-size:12px; align-items:center; cursor:pointer; transition:background .15s; }
+        .fp-station-row:last-child { border-bottom:none; }
+        .fp-station-row:hover { background:var(--row-hover); }
+        .fp-station-row.highlight { background:rgba(192,57,43,.05); }
+        .fp-station-row.hidden-filter { display:none; }
+        .fp-time { font-family:'B612 Mono',monospace; font-size:11px; color:var(--text-dim); }
+        .fp-icon { font-size:12px; margin-right:5px; }
+
+        /* ── AUTOCOMPLETE ── */
+        .autocomplete-wrap { position:relative; }
+        .autocomplete-input { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:12px 13px; border-radius:10px; font-size:14px; font-family:'DM Sans',sans-serif; transition:border-color .2s; }
+        .autocomplete-input:focus { outline:none; border-color:var(--accent); }
+        .autocomplete-list { position:absolute; top:calc(100%+4px); left:0; right:0; background:var(--modal-bg); border:1px solid var(--input-border); border-radius:10px; z-index:200; max-height:180px; overflow-y:auto; box-shadow:0 4px 16px var(--shadow); display:none; }
+        .autocomplete-list.open { display:block; }
+        .ac-item { padding:10px 13px; font-size:13px; cursor:pointer; transition:background .1s; }
+        .ac-item:hover { background:var(--row-hover); color:var(--accent); }
+        .ac-item mark { background:none; color:var(--accent); font-weight:bold; }
+
+        /* ── ROUTE ── */
+        .route-form { margin-bottom:18px; }
+        .route-input-wrap { margin-bottom:10px; }
+        .route-label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
+        .route-input { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:12px 13px; border-radius:10px; font-size:14px; font-family:'DM Sans',sans-serif; transition:border-color .2s; }
+        .route-input:focus { outline:none; border-color:var(--accent); }
+        .swap-btn { display:block; margin:0 auto 10px; background:var(--card); border:1px solid var(--input-border); color:var(--text-dim); padding:8px 18px; border-radius:8px; cursor:pointer; font-size:17px; }
+        .route-go-btn { width:100%; background:var(--accent); color:#fff; border:none; padding:13px; border-radius:10px; font-weight:800; font-size:14px; font-family:'Barlow',sans-serif; text-transform:uppercase; cursor:pointer; letter-spacing:1px; box-shadow:0 4px 14px rgba(192,57,43,.25); transition:opacity .2s; }
+        .route-go-btn:active { opacity:.8; }
+        .route-card { background:var(--card); border-radius:13px; padding:15px; border:1px solid var(--input-border); margin-bottom:10px; box-shadow:0 2px 8px var(--shadow); }
+        .route-card h3 { font-size:11px; margin-bottom:10px; color:var(--accent); }
+        .route-leg { display:flex; align-items:flex-start; gap:10px; padding:8px 6px; border-bottom:1px solid var(--fp-border); font-size:13px; cursor:pointer; border-radius:8px; transition:background .15s; margin:0 -6px; }
+        .route-leg:last-child { border-bottom:none; }
+        .route-leg:hover { background:var(--row-hover); }
+        .route-leg-icon { width:27px; height:27px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; flex-shrink:0; margin-top:2px; }
+        .route-leg-times { font-family:'B612 Mono',monospace; font-size:11px; color:var(--text-dim); margin-top:2px; }
+        .trip-summary { display:flex; margin-bottom:16px; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--input-border); }
+        .ts-item { flex:1; text-align:center; padding:11px 5px; border-right:1px solid var(--input-border); }
+        .ts-item:last-child { border-right:none; }
+        .ts-val { font-family:'B612 Mono',monospace; font-size:15px; font-weight:bold; color:var(--accent); }
+        .ts-lbl { font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-top:2px; }
+
+        /* ── SHOP ── */
+        .shop-section { margin-bottom:20px; }
+        .shop-section h2 { font-size:.75rem; color:var(--accent); margin-bottom:10px; letter-spacing:1px; }
+        .ticket-item { background:var(--card); border-radius:12px; padding:13px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--input-border); }
+        .ticket-info h3 { font-size:13px; margin-bottom:2px; }
+        .ticket-info p { font-size:11px; color:var(--text-dim); line-height:1.3; }
+        .buy-box { text-align:right; min-width:82px; }
+        .btn-buy { background:var(--card); border:1.5px solid var(--accent); color:var(--accent); padding:7px 9px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:11px; width:100%; transition:.2s; }
+        .btn-buy:active,.btn-buy.owned { background:var(--accent); color:#fff; cursor:default; }
+        .eur-sub { font-size:9px; color:var(--eur-color); margin-top:4px; display:block; }
+
+        /* ── WALLET ── */
+        .ticket-active { background:var(--card); border:2px solid var(--accent); border-radius:18px; padding:22px; text-align:center; box-shadow:0 4px 20px rgba(192,57,43,.18); margin-bottom:13px; }
+        .qr-code { background:#fff; width:134px; height:134px; margin:13px auto; padding:7px; border-radius:9px; }
+        .qr-code img { width:100%; height:100%; }
+        .wallet-tickets-section { background:var(--card); border-radius:13px; overflow:hidden; border:1px solid var(--input-border); }
+        .wallet-ticket-row { display:flex; align-items:center; gap:11px; padding:12px 13px; border-bottom:1px solid var(--fp-border); }
+        .wallet-ticket-row:last-child { border-bottom:none; }
+        .wt-icon { width:34px; height:34px; border-radius:8px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+        .wt-name { font-weight:bold; font-size:12px; }
+        .wt-exp { font-size:11px; color:var(--text-dim); margin-top:2px; }
+        .wt-badge { font-size:9px; font-weight:bold; padding:3px 7px; border-radius:20px; margin-left:auto; flex-shrink:0; background:rgba(39,174,96,.12); color:var(--success); border:1px solid rgba(39,174,96,.3); }
+
+        /* ── PROFIL ── */
+        .profile-header { text-align:center; padding:18px 0 13px; }
+        .profile-avatar-big { width:64px; height:64px; background:var(--accent); border-radius:17px; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; color:#fff; margin:0 auto 11px; box-shadow:0 4px 16px rgba(192,57,43,.3); }
+        .profile-name { font-size:19px; font-weight:bold; }
+        .profile-sub { font-size:11px; color:var(--text-dim); margin-top:3px; }
+        .profile-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:13px 0; }
+        .stat-box { background:var(--stat-box-bg); border-radius:11px; padding:12px 7px; text-align:center; box-shadow:0 1px 6px var(--shadow); }
+        .stat-val { font-family:'B612 Mono',monospace; font-size:16px; font-weight:bold; color:var(--accent); }
+        .stat-lbl { font-size:10px; color:var(--text-dim); margin-top:3px; text-transform:uppercase; }
+
+        /* ── Fahrtenverlauf ── */
+        .journey-item { background:var(--card); border-radius:10px; padding:11px 12px; margin-bottom:7px; display:flex; gap:11px; align-items:center; border:1px solid var(--input-border); }
+        .ji-line { width:30px; height:19px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:bold; flex-shrink:0; }
+        .ji-route { flex:1; }
+        .ji-route-main { font-size:12px; font-weight:bold; }
+        .ji-route-sub { font-size:11px; color:var(--text-dim); margin-top:2px; }
+        .ji-time { font-size:10px; color:var(--text-dim); font-family:'B612 Mono',monospace; text-align:right; flex-shrink:0; }
+
+        /* ── SETTINGS ── */
+        .setting-group { margin-bottom:16px; }
+        .setting-group h2 { font-size:10px; color:var(--accent); margin-bottom:6px; letter-spacing:1px; }
+        .setting-row { background:var(--setting-row-bg); padding:12px; border-radius:10px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:background .15s; }
+        .setting-row:hover { background:var(--row-hover); }
+        .setting-row p { font-size:11px; color:var(--text-dim); margin-top:2px; }
+        .setting-row .arrow { color:var(--text-dim); font-size:15px; }
+        .setting-row span.val { font-size:11px; color:var(--text-dim); }
+        .theme-picker { display:flex; gap:5px; }
+        .tp-btn { padding:5px 9px; border-radius:6px; border:1px solid var(--input-border); background:var(--card); color:var(--text-dim); font-size:11px; font-weight:bold; cursor:pointer; transition:.2s; }
+        .tp-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(192,57,43,.08); }
+        .subscribe-row { display:flex; justify-content:space-between; align-items:center; background:var(--card); border-radius:10px; padding:11px 12px; margin-bottom:7px; }
+        .subscribe-row p { font-size:11px; color:var(--text-dim); margin-top:2px; }
+        .toggle { width:42px; height:24px; background:var(--toggle-off); border-radius:12px; position:relative; cursor:pointer; transition:background .2s; flex-shrink:0; }
+        .toggle.on { background:var(--success); }
+        .toggle::after { content:''; position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:3px; left:3px; transition:left .2s; }
+        .toggle.on::after { left:21px; }
+
+        /* ── DELAY ADMIN (in profil for admins) ── */
+        .admin-panel { background:var(--card); border:1.5px solid rgba(231,76,60,.35); border-radius:13px; padding:15px; margin-bottom:14px; }
+        .admin-panel h3 { font-size:11px; color:var(--premium); letter-spacing:1px; margin-bottom:12px; }
+        .admin-row { display:grid; grid-template-columns:1fr 80px 60px; gap:7px; margin-bottom:7px; align-items:center; }
+        .admin-select { width:100%; background:var(--input-bg); border:1px solid var(--input-border); color:var(--text); padding:8px 10px; border-radius:8px; font-size:12px; font-family:'DM Sans',sans-serif; }
+        .admin-input { width:100%; background:var(--input-bg); border:1px solid var(--input-border); color:var(--text); padding:8px 10px; border-radius:8px; font-size:12px; font-family:'B612 Mono',monospace; text-align:center; }
+        .admin-btn { background:var(--premium); color:#fff; border:none; padding:8px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; width:100%; }
+        .admin-clear-btn { background:var(--success); color:#fff; border:none; padding:8px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; width:100%; margin-top:4px; }
+        .admin-live-list { margin-top:10px; }
+        .admin-live-item { display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:6px 0; border-bottom:1px solid var(--fp-border); }
+        .admin-live-item:last-child { border-bottom:none; }
+
+        /* ── NOTIF DRAWER ── */
+        .notif-item { background:var(--card); border-radius:12px; padding:12px; border-left:3px solid transparent; margin-bottom:8px; display:flex; gap:10px; align-items:flex-start; }
+        .notif-item.warn { border-left-color:var(--warn); }
+        .notif-item.ok   { border-left-color:var(--success); }
+        .notif-item.info { border-left-color:var(--eur-color); }
+        .notif-item.crit { border-left-color:var(--premium); }
+        .notif-icon { font-size:18px; flex-shrink:0; margin-top:2px; }
+        .notif-title { font-weight:bold; font-size:12px; margin-bottom:3px; }
+        .notif-desc { font-size:11px; color:var(--text-dim); line-height:1.4; }
+        .notif-time { font-size:10px; color:var(--text-dim); margin-top:4px; font-family:'B612 Mono',monospace; opacity:.6; }
+        .notif-drawer { position:fixed; top:0; right:-100%; width:84%; max-width:340px; height:100vh; background:var(--notif-drawer-bg); border-left:1px solid var(--drawer-border); z-index:500; transition:right .3s ease; overflow-y:auto; padding:18px; }
+        .notif-drawer.open { right:0; }
+        .notif-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:499; display:none; }
+        .notif-backdrop.open { display:block; }
+        .drawer-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:13px; }
+        .drawer-close { background:none; border:none; color:var(--text-dim); font-size:22px; cursor:pointer; }
+
+        /* ── TRIP DRAWER ── */
+        .trip-drawer { position:fixed; bottom:-100%; left:0; width:100%; max-height:92vh; background:var(--modal-bg); border-radius:22px 22px 0 0; border-top:1px solid var(--input-border); z-index:600; transition:bottom .35s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; box-shadow:0 -8px 40px rgba(0,0,0,.35); }
+        .trip-drawer.open { bottom:0; }
+        .trip-drawer-handle { width:36px; height:4px; background:var(--input-border); border-radius:2px; margin:11px auto 0; }
+        .trip-drawer-header { padding:13px 17px 9px; border-bottom:1px solid var(--input-border); display:flex; align-items:center; gap:11px; }
+        .trip-drawer-body { overflow-y:auto; padding:15px 17px 40px; flex:1; }
+        .timeline { display:flex; flex-direction:column; }
+        .tl-stop { display:flex; gap:13px; position:relative; }
+        .tl-stop:not(:last-child) .tl-line-seg { position:absolute; left:14px; top:27px; width:2px; bottom:0; background:var(--tl-color,#555); opacity:.35; z-index:0; }
+        .tl-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:28px; position:relative; z-index:1; }
+        .tl-dot { width:19px; height:19px; border-radius:50%; border:2.5px solid var(--tl-color,#555); background:var(--modal-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:8px; }
+        .tl-dot.terminal { background:var(--tl-color,#555); }
+        .tl-dot.terminal::after { content:''; width:6px; height:6px; border-radius:50%; background:#fff; }
+        .tl-dot.mid::after { content:''; width:5px; height:5px; border-radius:50%; background:var(--tl-color,#555); }
+        .tl-right { padding:5px 0 17px; flex:1; }
+        .tl-stop-name { font-size:13px; font-weight:bold; }
+        .tl-stop-time { font-family:'B612 Mono',monospace; font-size:12px; color:var(--success); font-weight:bold; margin-top:2px; }
+        .tl-stop-sub { font-size:11px; color:var(--text-dim); margin-top:3px; }
+        .tl-delay { color:var(--premium); font-size:10px; font-family:'B612 Mono',monospace; }
+        .tl-transfer-badge { display:inline-flex; align-items:center; gap:5px; background:rgba(230,126,34,.12); border:1px solid rgba(230,126,34,.3); color:var(--warn); font-size:10px; padding:3px 8px; border-radius:20px; margin-top:5px; font-weight:bold; }
+
+        /* ── MODAL ── */
+        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--overlay-bg); display:none; align-items:center; justify-content:center; z-index:1000; }
+        .modal { background:var(--modal-bg); width:87%; border-radius:18px; padding:22px; border:1px solid var(--input-border); text-align:center; max-height:85vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.3); }
+        .confirm-btn { background:var(--accent); color:#fff; border:none; padding:13px; border-radius:10px; width:100%; font-weight:800; margin-top:16px; cursor:pointer; font-family:'Barlow',sans-serif; font-size:13px; text-transform:uppercase; }
+        .stn-modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--fp-border); font-size:12px; }
+        .stn-modal-row:last-child { border-bottom:none; }
+        .stn-modal-row .key { color:var(--text-dim); }
+
+        /* ── HOME STATION MODAL ── */
+        .home-station-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:13px; }
+        .hs-btn { padding:11px 9px; border-radius:9px; border:1.5px solid var(--input-border); background:var(--card); color:var(--text); font-size:11px; font-weight:bold; cursor:pointer; text-align:left; transition:.2s; line-height:1.3; }
+        .hs-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(192,57,43,.08); }
+        .hs-btn .hs-sub { font-size:10px; color:var(--text-dim); font-weight:normal; display:block; margin-top:2px; }
+
+        /* ── TOAST ── */
+        #toast-container { position:fixed; top:13px; left:50%; transform:translateX(-50%); z-index:3000; display:flex; flex-direction:column; gap:6px; align-items:center; pointer-events:none; }
+        .toast-msg { background:var(--success); color:#fff; padding:10px 20px; border-radius:50px; font-weight:bold; font-size:12px; box-shadow:0 4px 16px rgba(39,174,96,.3); animation:toastIn .22s ease; white-space:nowrap; max-width:calc(100vw - 36px); }
+        .toast-msg.warn  { background:var(--warn); box-shadow:0 4px 16px rgba(230,126,34,.3); }
+        .toast-msg.error { background:var(--premium); box-shadow:0 4px 16px rgba(231,76,60,.3); }
+        .toast-msg.exit  { animation:toastOut .22s ease forwards; }
+        @keyframes toastIn  { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes toastOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-8px)} }
+
+        /* ── SPINNER ── */
+        .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--input-border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .loading-row { display:flex; align-items:center; justify-content:center; gap:8px; padding:20px; font-size:12px; color:var(--text-dim); }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="login-screen">
+    <div class="login-logo">GÜN</div>
+    <div class="login-title">Güntringen ÖPNV</div>
+    <div class="login-subtitle">Anmelden oder Konto erstellen.<br>Deine Fahrtdaten werden sicher gespeichert.</div>
+
+    <div class="login-tabs">
+        <div class="login-tab active" id="tab-login" onclick="switchLoginTab('login')">Anmelden</div>
+        <div class="login-tab" id="tab-register" onclick="switchLoginTab('register')">Registrieren</div>
+    </div>
+
+    <div id="login-register-fields">
+        <div class="login-field">
+            <div class="login-label">Vorname</div>
+            <input class="login-input" id="reg-firstname" type="text" placeholder="Jana" maxlength="30" autocomplete="given-name">
+        </div>
+        <div class="login-field">
+            <div class="login-label">Nachname</div>
+            <input class="login-input" id="reg-lastname" type="text" placeholder="Müller" maxlength="30" autocomplete="family-name">
+        </div>
+    </div>
+
+    <div class="login-field">
+        <div class="login-label">E-Mail</div>
+        <input class="login-input" id="auth-email" type="email" placeholder="jana@beispiel.de" autocomplete="email">
+    </div>
+    <div class="login-field">
+        <div class="login-label">Passwort</div>
+        <input class="login-input" id="auth-pw" type="password" placeholder="Mindestens 6 Zeichen" autocomplete="current-password">
+    </div>
+
+    <button class="login-btn" id="auth-btn" onclick="doAuth()">Anmelden →</button>
+    <div class="login-err" id="auth-err"></div>
+</div>
+
+<!-- ═══════════════════ APP SHELL ═══════════════════ -->
+<div id="app-shell" class="hidden">
+
+<header>
+    <div class="user-info" onclick="showView('profil',document.querySelector('[data-view=profil]'))">
+        <div class="avatar" id="header-avatar">–</div>
+        <div>
+            <h1 style="font-size:12px;" id="header-name">–</h1>
+            <p style="font-size:10px;color:var(--text-dim);" id="header-card">GÜN-Card</p>
+        </div>
+    </div>
+    <div class="header-right">
+        <button class="theme-btn" onclick="cycleTheme()" id="theme-btn">🌙</button>
+        <div class="notif-bell" onclick="openNotifDrawer()">🔔<div class="notif-dot" id="notif-dot"></div></div>
+        <div class="balance-display">
+            <div class="vil-val" id="bal-vil">G$ –</div>
+            <div class="eur-val" id="bal-eur">– €</div>
+        </div>
+    </div>
+</header>
+
+<div class="tab-bar">
+    <div class="tab active" data-view="fis"     onclick="showView('fis',this)">Abfahrten</div>
+    <div class="tab"        data-view="fahrplan" onclick="showView('fahrplan',this)">Fahrplan</div>
+    <div class="tab"        data-view="route"    onclick="showView('route',this)">Route</div>
+    <div class="tab"        data-view="shop"     onclick="showView('shop',this)">Tickets</div>
+    <div class="tab"        data-view="wallet"   onclick="showView('wallet',this)">Wallet</div>
+    <div class="tab"        data-view="profil"   onclick="showView('profil',this)">Profil</div>
+</div>
+
+<main>
+
+<!-- ══ ABFAHRTEN ══ -->
+<section id="view-fis" class="view active">
+    <div class="fis-station-header">
+        <div>
+            <div class="section-title" style="margin-bottom:2px;">Live-Abfahrten</div>
+            <div class="fis-station-name" id="fis-station-label">Güntringen Hbf</div>
+        </div>
+        <div class="fis-change-btn" onclick="openHomeStationModal()">📍 Ändern</div>
+    </div>
+    <div class="s11-map">
+        <h3>S11 · Streckenübersicht</h3>
+        <div class="s11-route">
+            <div class="s11-stop"><div class="s11-dot terminal"></div><div class="s11-stop-info"><div class="s11-stop-name">Lixen</div><div class="s11-stop-sub">Endstation · Bstg. 1</div></div></div>
+            <div class="s11-stop"><div class="s11-dot mid"></div><div class="s11-stop-info"><div class="s11-stop-name">Güntratal Süd</div><div class="s11-stop-sub">Umstieg L14/L15</div></div></div>
+            <div class="s11-stop"><div class="s11-dot mid" style="background:#c0392b;border-color:#c0392b"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:#c0392b">Altgün Dreieck ★</div><div class="s11-stop-sub">Knotenpunkt · L14, L15, L16</div></div></div>
+            <div class="s11-stop"><div class="s11-dot mid" style="background:#c0392b;border-color:#c0392b"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:#c0392b">Güntringen Hbf ★</div><div class="s11-stop-sub">Hauptbahnhof · Fernverkehr</div></div></div>
+            <div class="s11-stop"><div class="s11-dot mid"></div><div class="s11-stop-info"><div class="s11-stop-name">Villotal Süd</div><div class="s11-stop-sub">Umstieg Regionalbus</div></div></div>
+            <div class="s11-stop"><div class="s11-dot terminal"></div><div class="s11-stop-info"><div class="s11-stop-name">Villotal Hbf</div><div class="s11-stop-sub">Endstation · Fernverkehr + U-Bahn</div></div></div>
+        </div>
+    </div>
+    <div class="fis-card" id="fis-list"><div class="loading-row"><div class="spinner"></div>Verspätungen werden geladen…</div></div>
+</section>
+
+<!-- ══ FAHRPLAN ══ -->
+<section id="view-fahrplan" class="view">
+    <p class="section-title">Linie wählen</p>
+    <div class="fp-selector">
+        <div class="fp-btn" onclick="selectLine(14,this)">Linie 14</div>
+        <div class="fp-btn" onclick="selectLine(15,this)">Linie 15</div>
+        <div class="fp-btn" onclick="selectLine(16,this)">Linie 16</div>
+        <div class="fp-btn active" onclick="selectLine('S11',this)">S11</div>
+    </div>
+    <div class="fp-direction" id="fp-directions"></div>
+    <div class="fp-search-wrap">
+        <span class="fp-search-icon">🔍</span>
+        <input class="fp-search" id="fp-search" type="text" placeholder="Station suchen…" oninput="filterFahrplan(this.value)">
+    </div>
+    <div id="fp-table"></div>
+</section>
+
+<!-- ══ ROUTE ══ -->
+<section id="view-route" class="view">
+    <p class="section-title">Verbindung suchen</p>
+    <div class="route-form">
+        <div class="route-input-wrap">
+            <div class="route-label">Von</div>
+            <div class="autocomplete-wrap">
+                <input class="autocomplete-input" id="route-from-input" type="text" placeholder="Station wählen…" autocomplete="off"
+                    oninput="acSearch('from',this.value)" onfocus="acSearch('from',this.value)">
+                <div class="autocomplete-list" id="ac-from"></div>
+            </div>
+        </div>
+        <button class="swap-btn" onclick="swapRoute()">⇅</button>
+        <div class="route-input-wrap">
+            <div class="route-label">Nach</div>
+            <div class="autocomplete-wrap">
+                <input class="autocomplete-input" id="route-to-input" type="text" placeholder="Station wählen…" autocomplete="off"
+                    oninput="acSearch('to',this.value)" onfocus="acSearch('to',this.value)">
+                <div class="autocomplete-list" id="ac-to"></div>
+            </div>
+        </div>
+        <div style="margin-top:10px;">
+            <div class="route-label">Abfahrt (optional)</div>
+            <input type="time" class="route-input" id="route-time" style="margin-top:5px;">
+        </div>
+        <button class="route-go-btn" style="margin-top:13px;" onclick="calcRoute()">Verbindung suchen</button>
+    </div>
+    <div id="route-result"></div>
+</section>
+
+<!-- ══ SHOP ══ -->
+<section id="view-shop" class="view">
+    <div class="shop-section"><h2>Einzeltickets &amp; Tageskarten</h2><div id="shop-single"></div></div>
+    <div class="shop-section"><h2>Abo-Modelle</h2><div id="shop-abo"></div></div>
+    <div class="shop-section"><h2>Junior Specials</h2><div id="shop-junior"></div></div>
+</section>
+
+<!-- ══ WALLET ══ -->
+<section id="view-wallet" class="view">
+    <div class="ticket-active">
+        <p style="font-size:10px;letter-spacing:2px;color:var(--text-dim);">AKTIVES TICKET</p>
+        <h2 id="wallet-ticket-name" style="margin-top:5px;">GÜN-Card Basis</h2>
+        <div class="qr-code"><img src="" alt="QR" id="qr-img"></div>
+        <p style="font-size:11px;margin-top:12px;color:var(--text-dim);" id="wallet-valid-text">Gültig für: –<br>Zone: GÜN-Kernzone</p>
+    </div>
+    <p class="section-title" style="margin-top:13px;">Meine Tickets</p>
+    <div class="wallet-tickets-section" id="wallet-tickets-list">
+        <div class="loading-row"><div class="spinner"></div>Wird geladen…</div>
+    </div>
+</section>
+
+<!-- ══ PROFIL ══ -->
+<section id="view-profil" class="view">
+    <div class="profile-header">
+        <div class="profile-avatar-big" id="profil-avatar">–</div>
+        <div class="profile-name" id="profil-name">–</div>
+        <div class="profile-sub" id="profil-sub">GÜN-Card · Mitglied</div>
+    </div>
+    <div class="profile-stats">
+        <div class="stat-box"><div class="stat-val" id="stat-fahrten">–</div><div class="stat-lbl">Fahrten</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-km">–</div><div class="stat-lbl">km</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-co2">–</div><div class="stat-lbl">kg CO₂ ↓</div></div>
+    </div>
+
+    <!-- Fahrtenverlauf -->
+    <p class="section-title">Fahrtenverlauf</p>
+    <div id="journey-history"><div class="loading-row"><div class="spinner"></div></div></div>
+
+    <!-- Admin: Verspätungen -->
+    <div id="admin-panel-wrap" style="display:none;">
+        <p class="section-title" style="margin-top:14px;">Admin – Verspätungen</p>
+        <div class="admin-panel">
+            <h3>🔧 Live-Verspätung eintragen</h3>
+            <div class="admin-row">
+                <select class="admin-select" id="admin-line">
+                    <option value="S11">S11</option>
+                    <option value="14">Linie 14</option>
+                    <option value="15">Linie 15</option>
+                    <option value="16">Linie 16</option>
+                </select>
+                <input class="admin-input" id="admin-delay" type="number" min="0" max="120" placeholder="+Min" title="Verspätung in Minuten">
+                <button class="admin-btn" onclick="setDelay()">Setzen</button>
+            </div>
+            <button class="admin-clear-btn" onclick="clearDelay()">Alle Verspätungen löschen</button>
+            <div class="admin-live-list" id="admin-live-list"></div>
+        </div>
+    </div>
+
+    <div class="setting-group" style="margin-top:14px;">
+        <h2>Konto</h2>
+        <div class="setting-row" onclick="openNameEdit()"><div><div style="font-weight:bold;">Name ändern</div><p>Anzeigenamen bearbeiten</p></div><span class="arrow">›</span></div>
+        <div class="setting-row" onclick="openRechargeModal()"><div><div style="font-weight:bold;">GÜN-Coins aufladen</div><p>Guthaben erhöhen</p></div><span class="arrow">›</span></div>
+    </div>
+    <div class="setting-group">
+        <h2>App-Einstellungen</h2>
+        <div class="setting-row">
+            <div><div style="font-weight:bold;">Erscheinungsbild</div><p>Hell / Dunkel / System</p></div>
+            <div class="theme-picker">
+                <button class="tp-btn" id="tp-light" onclick="setTheme('light')">☀️</button>
+                <button class="tp-btn" id="tp-dark"  onclick="setTheme('dark')">🌙</button>
+                <button class="tp-btn" id="tp-system" onclick="setTheme('system')">⚙️</button>
+            </div>
+        </div>
+        <div class="setting-row" onclick="openHomeStationModal()">
+            <div><div style="font-weight:bold;">Heimatbahnhof</div><p>Standard für Abfahrten &amp; Route</p></div>
+            <span class="val" id="setting-home-station">–</span>
+        </div>
+    </div>
+    <div class="setting-group">
+        <h2>Benachrichtigungen</h2>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:12px;">Verspätungen (S11)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:12px;">Verspätungen (L14)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:12px;">Angebote &amp; Aktionen</div><p>Junior-Specials und Rabatte</p></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+    <div class="setting-group">
+        <h2>App-Info</h2>
+        <div class="setting-row"><div><div style="font-weight:bold;">Version</div></div><span class="val">5.0.0 (GÜN)</span></div>
+        <div class="setting-row" onclick="doLogout()" style="border-left:2px solid var(--premium);">
+            <div><div style="font-weight:bold;color:var(--premium);">Abmelden</div><p>Session beenden</p></div>
+            <span class="arrow" style="color:var(--premium);">›</span>
+        </div>
+    </div>
+</section>
+
+</main>
+</div><!-- /app-shell -->
+
+<!-- ══ MODALS ══ -->
+<div class="overlay" id="buy-modal">
+    <div class="modal">
+        <h2 id="m-title">Ticket kaufen</h2>
+        <p id="m-desc" style="font-size:12px;color:var(--text-dim);margin-top:9px;"></p>
+        <div style="margin:16px 0;border-top:1px solid var(--input-border);padding-top:13px;">
+            <div class="vil-val" id="m-price-vil"></div>
+            <div class="eur-val" id="m-price-eur"></div>
+        </div>
+        <button class="confirm-btn" id="confirm-buy">Zahlung bestätigen</button>
+        <p onclick="closeModal('buy-modal')" style="margin-top:13px;font-size:12px;cursor:pointer;color:var(--text-dim);">Abbrechen</p>
+    </div>
+</div>
+
+<div class="overlay" id="recharge-modal">
+    <div class="modal">
+        <h2>GÜN-Coins aufladen</h2>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:8px;">Betrag wählen:</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px;">
+            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(10)">G$ 10,00<br><span style="font-size:10px;opacity:.7;">7,50 €</span></button>
+            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(25)">G$ 25,00<br><span style="font-size:10px;opacity:.7;">18,75 €</span></button>
+            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(50)">G$ 50,00<br><span style="font-size:10px;opacity:.7;">37,50 €</span></button>
+            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(100)">G$ 100,00<br><span style="font-size:10px;opacity:.7;">75,00 €</span></button>
+        </div>
+        <p onclick="closeModal('recharge-modal')" style="margin-top:15px;font-size:12px;cursor:pointer;color:var(--text-dim);">Abbrechen</p>
+    </div>
+</div>
+
+<div class="overlay" id="stn-modal">
+    <div class="modal">
+        <h2 id="stn-modal-name">Station</h2>
+        <div style="text-align:left;margin-top:13px;" id="stn-modal-body"></div>
+        <button class="confirm-btn" onclick="closeModal('stn-modal')" style="background:var(--card);color:var(--text);border:1px solid var(--input-border);">Schließen</button>
+    </div>
+</div>
+
+<div class="overlay" id="name-modal">
+    <div class="modal">
+        <h2>Name ändern</h2>
+        <div style="margin-top:13px;text-align:left;">
+            <div class="route-label">Vorname</div>
+            <input class="route-input" id="edit-firstname" type="text" maxlength="30" style="margin-top:5px;margin-bottom:10px;">
+            <div class="route-label">Nachname</div>
+            <input class="route-input" id="edit-lastname" type="text" maxlength="30" style="margin-top:5px;">
+        </div>
+        <button class="confirm-btn" onclick="saveName()">Speichern</button>
+        <p onclick="closeModal('name-modal')" style="margin-top:11px;font-size:12px;cursor:pointer;color:var(--text-dim);">Abbrechen</p>
+    </div>
+</div>
+
+<div class="overlay" id="home-station-modal">
+    <div class="modal" style="text-align:left;max-width:380px;">
+        <h2 style="text-align:center;">Heimatbahnhof</h2>
+        <p style="font-size:12px;color:var(--text-dim);text-align:center;margin-top:5px;">Steuert die Abfahrtstafel und den Routenplaner.</p>
+        <div class="home-station-grid" id="home-station-grid"></div>
+        <p onclick="closeModal('home-station-modal')" style="margin-top:15px;font-size:12px;cursor:pointer;color:var(--text-dim);text-align:center;">Abbrechen</p>
+    </div>
+</div>
+
+<!-- ══ TRIP DRAWER ══ -->
+<div class="notif-backdrop" id="trip-backdrop" onclick="closeTripDrawer()"></div>
+<div class="trip-drawer" id="trip-drawer">
+    <div class="trip-drawer-handle"></div>
+    <div class="trip-drawer-header">
+        <div>
+            <div id="trip-drawer-title" style="font-size:15px;font-weight:800;font-family:'Barlow',sans-serif;text-transform:uppercase;"></div>
+            <div id="trip-drawer-sub" style="font-size:11px;color:var(--text-dim);margin-top:2px;"></div>
+        </div>
+        <button onclick="closeTripDrawer()" style="margin-left:auto;background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;">✕</button>
+    </div>
+    <div class="trip-drawer-body" id="trip-drawer-body"></div>
+</div>
+
+<!-- ══ NOTIF DRAWER ══ -->
+<div class="notif-backdrop" id="notif-backdrop" onclick="closeNotifDrawer()"></div>
+<div class="notif-drawer" id="notif-drawer">
+    <div class="drawer-header">
+        <h2 style="font-size:14px;">Benachrichtigungen</h2>
+        <button class="drawer-close" onclick="closeNotifDrawer()">✕</button>
+    </div>
+    <div id="notif-list"></div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ════════════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════════════
+const GUN_TO_EUR = 0.75;
+const ADMIN_EMAILS = []; // add admin e-mails here, e.g. 'admin@guen.de'
+
+// Line colours
+const LINE_COLORS = { 'S11':'#c0392b', '14':'#003f8a', '15':'#6b1e1e', '16':'#174f17' };
+
+// ════════════════════════════════════════════════
+//  FIREBASE HELPERS  (populated after module load)
+// ════════════════════════════════════════════════
+function fb() { return window._fb; }
+function uid() { return window._fbUser ? window._fbUser.uid : null; }
+
+// ════════════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════════════
+const HOME_STATIONS = [
+    { id:'Güntringen Hbf', label:'Güntringen Hbf', sub:'S11 · Hauptbahnhof' },
+    { id:'Altgün Dreieck',  label:'Altgün Dreieck',  sub:'L14, L15, L16, S11' },
+    { id:'Güntratal Süd',   label:'Güntratal Süd',   sub:'S11, L14, L15' },
+    { id:'Lixen',           label:'Lixen',            sub:'S11 · Endstation' },
+    { id:'Villotal Hbf',    label:'Villotal Hbf',    sub:'S11 · Fernbahnhof' },
+    { id:'Villotal Süd',    label:'Villotal Süd',    sub:'S11' },
+    { id:'Falkenberg',      label:'Falkenberg',       sub:'L14, L15' },
+    { id:'Sonnenstadt',     label:'Sonnenstadt',      sub:'L14 · Endstation' },
+];
+
+// FIS data per station (delays merged from Firebase)
+const STATION_FIS = {
+    'Güntringen Hbf':[
+        {id:'S11',dest:'Villotal Hbf',col:'#c0392b',m:[4,34],gleis:'11'},
+        {id:'S11',dest:'Lixen',       col:'#c0392b',m:[19,49],gleis:'12'},
+    ],
+    'Altgün Dreieck':[
+        {id:'S11',dest:'Villotal Hbf',   col:'#c0392b',m:[10,40],gleis:'11'},
+        {id:'S11',dest:'Lixen',          col:'#c0392b',m:[25,55],gleis:'12'},
+        {id:'14', dest:'Sonnenstadt',    col:'#003f8a',m:[0,10,20,30,40,50],gleis:'2'},
+        {id:'14', dest:'Falkenberg',     col:'#003f8a',m:[5,15,25,35,45,55],gleis:'3'},
+        {id:'15', dest:'Westende',       col:'#6b1e1e',m:[1,9,11,19,21,29,31,39,41,49,51,59],gleis:'4'},
+        {id:'16', dest:'Hügelbezirk Süd',col:'#174f17',m:[2,8,12,18,22,28,32,38,42,48,52,58],gleis:'5'},
+    ],
+    'Güntratal Süd':[
+        {id:'S11',dest:'Villotal Hbf',   col:'#c0392b',m:[18,48],gleis:'1'},
+        {id:'S11',dest:'Lixen',          col:'#c0392b',m:[11,41],gleis:'2'},
+        {id:'14', dest:'Sonnenstadt',    col:'#003f8a',m:[10,20,30,40,50,0],gleis:'3'},
+        {id:'15', dest:'Altgün Dreieck', col:'#6b1e1e',m:[9,19,29,39,49,59],gleis:'4'},
+    ],
+    'Lixen':       [{id:'S11',dest:'Villotal Hbf',col:'#c0392b',m:[4,34],gleis:'1'}],
+    'Villotal Hbf':[{id:'S11',dest:'Lixen',       col:'#c0392b',m:[19,49],gleis:'1'}],
+    'Villotal Süd':[
+        {id:'S11',dest:'Villotal Hbf',col:'#c0392b',m:[13,43],gleis:'1'},
+        {id:'S11',dest:'Lixen',       col:'#c0392b',m:[28,58],gleis:'2'},
+    ],
+    'Falkenberg':[
+        {id:'14',dest:'Sonnenstadt',    col:'#003f8a',m:[0,10,20,30,40,50],gleis:'1'},
+        {id:'15',dest:'Altgün Dreieck', col:'#6b1e1e',m:[1,11,21,31,41,51],gleis:'2'},
+    ],
+    'Sonnenstadt':[{id:'14',dest:'Falkenberg',col:'#003f8a',m:[0,10,20,30,40,50],gleis:'1'}],
+};
+
+const ALL_STATIONS = [
+    'Falkenberg','Neuer Ring','Regierungsviertel','Altgüner Vorstadt','Altgün Mitte',
+    'Altgün Dreieck','Seenring','Sonnenwald','Technopolis','Sonnenstadt',
+    'Westende','ZOB Flussbezirk','Falkenberger Allee','Sâscha-Okto-Ring',
+    'Vûlfja-Hüpel-Allee','Altgün-Markt','Altgün-Center',
+    'Krakingerallee','Burg','Vélicherring','Osttal',
+    'Villenviertel','Hügelbezirk Süd',
+    'Lixen','Güntratal Süd','Güntringen Hbf','Villotal Süd','Villotal Hbf'
+];
+
+const STATION_INFO = {
+    'Altgün Dreieck':  {typ:'Knotenpunkt',linien:'14,15,16,S11',aufzug:'Ja',fahrrad:'Ja',park:'Nein',info:'Zentraler Umsteigeknoten im GÜN-Netz.'},
+    'Güntringen Hbf':  {typ:'Hauptbahnhof',linien:'S11',aufzug:'Ja',fahrrad:'Ja',park:'Ja',info:'Fernverkehrsanbindung. Direkte S11 nach Villotal Hbf und Lixen.'},
+    'Lixen':           {typ:'Endstation',linien:'S11',aufzug:'Nein',fahrrad:'Ja',park:'Ja',info:'P+R-Parkplatz mit 120 Stellplätzen.'},
+    'Güntratal Süd':   {typ:'Haltestelle',linien:'S11,L14,L15',aufzug:'Nein',fahrrad:'Ja',park:'Nein',info:'Umstieg auf Linien 14 und 15 möglich.'},
+    'Villotal Süd':    {typ:'Haltestelle',linien:'S11',aufzug:'Ja',fahrrad:'Nein',park:'Nein',info:'Anschluss an Regionalbusse Richtung Villotal-West.'},
+    'Villotal Hbf':    {typ:'Fernbahnhof',linien:'S11',aufzug:'Ja',fahrrad:'Ja',park:'Ja',info:'Anbindung an Fernverkehr + Villotal-U-Bahn.'},
+    'Sonnenstadt':     {typ:'Endstation',linien:'14',aufzug:'Ja',fahrrad:'Ja',park:'Ja',info:'Stadteingang Sonnenstadt, Bushaltestellen 3–8.'},
+    'Falkenberg':      {typ:'Endstation',linien:'14,15',aufzug:'Nein',fahrrad:'Ja',park:'Ja',info:'P+R-Parkplatz mit 80 Stellplätzen.'},
+    'Westende':        {typ:'Endstation',linien:'15',aufzug:'Nein',fahrrad:'Nein',park:'Nein',info:'Nahe Hafenpromenade.'},
+    'Hügelbezirk Süd': {typ:'Endstation',linien:'16',aufzug:'Ja',fahrrad:'Ja',park:'Nein',info:'Nächste Haltestelle: Villenviertel 5 Min. zu Fuß.'},
+};
+
+const LINE_FULL_STOPS = {
+    'S11_Villotal':[
+        {name:'Lixen',gleis:'1',transfer:null},{name:'Güntratal Süd',gleis:'2',transfer:'L14/L15 Umstieg'},
+        {name:'Altgün Dreieck',gleis:'11',transfer:'L14,L15,L16'},{name:'Güntringen Hbf',gleis:'11',transfer:null},
+        {name:'Villotal Süd',gleis:'1',transfer:'Regionalbus'},{name:'Villotal Hbf',gleis:'3',transfer:'Fernverkehr, U-Bahn'},
+    ],
+    'S11_Lixen':[
+        {name:'Villotal Hbf',gleis:'4',transfer:'Fernverkehr, U-Bahn'},{name:'Villotal Süd',gleis:'1',transfer:null},
+        {name:'Güntringen Hbf',gleis:'12',transfer:null},{name:'Altgün Dreieck',gleis:'12',transfer:'L14,L15,L16'},
+        {name:'Güntratal Süd',gleis:'2',transfer:'L14/L15'},{name:'Lixen',gleis:'1',transfer:null},
+    ],
+    '14_Sonnenstadt':[
+        {name:'Falkenberg',gleis:'1',transfer:null},{name:'Neuer Ring',gleis:'1',transfer:null},
+        {name:'Regierungsviertel',gleis:'2',transfer:'L15'},{name:'Altgüner Vorstadt',gleis:'2',transfer:null},
+        {name:'Altgün Mitte',gleis:'2',transfer:null},{name:'Altgün Dreieck',gleis:'2',transfer:'S11,L15,L16'},
+        {name:'Seenring',gleis:'1',transfer:null},{name:'Sonnenwald',gleis:'1',transfer:null},
+        {name:'Technopolis',gleis:'1',transfer:null},{name:'Sonnenstadt',gleis:'2',transfer:'Bushalt 3–8'},
+    ],
+    '14_Falkenberg':[
+        {name:'Sonnenstadt',gleis:'1',transfer:null},{name:'Technopolis',gleis:'1',transfer:null},
+        {name:'Sonnenwald',gleis:'1',transfer:null},{name:'Seenring',gleis:'1',transfer:null},
+        {name:'Altgün Dreieck',gleis:'3',transfer:'S11,L15,L16'},{name:'Altgün Mitte',gleis:'2',transfer:null},
+        {name:'Altgüner Vorstadt',gleis:'2',transfer:'L15'},{name:'Regierungsviertel',gleis:'2',transfer:'L15'},
+        {name:'Neuer Ring',gleis:'1',transfer:null},{name:'Falkenberg',gleis:'1',transfer:null},
+    ],
+    '15_Westende':[
+        {name:'Altgün Dreieck',gleis:'4',transfer:'S11,L14,L16'},{name:'Altgün-Center',gleis:'1',transfer:null},
+        {name:'Altgün-Markt',gleis:'1',transfer:null},{name:'Vûlfja-Hüpel-Allee',gleis:'1',transfer:null},
+        {name:'Sâscha-Okto-Ring',gleis:'1',transfer:null},{name:'Altgüner Vorstadt',gleis:'1',transfer:'L14'},
+        {name:'Regierungsviertel',gleis:'1',transfer:'L14'},{name:'Falkenberger Allee',gleis:'1',transfer:null},
+        {name:'ZOB Flussbezirk',gleis:'1',transfer:null},{name:'Westende',gleis:'2',transfer:'Hafenpromenade'},
+    ],
+    '16_Hügelbezirk':[
+        {name:'Altgün Dreieck',gleis:'5',transfer:'S11,L14,L15'},{name:'Krakingerallee',gleis:'1',transfer:null},
+        {name:'Burg',gleis:'1',transfer:null},{name:'Vélicherring',gleis:'1',transfer:null},
+        {name:'Osttal',gleis:'1',transfer:null},{name:'Villenviertel',gleis:'1',transfer:null},
+        {name:'Hügelbezirk Süd',gleis:'1',transfer:'Fußweg Villenviertel 5 Min.'},
+    ],
+};
+
+const SCHEDULES = {
+    14:{name:'Linie 14',color:'#003f8a',
+        directions:[
+            {label:'Richtung Sonnenstadt',stopKey:'14_Sonnenstadt',stations:[
+                {name:'Falkenberg',skip:false,offset:0},{name:'Neuer Ring',skip:false,offset:2},
+                {name:'Regierungsviertel',skip:false,offset:4},{name:'Altgüner Vorstadt',skip:false,offset:6},
+                {name:'Altgün Mitte',skip:false,offset:8},{name:'Altgün Dreieck',skip:false,offset:10},
+                {name:'Seenring',skip:false,offset:12},{name:'Sonnenwald',skip:false,offset:14},
+                {name:'Technopolis',skip:false,offset:16},{name:'Sonnenstadt',skip:false,offset:18},
+            ]},
+            {label:'Richtung Falkenberg',stopKey:'14_Falkenberg',stations:[
+                {name:'Sonnenstadt',skip:false,offset:0},{name:'Technopolis',skip:false,offset:2},
+                {name:'Sonnenwald',skip:false,offset:4},{name:'Seenring',skip:false,offset:6},
+                {name:'Altgün Dreieck',skip:false,offset:8},{name:'Altgün Mitte',skip:false,offset:10},
+                {name:'Altgüner Vorstadt',skip:false,offset:12},{name:'Regierungsviertel',skip:false,offset:14},
+                {name:'Neuer Ring',skip:false,offset:16},{name:'Falkenberg',skip:false,offset:18},
+            ]},
+        ],
+        departures:[0,10,20,30,40,50]},
+    15:{name:'Linie 15',color:'#6b1e1e',
+        directions:[
+            {label:'Richtung Westende',stopKey:'15_Westende',stations:[
+                {name:'Altgün Dreieck',skip:false,offset:0},{name:'Altgün-Center',skip:false,offset:2},
+                {name:'Altgün-Markt',skip:false,offset:4},{name:'Vûlfja-Hüpel-Allee',skip:false,offset:6},
+                {name:'Sâscha-Okto-Ring',skip:false,offset:8},{name:'Altgüner Vorstadt',skip:false,offset:10},
+                {name:'Regierungsviertel',skip:false,offset:12},{name:'Falkenberger Allee',skip:false,offset:14},
+                {name:'ZOB Flussbezirk',skip:false,offset:16},{name:'Westende',skip:false,offset:18},
+            ]},
+            {label:'Richtung Altgün Dreieck',stopKey:'15_Westende',stations:[
+                {name:'Westende',skip:false,offset:0},{name:'ZOB Flussbezirk',skip:false,offset:2},
+                {name:'Falkenberger Allee',skip:false,offset:4},{name:'Regierungsviertel',skip:false,offset:6},
+                {name:'Altgüner Vorstadt',skip:false,offset:8},{name:'Sâscha-Okto-Ring',skip:false,offset:10},
+                {name:'Vûlfja-Hüpel-Allee',skip:false,offset:12},{name:'Altgün-Markt',skip:false,offset:14},
+                {name:'Altgün-Center',skip:false,offset:16},{name:'Altgün Dreieck',skip:false,offset:18},
+            ]},
+        ],
+        departures:[1,9,11,19,21,29,31,39,41,49,51,59]},
+    16:{name:'Linie 16',color:'#174f17',
+        directions:[
+            {label:'Richtung Hügelbezirk Süd',stopKey:'16_Hügelbezirk',stations:[
+                {name:'Altgün Dreieck',skip:false,offset:0},{name:'Krakingerallee',skip:false,offset:4},
+                {name:'Burg',skip:false,offset:6},{name:'Vélicherring',skip:false,offset:8},
+                {name:'Osttal',skip:false,offset:10},{name:'Villenviertel',skip:false,offset:12},
+                {name:'Hügelbezirk Süd',skip:false,offset:16},
+            ]},
+            {label:'Richtung Altgün Dreieck',stopKey:'16_Hügelbezirk',stations:[
+                {name:'Hügelbezirk Süd',skip:false,offset:0},{name:'Villenviertel',skip:false,offset:4},
+                {name:'Osttal',skip:false,offset:6},{name:'Vélicherring',skip:false,offset:8},
+                {name:'Burg',skip:false,offset:10},{name:'Krakingerallee',skip:false,offset:12},
+                {name:'Altgün Dreieck',skip:false,offset:16},
+            ]},
+        ],
+        departures:[2,8,12,18,22,28,32,38,42,48,52,58]},
+    'S11':{name:'S11',color:'#c0392b',
+        directions:[
+            {label:'Richtung Villotal Hbf',stopKey:'S11_Villotal',stations:[
+                {name:'Lixen',skip:false,offset:0},{name:'Güntratal Süd',skip:false,offset:8},
+                {name:'Altgün Dreieck',skip:false,offset:18},{name:'Güntringen Hbf',skip:false,offset:24},
+                {name:'Villotal Süd',skip:false,offset:35},{name:'Villotal Hbf',skip:false,offset:44},
+            ]},
+            {label:'Richtung Lixen',stopKey:'S11_Lixen',stations:[
+                {name:'Villotal Hbf',skip:false,offset:0},{name:'Villotal Süd',skip:false,offset:9},
+                {name:'Güntringen Hbf',skip:false,offset:20},{name:'Altgün Dreieck',skip:false,offset:26},
+                {name:'Güntratal Süd',skip:false,offset:36},{name:'Lixen',skip:false,offset:44},
+            ]},
+        ],
+        departures:[4,34]},
+};
+
+const TARIFE = {
+    single:[
+        {id:'k14', name:'Kurzzeit (L14/L15)', price:1.20, desc:'60 Min. Gültigkeit'},
+        {id:'ks11',name:'S11 Einzelfahrt',    price:3.50, desc:'Lixen ↔ Villotal Hbf, 1 Fahrt'},
+        {id:'tag', name:'Tagesticket Kombi',  price:13.00,desc:'24 Std. alle Linien inkl. S11'},
+    ],
+    abo:[
+        {id:'erw',name:'Monatskarte Erw.',   price:169.00,desc:'Gesamtes Netz GÜN + Villotal'},
+        {id:'jug',name:'Monatskarte Jugend', price:139.00,desc:'Gesamtes Netz (< 16 J.)'},
+    ],
+    junior:[
+        {id:'upg',name:'Upgrade GÜN-Netz',  price:11.99,desc:'24/7 Netzweite Gültigkeit für Junior Card'},
+        {id:'fer',name:'Ferien-Upgrade',     price:6.99, desc:'14 Tage volle Flexibilität inkl. S11'},
+    ]
+};
+
+const LINE_GRAPH = {
+    'Lixen':             {'Güntratal Süd':{line:'S11',color:'#c0392b',mins:8}},
+    'Güntratal Süd':     {'Lixen':{line:'S11',color:'#c0392b',mins:8},'Altgün Dreieck':{line:'S11',color:'#c0392b',mins:10}},
+    'Altgün Dreieck':    {'Güntratal Süd':{line:'S11',color:'#c0392b',mins:10},'Güntringen Hbf':{line:'S11',color:'#c0392b',mins:6},'Altgün Mitte':{line:14,color:'#003f8a',mins:2},'Seenring':{line:14,color:'#003f8a',mins:2},'Altgün-Center':{line:15,color:'#6b1e1e',mins:2},'Krakingerallee':{line:16,color:'#174f17',mins:4}},
+    'Güntringen Hbf':    {'Altgün Dreieck':{line:'S11',color:'#c0392b',mins:6},'Villotal Süd':{line:'S11',color:'#c0392b',mins:11}},
+    'Villotal Süd':      {'Güntringen Hbf':{line:'S11',color:'#c0392b',mins:11},'Villotal Hbf':{line:'S11',color:'#c0392b',mins:9}},
+    'Villotal Hbf':      {'Villotal Süd':{line:'S11',color:'#c0392b',mins:9}},
+    'Falkenberg':        {'Neuer Ring':{line:14,color:'#003f8a',mins:2}},
+    'Neuer Ring':        {'Falkenberg':{line:14,color:'#003f8a',mins:2},'Regierungsviertel':{line:14,color:'#003f8a',mins:2}},
+    'Regierungsviertel': {'Neuer Ring':{line:14,color:'#003f8a',mins:2},'Altgüner Vorstadt':{line:14,color:'#003f8a',mins:2},'Falkenberger Allee':{line:15,color:'#6b1e1e',mins:2}},
+    'Altgüner Vorstadt': {'Regierungsviertel':{line:14,color:'#003f8a',mins:2},'Altgün Mitte':{line:14,color:'#003f8a',mins:2},'Sâscha-Okto-Ring':{line:15,color:'#6b1e1e',mins:2}},
+    'Altgün Mitte':      {'Altgüner Vorstadt':{line:14,color:'#003f8a',mins:2},'Altgün Dreieck':{line:14,color:'#003f8a',mins:2}},
+    'Seenring':          {'Altgün Dreieck':{line:14,color:'#003f8a',mins:2},'Sonnenwald':{line:14,color:'#003f8a',mins:2}},
+    'Sonnenwald':        {'Seenring':{line:14,color:'#003f8a',mins:2},'Technopolis':{line:14,color:'#003f8a',mins:2}},
+    'Technopolis':       {'Sonnenwald':{line:14,color:'#003f8a',mins:2},'Sonnenstadt':{line:14,color:'#003f8a',mins:2}},
+    'Sonnenstadt':       {'Technopolis':{line:14,color:'#003f8a',mins:2}},
+    'Westende':          {'ZOB Flussbezirk':{line:15,color:'#6b1e1e',mins:2}},
+    'ZOB Flussbezirk':   {'Westende':{line:15,color:'#6b1e1e',mins:2},'Falkenberger Allee':{line:15,color:'#6b1e1e',mins:2}},
+    'Falkenberger Allee':{'ZOB Flussbezirk':{line:15,color:'#6b1e1e',mins:2},'Regierungsviertel':{line:15,color:'#6b1e1e',mins:2}},
+    'Sâscha-Okto-Ring':  {'Altgüner Vorstadt':{line:15,color:'#6b1e1e',mins:2},'Vûlfja-Hüpel-Allee':{line:15,color:'#6b1e1e',mins:2}},
+    'Vûlfja-Hüpel-Allee':{'Sâscha-Okto-Ring':{line:15,color:'#6b1e1e',mins:2},'Altgün-Markt':{line:15,color:'#6b1e1e',mins:2}},
+    'Altgün-Markt':      {'Vûlfja-Hüpel-Allee':{line:15,color:'#6b1e1e',mins:2},'Altgün-Center':{line:15,color:'#6b1e1e',mins:2}},
+    'Altgün-Center':     {'Altgün-Markt':{line:15,color:'#6b1e1e',mins:2},'Altgün Dreieck':{line:15,color:'#6b1e1e',mins:2}},
+    'Krakingerallee':    {'Altgün Dreieck':{line:16,color:'#174f17',mins:4},'Burg':{line:16,color:'#174f17',mins:2}},
+    'Burg':              {'Krakingerallee':{line:16,color:'#174f17',mins:2},'Vélicherring':{line:16,color:'#174f17',mins:2}},
+    'Vélicherring':      {'Burg':{line:16,color:'#174f17',mins:2},'Osttal':{line:16,color:'#174f17',mins:2}},
+    'Osttal':            {'Vélicherring':{line:16,color:'#174f17',mins:2},'Villenviertel':{line:16,color:'#174f17',mins:2}},
+    'Villenviertel':     {'Osttal':{line:16,color:'#174f17',mins:2},'Hügelbezirk Süd':{line:16,color:'#174f17',mins:4}},
+    'Hügelbezirk Süd':   {'Villenviertel':{line:16,color:'#174f17',mins:2}},
+};
+
+// ════════════════════════════════════════════════
+//  LIVE STATE  (populated from Firebase)
+// ════════════════════════════════════════════════
+let liveDelays   = {};   // { 'S11': 6, '14': 0, … }
+let userData     = null; // from DB: { displayName, balance, homeStation, … }
+let unsubDelays  = null;
+let unsubUser    = null;
+let fisIntervalId = null;
+
+// ════════════════════════════════════════════════
+//  LOGIN / AUTH
+// ════════════════════════════════════════════════
+let loginMode = 'login';
+
+function switchLoginTab(mode) {
+    loginMode = mode;
+    document.getElementById('tab-login').classList.toggle('active', mode==='login');
+    document.getElementById('tab-register').classList.toggle('active', mode==='register');
+    document.getElementById('login-register-fields').style.display = mode==='register' ? 'block' : 'none';
+    document.getElementById('auth-btn').textContent = mode==='register' ? 'Konto erstellen →' : 'Anmelden →';
+    document.getElementById('auth-err').textContent = '';
+}
+
+async function doAuth() {
+    const email = document.getElementById('auth-email').value.trim();
+    const pw    = document.getElementById('auth-pw').value;
+    const errEl = document.getElementById('auth-err');
+    errEl.textContent = '';
+    if (!email || !pw) { errEl.textContent = 'Bitte E-Mail und Passwort eingeben.'; return; }
+
+    const btn = document.getElementById('auth-btn');
+    btn.disabled = true;
+    btn.textContent = '…';
+
+    try {
+        const { auth } = fb();
+        if (loginMode === 'register') {
+            const first = document.getElementById('reg-firstname').value.trim();
+            const last  = document.getElementById('reg-lastname').value.trim();
+            if (!first || !last) { errEl.textContent = 'Bitte Vor- und Nachname eingeben.'; btn.disabled=false; btn.textContent='Konto erstellen →'; return; }
+            const { createUserWithEmailAndPassword, updateProfile } = fb();
+            const cred = await createUserWithEmailAndPassword(auth, email, pw);
+            await updateProfile(cred.user, { displayName: `${first} ${last}` });
+            // Create user record in DB
+            const { db, ref, set, serverTimestamp } = fb();
+            await set(ref(db, `users/${cred.user.uid}`), {
+                displayName: `${first} ${last}`,
+                email,
+                balance: 0,
+                homeStation: 'Güntringen Hbf',
+                since: new Date().getFullYear(),
+                journeys: 0,
+                km: 0,
+            });
+        } else {
+            const { signInWithEmailAndPassword } = fb();
+            await signInWithEmailAndPassword(auth, email, pw);
+        }
+    } catch(e) {
+        const msgs = {
+            'auth/invalid-email':          'Ungültige E-Mail-Adresse.',
+            'auth/user-not-found':         'Kein Konto mit dieser E-Mail gefunden.',
+            'auth/wrong-password':         'Falsches Passwort.',
+            'auth/invalid-credential':     'E-Mail oder Passwort falsch.',
+            'auth/email-already-in-use':   'Diese E-Mail ist bereits registriert.',
+            'auth/weak-password':          'Passwort muss mindestens 6 Zeichen haben.',
+            'auth/too-many-requests':      'Zu viele Versuche – kurz warten.',
+        };
+        errEl.textContent = msgs[e.code] || e.message;
+        btn.disabled = false;
+        btn.textContent = loginMode==='register' ? 'Konto erstellen →' : 'Anmelden →';
+    }
+}
+
+document.getElementById('auth-email').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('auth-pw').focus(); });
+document.getElementById('auth-pw').addEventListener('keydown',    e=>{ if(e.key==='Enter') doAuth(); });
+
+async function doLogout() {
+    if (!confirm('Wirklich abmelden?')) return;
+    if (unsubDelays) { unsubDelays(); unsubDelays=null; }
+    if (unsubUser)   { unsubUser();   unsubUser=null; }
+    if (fisIntervalId) { clearInterval(fisIntervalId); fisIntervalId=null; }
+    await fb().signOut(fb().auth);
+}
+
+// ════════════════════════════════════════════════
+//  ON LOGIN – called from the module's onAuthStateChanged
+// ════════════════════════════════════════════════
+window._onLogin = async function(user) {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app-shell').classList.remove('hidden');
+
+    // Subscribe to user data in DB
+    const { db, ref, onValue } = fb();
+    if (unsubUser) unsubUser();
+    unsubUser = onValue(ref(db, `users/${user.uid}`), snap => {
+        userData = snap.val() || {};
+        // Fallback if record doesn't exist yet (e.g. Google sign-in)
+        if (!userData.displayName) userData.displayName = user.displayName || user.email;
+        if (!userData.balance)     userData.balance = 0;
+        if (!userData.homeStation) userData.homeStation = 'Güntringen Hbf';
+        renderUserUI(user, userData);
+    });
+
+    // Subscribe to live delays
+    if (unsubDelays) unsubDelays();
+    unsubDelays = onValue(ref(db, 'delays'), snap => {
+        liveDelays = snap.val() || {};
+        renderFIS();
+        renderAdminDelayList();
+        updateNotifDot();
+    });
+
+    // FIS countdown every second
+    if (fisIntervalId) clearInterval(fisIntervalId);
+    fisIntervalId = setInterval(renderFIS, 1000);
+
+    renderFahrplan();
+    const now = new Date();
+    document.getElementById('route-time').value =
+        `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+    // Show admin panel for admin emails
+    const isAdmin = ADMIN_EMAILS.includes(user.email) || true; // set to true so anyone can manage delays in demo
+    document.getElementById('admin-panel-wrap').style.display = isAdmin ? 'block' : 'none';
+};
+
+// ════════════════════════════════════════════════
+//  RENDER USER UI
+// ════════════════════════════════════════════════
+function renderUserUI(user, data) {
+    const name     = data.displayName || user.email;
+    const parts    = name.split(' ');
+    const initials = parts.length >= 2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : name[0].toUpperCase();
+    const since    = data.since || new Date().getFullYear();
+    const uid4     = user.uid.slice(-4).toUpperCase();
+
+    document.getElementById('header-avatar').textContent    = initials;
+    document.getElementById('header-name').textContent      = name;
+    document.getElementById('header-card').textContent      = `GÜN-Card #${uid4}`;
+    document.getElementById('profil-avatar').textContent    = initials;
+    document.getElementById('profil-name').textContent      = name;
+    document.getElementById('profil-sub').textContent       = `GÜN-Card #${uid4} · Mitglied seit ${since}`;
+    document.getElementById('bal-vil').textContent          = `G$ ${(data.balance||0).toFixed(2)}`;
+    document.getElementById('bal-eur').textContent          = `${((data.balance||0)*GUN_TO_EUR).toFixed(2).replace('.',',')} €`;
+    document.getElementById('stat-fahrten').textContent     = data.journeys  || 0;
+    document.getElementById('stat-km').textContent          = (data.km||0).toLocaleString('de-DE');
+    document.getElementById('stat-co2').textContent         = Math.round((data.km||0)*0.095);
+    document.getElementById('setting-home-station').textContent = data.homeStation || 'Güntringen Hbf';
+    document.getElementById('fis-station-label').textContent    = data.homeStation || 'Güntringen Hbf';
+    document.getElementById('route-from-input').value           = data.homeStation || 'Güntringen Hbf';
+    routeFromVal = data.homeStation || 'Güntringen Hbf';
+
+    const qrData = `VALID-GUN-${uid4}-${initials}`;
+    document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+    document.getElementById('wallet-valid-text').innerHTML = `Gültig für: ${name}<br>Zone: GÜN-Kernzone`;
+
+    renderShop(data);
+    renderWalletTickets(data);
+    renderJourneyHistory(data);
+    renderFIS();
+}
+
+// ════════════════════════════════════════════════
+//  FIREBASE – USER WRITES
+// ════════════════════════════════════════════════
+async function dbUpdate(path, val) {
+    const { db, ref, update } = fb();
+    await update(ref(db, path), val);
+}
+async function dbSet(path, val) {
+    const { db, ref, set } = fb();
+    await set(ref(db, path), val);
+}
+
+// ════════════════════════════════════════════════
+//  BALANCE / RECHARGE
+// ════════════════════════════════════════════════
+function openRechargeModal() { document.getElementById('recharge-modal').style.display='flex'; }
+async function recharge(amount) {
+    const newBalance = (userData.balance||0) + amount;
+    await dbUpdate(`users/${uid()}`, { balance: newBalance });
+    closeModal('recharge-modal');
+    showToast(`✓ G$ ${amount.toFixed(2)} aufgeladen!`);
+}
+
+// ════════════════════════════════════════════════
+//  BUY TICKET
+// ════════════════════════════════════════════════
+let activePending = null;
+function openBuyModal(id, name, price) {
+    activePending = {id, name, price};
+    document.getElementById('m-title').textContent    = name;
+    document.getElementById('m-desc').textContent     = 'Wird sofort in dein Wallet geladen.';
+    document.getElementById('m-price-vil').textContent= `G$ ${price.toFixed(2)}`;
+    document.getElementById('m-price-eur').textContent= `${(price*GUN_TO_EUR).toFixed(2).replace('.',',')} €`;
+    document.getElementById('buy-modal').style.display= 'flex';
+}
+document.getElementById('confirm-buy').onclick = async () => {
+    if (!activePending) return;
+    const bal = userData.balance || 0;
+    if (bal < activePending.price) { showToast('Nicht genügend GÜN-Coins!','error'); closeModal('buy-modal'); return; }
+    const newBal = bal - activePending.price;
+    const tickets = userData.tickets ? {...userData.tickets} : {};
+    tickets[activePending.id] = { name: activePending.name, date: new Date().toLocaleDateString('de-DE') };
+    await dbUpdate(`users/${uid()}`, { balance: newBal, tickets });
+    closeModal('buy-modal');
+    showToast('✓ Kauf erfolgreich!');
+};
+
+// ════════════════════════════════════════════════
+//  HOME STATION
+// ════════════════════════════════════════════════
+function openHomeStationModal() {
+    const current = userData?.homeStation || 'Güntringen Hbf';
+    document.getElementById('home-station-grid').innerHTML = HOME_STATIONS.map(s=>`
+        <button class="hs-btn ${s.id===current?'active':''}" onclick="selectHomeStation('${s.id}')">
+            ${s.label}<span class="hs-sub">${s.sub}</span>
+        </button>`).join('');
+    document.getElementById('home-station-modal').style.display='flex';
+}
+async function selectHomeStation(id) {
+    await dbUpdate(`users/${uid()}`, { homeStation: id });
+    closeModal('home-station-modal');
+    showToast(`📍 Heimatbahnhof: ${id}`);
+}
+
+// ════════════════════════════════════════════════
+//  NAME EDIT
+// ════════════════════════════════════════════════
+function openNameEdit() {
+    const name  = userData?.displayName || '';
+    const parts = name.split(' ');
+    document.getElementById('edit-firstname').value = parts[0] || '';
+    document.getElementById('edit-lastname').value  = parts.slice(1).join(' ') || '';
+    document.getElementById('name-modal').style.display='flex';
+}
+async function saveName() {
+    const first = document.getElementById('edit-firstname').value.trim();
+    const last  = document.getElementById('edit-lastname').value.trim();
+    if (!first||!last) { showToast('Bitte beide Felder ausfüllen','warn'); return; }
+    const fullName = `${first} ${last}`;
+    await fb().updateProfile(fb().auth.currentUser, { displayName: fullName });
+    await dbUpdate(`users/${uid()}`, { displayName: fullName });
+    closeModal('name-modal');
+    showToast('✓ Name gespeichert');
+}
+
+// ════════════════════════════════════════════════
+//  DELAY ADMIN
+// ════════════════════════════════════════════════
+async function setDelay() {
+    const line  = document.getElementById('admin-line').value;
+    const delay = parseInt(document.getElementById('admin-delay').value);
+    if (isNaN(delay) || delay < 0) { showToast('Ungültige Verspätung','warn'); return; }
+    const { db, ref, update } = fb();
+    await update(ref(db,'delays'), { [line]: delay });
+    showToast(`✓ ${line}: +${delay} Min. gespeichert`);
+    document.getElementById('admin-delay').value = '';
+}
+async function clearDelay() {
+    if (!confirm('Alle Verspätungen löschen?')) return;
+    await dbSet('delays', {});
+    showToast('✓ Alle Verspätungen gelöscht');
+}
+function renderAdminDelayList() {
+    const el = document.getElementById('admin-live-list');
+    if (!el) return;
+    const entries = Object.entries(liveDelays).filter(([,v])=>v>0);
+    el.innerHTML = entries.length
+        ? entries.map(([line,mins])=>`
+            <div class="admin-live-item">
+                <span><strong>${line}</strong></span>
+                <span style="color:var(--premium);font-family:'B612 Mono',monospace;">+${mins} Min.</span>
+                <button onclick="clearOneLine('${line}')" style="font-size:10px;background:none;border:none;color:var(--text-dim);cursor:pointer;">✕</button>
+            </div>`).join('')
+        : '<div style="font-size:11px;color:var(--text-dim);padding:6px 0;">Keine aktiven Verspätungen.</div>';
+}
+async function clearOneLine(line) {
+    const { db, ref, update } = fb();
+    await update(ref(db,'delays'), { [line]: 0 });
+}
+
+// ════════════════════════════════════════════════
+//  NOTIFICATIONS DOT
+// ════════════════════════════════════════════════
+function updateNotifDot() {
+    const hasDelay = Object.values(liveDelays).some(v=>v>0);
+    document.getElementById('notif-dot').classList.toggle('active', hasDelay);
+}
+function renderNotifDrawer() {
+    const delayEntries = Object.entries(liveDelays).filter(([,v])=>v>0);
+    let html = '';
+    delayEntries.forEach(([line,mins])=>{
+        html += `<div class="notif-item warn">
+            <div class="notif-icon">⏱️</div>
+            <div><div class="notif-title">Linie ${line}: +${mins} Min. Verspätung</div>
+            <div class="notif-desc">Aktuelle Verspätung auf Linie ${line}.</div>
+            <div class="notif-time">Jetzt aktuell</div></div>
+        </div>`;
+    });
+    if (!html) html = '<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Keine aktuellen Meldungen.</div>';
+    document.getElementById('notif-list').innerHTML = html;
+}
+function openNotifDrawer() {
+    renderNotifDrawer();
+    document.getElementById('notif-drawer').classList.add('open');
+    document.getElementById('notif-backdrop').classList.add('open');
+    document.getElementById('notif-dot').classList.remove('active');
+}
+function closeNotifDrawer() {
+    document.getElementById('notif-drawer').classList.remove('open');
+    document.getElementById('notif-backdrop').classList.remove('open');
+}
+
+// ════════════════════════════════════════════════
+//  FIS  (merges liveDelays from Firebase)
+// ════════════════════════════════════════════════
+function renderFIS() {
+    const sid = userData?.homeStation || 'Güntringen Hbf';
+    const fisData = STATION_FIS[sid] || STATION_FIS['Güntringen Hbf'];
+    const now = new Date();
+    const nowM = now.getMinutes(), nowH = now.getHours(), nowS = now.getSeconds();
+    let html = '';
+    fisData.forEach(l => {
+        const delayMin = liveDelays[l.id] || 0;
+        let next = l.m.find(m=>m>nowM) ?? l.m[0];
+        let diff = next - nowM; if(diff<0) diff+=60;
+        const nextAbs = nowH*60+nowM+diff;
+        const nextHH=Math.floor(nextAbs/60)%24, nextMM=nextAbs%60;
+        const nextTime=`${String(nextHH).padStart(2,'0')}:${String(nextMM).padStart(2,'0')}`;
+        const m2idx=(l.m.indexOf(next)+1)%l.m.length;
+        const next2=l.m[m2idx];
+        let diff2=next2-nowM; if(diff2<=diff) diff2+=60;
+        const n2Abs=nowH*60+nowM+diff2;
+        const n2Time=`${String(Math.floor(n2Abs/60)%24).padStart(2,'0')}:${String(n2Abs%60).padStart(2,'0')}`;
+        const totalSec = diff*60 - nowS;
+        const cdMin=Math.floor(totalSec/60), cdSec=Math.max(0,totalSec%60);
+        const cdStr = diff===0 ? '🚉 Jetzt' : `${cdMin}:${String(cdSec).padStart(2,'0')} min`;
+        const isS11 = l.id==='S11';
+        const stopKey = isS11 ? (l.dest.includes('Villotal')?'S11_Villotal':'S11_Lixen')
+                      : l.id==='14'?(l.dest==='Sonnenstadt'?'14_Sonnenstadt':'14_Falkenberg')
+                      : l.id==='15'?'15_Westende':'16_Hügelbezirk';
+        html+=`
+        <div class="fis-row" onclick="openTripDrawer('${l.id}','${l.dest}','${l.col}','${stopKey}',${delayMin},${nextHH},${nextMM})">
+            <div class="line-badge" style="background:${l.col}">${l.id}</div>
+            <div>
+                <div style="font-weight:bold;font-size:13px;">Richtung ${l.dest}</div>
+                <div style="font-size:10px;color:var(--text-dim);">Gleis ${l.gleis} · ${nextTime} / ${n2Time}</div>
+                ${delayMin>0 ? `<span class="delay-live">+${delayMin} Min. · Live</span>` : ''}
+            </div>
+            <div class="eta-col">
+                <div class="eta" style="${delayMin>0?'color:var(--premium)':''}">${diff===0?'jetzt':diff+' min'}</div>
+                <div class="eta-cd">${cdStr}</div>
+            </div>
+        </div>`;
+    });
+    document.getElementById('fis-list').innerHTML = html ||
+        '<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:12px;">Keine Abfahrten für diese Station.</div>';
+}
+
+// ════════════════════════════════════════════════
+//  STATION INFO
+// ════════════════════════════════════════════════
+function showStationInfo(name, lineId) {
+    const i = STATION_INFO[name]||{typ:'Haltestelle',linien:lineId,aufzug:'k.A.',fahrrad:'k.A.',park:'k.A.',info:''};
+    document.getElementById('stn-modal-name').textContent = name;
+    document.getElementById('stn-modal-body').innerHTML=`
+        <div class="stn-modal-row"><span class="key">Typ</span><span>${i.typ}</span></div>
+        <div class="stn-modal-row"><span class="key">Linien</span><span>${i.linien}</span></div>
+        <div class="stn-modal-row"><span class="key">Aufzug</span><span>${i.aufzug}</span></div>
+        <div class="stn-modal-row"><span class="key">Fahrrad</span><span>${i.fahrrad}</span></div>
+        <div class="stn-modal-row"><span class="key">P+R</span><span>${i.park}</span></div>
+        ${i.info?`<div style="margin-top:9px;font-size:11px;color:var(--text-dim);line-height:1.5;">${i.info}</div>`:''}
+    `;
+    document.getElementById('stn-modal').style.display='flex';
+}
+
+// ════════════════════════════════════════════════
+//  TRIP DRAWER
+// ════════════════════════════════════════════════
+function openTripDrawer(lineId,dest,color,stopKey,delayMin,depH,depM) {
+    const stops   = LINE_FULL_STOPS[stopKey]||[];
+    const sched   = SCHEDULES[lineId];
+    const dir     = sched ? sched.directions.find(d=>d.stopKey===stopKey) : null;
+    const timeMap = {};
+    if (dir) dir.stations.forEach(s=>{timeMap[s.name]=s.offset;});
+    const totalMins = stops.length>1 ? (timeMap[stops[stops.length-1].name]||44) : 44;
+    const arrMins   = (depH*60+depM+totalMins+delayMin)%(24*60);
+    const depTime   = `${String(depH).padStart(2,'0')}:${String(depM).padStart(2,'0')}`;
+    const arrTime   = `${String(Math.floor(arrMins/60)).padStart(2,'0')}:${String(arrMins%60).padStart(2,'0')}`;
+    document.getElementById('trip-drawer-title').textContent = `${lineId} · Richtung ${dest}`;
+    document.getElementById('trip-drawer-sub').textContent   = `Abfahrt ${depTime} · Ankunft ${arrTime}${delayMin?` · +${delayMin} Min.`:''}`;
+    let tl='<div class="timeline">';
+    stops.forEach((s,idx)=>{
+        const isFirst=idx===0, isLast=idx===stops.length-1;
+        const offset = timeMap[s.name]||0;
+        const absMin = (depH*60+depM+offset+delayMin)%(24*60);
+        const ts = `${String(Math.floor(absMin/60)%24).padStart(2,'0')}:${String(absMin%60).padStart(2,'0')}`;
+        const dc = (isFirst||isLast)?'terminal':'mid';
+        tl+=`<div class="tl-stop" style="--tl-color:${color}">
+            <div class="tl-left">
+                <div class="tl-dot ${dc}" style="border-color:${color};${(isFirst||isLast)?'background:'+color:''}"></div>
+                <div class="tl-line-seg"></div>
+            </div>
+            <div class="tl-right">
+                <div class="tl-stop-name">${s.name}</div>
+                <div class="tl-stop-time">${ts}${delayMin&&(isFirst||isLast)?` <span class="tl-delay">+${delayMin}'</span>`:''}</div>
+                <div class="tl-stop-sub">Gleis ${s.gleis}${s.transfer?' · '+s.transfer:''}</div>
+                ${s.transfer&&!isFirst&&!isLast?'<div class="tl-transfer-badge">🔀 Umstieg möglich</div>':''}
+            </div>
+        </div>`;
+    });
+    tl+='</div>';
+    const statusHtml = delayMin
+        ? `<div style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:10px;padding:11px;margin-bottom:13px;"><div style="font-weight:bold;color:var(--premium);font-size:12px;">⚠️ Verspätung: +${delayMin} Min.</div></div>`
+        : `<div style="background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:10px;padding:9px;margin-bottom:13px;"><div style="font-size:12px;color:var(--success);">✅ Pünktlich</div></div>`;
+    document.getElementById('trip-drawer-body').innerHTML=`
+        <div class="trip-summary">
+            <div class="ts-item"><div class="ts-val">${depTime}</div><div class="ts-lbl">Abfahrt</div></div>
+            <div class="ts-item"><div class="ts-val">${totalMins}m</div><div class="ts-lbl">Dauer</div></div>
+            <div class="ts-item"><div class="ts-val">${arrTime}</div><div class="ts-lbl">Ankunft</div></div>
+            <div class="ts-item"><div class="ts-val">${stops.length}</div><div class="ts-lbl">Halte</div></div>
+        </div>
+        ${statusHtml}
+        <div class="section-title" style="margin-bottom:9px;">Streckenverlauf</div>
+        ${tl}`;
+    document.getElementById('trip-backdrop').classList.add('open');
+    document.getElementById('trip-drawer').classList.add('open');
+}
+function closeTripDrawer() {
+    document.getElementById('trip-drawer').classList.remove('open');
+    document.getElementById('trip-backdrop').classList.remove('open');
+}
+
+// ════════════════════════════════════════════════
+//  FAHRPLAN
+// ════════════════════════════════════════════════
+let activeLine='S11', activeDir=0;
+function selectLine(id,el) {
+    activeLine=id; activeDir=0;
+    document.querySelectorAll('.fp-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('fp-search').value='';
+    renderFahrplan();
+}
+function renderFahrplan() {
+    const sched=SCHEDULES[activeLine];
+    const dirs=sched.directions;
+    document.getElementById('fp-directions').innerHTML=dirs.map((d,i)=>
+        `<div class="dir-btn ${i===activeDir?'active':''}" onclick="setDir(${i})">${d.label}</div>`
+    ).join('');
+    const dir=dirs[activeDir];
+    const now=new Date();
+    const nowM=now.getHours()*60+now.getMinutes();
+    const nextDeps=[];
+    for(let h=now.getHours();h<now.getHours()+4;h++){
+        sched.departures.forEach(m=>{ const a=h*60+m; if(a>=nowM) nextDeps.push({h:h%24,m}); });
+    }
+    const shown=nextDeps.slice(0,3);
+    let html=`<div class="fp-table"><div class="fp-header"><span>Station</span><span style="text-align:center;">Nächste</span><span style="text-align:center;">Dann</span></div>`;
+    dir.stations.forEach(s=>{
+        const times=shown.map(dep=>{
+            const mins=(dep.h*60+dep.m+s.offset)%(24*60);
+            return `${String(Math.floor(mins/60)%24).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+        });
+        const isO=s.offset===0, isE=s.offset===Math.max(...dir.stations.map(x=>x.offset));
+        html+=`<div class="fp-station-row ${isO||isE?'highlight':''}" onclick="${`showStationInfo('${s.name}','${activeLine}')`}" data-name="${s.name.toLowerCase()}">
+            <div><span class="fp-icon">${isO?'🟢':isE?'🔴':'⚪'}</span>${s.name}</div>
+            <div class="fp-time" style="text-align:center;">${times[0]||'–'}</div>
+            <div class="fp-time" style="text-align:center;">${times[1]||'–'}</div>
+        </div>`;
+    });
+    html+='</div>';
+    document.getElementById('fp-table').innerHTML=html;
+}
+function setDir(i) { activeDir=i; renderFahrplan(); }
+function filterFahrplan(q) {
+    document.querySelectorAll('.fp-station-row').forEach(r=>
+        r.classList.toggle('hidden-filter', q.length>0 && !r.dataset.name.includes(q.toLowerCase()))
+    );
+}
+
+// ════════════════════════════════════════════════
+//  AUTOCOMPLETE + ROUTE
+// ════════════════════════════════════════════════
+let routeFromVal='Güntringen Hbf', routeToVal='Villotal Hbf';
+function acSearch(field,q) {
+    const list=document.getElementById(field==='from'?'ac-from':'ac-to');
+    if (!q) { list.classList.remove('open'); return; }
+    const m=ALL_STATIONS.filter(s=>s.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+    if (!m.length) { list.classList.remove('open'); return; }
+    list.innerHTML=m.map(s=>{
+        const hl=s.replace(new RegExp(q,'gi'),x=>`<mark>${x}</mark>`);
+        return `<div class="ac-item" onclick="acSelect('${field}','${s}')">${hl}</div>`;
+    }).join('');
+    list.classList.add('open');
+}
+function acSelect(field,val) {
+    if(field==='from') { routeFromVal=val; document.getElementById('route-from-input').value=val; document.getElementById('ac-from').classList.remove('open'); }
+    else               { routeToVal=val;   document.getElementById('route-to-input').value=val;   document.getElementById('ac-to').classList.remove('open'); }
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('.autocomplete-wrap')) document.querySelectorAll('.autocomplete-list').forEach(l=>l.classList.remove('open')); });
+function swapRoute() {
+    [routeFromVal,routeToVal]=[routeToVal,routeFromVal];
+    document.getElementById('route-from-input').value=routeFromVal;
+    document.getElementById('route-to-input').value=routeToVal;
+}
+
+function dijkstra(from,to) {
+    const dist={},prev={},vis=new Set();
+    Object.keys(LINE_GRAPH).forEach(n=>dist[n]=Infinity);
+    dist[from]=0; const q=[from];
+    while(q.length){
+        q.sort((a,b)=>dist[a]-dist[b]);
+        const u=q.shift(); if(vis.has(u)) continue; vis.add(u); if(u===to) break;
+        for(const[v,e] of Object.entries(LINE_GRAPH[u]||{})){
+            const alt=dist[u]+e.mins;
+            if(alt<dist[v]){ dist[v]=alt; prev[v]={from:u,...e}; if(!vis.has(v)) q.push(v); }
+        }
+    }
+    if(dist[to]===Infinity) return null;
+    const path=[]; let cur=to;
+    while(prev[cur]){ path.unshift({station:cur,...prev[cur]}); cur=prev[cur].from; }
+    path.unshift({station:from});
+    return {path,totalMins:dist[to]};
+}
+
+async function calcRoute() {
+    const from=routeFromVal||document.getElementById('route-from-input').value;
+    const to=routeToVal||document.getElementById('route-to-input').value;
+    const tv=document.getElementById('route-time').value;
+    if(!from||!to) { showToast('Bitte Start und Ziel wählen','warn'); return; }
+    if(from===to)  { showToast('Start = Ziel!','warn'); return; }
+    const res=dijkstra(from,to);
+    const container=document.getElementById('route-result');
+    if(!res){ container.innerHTML=`<div class="route-card"><h3>Keine Verbindung</h3><p style="font-size:12px;color:var(--text-dim);">Diese Strecke ist nicht verbunden.</p></div>`; return; }
+    let[depH,depM]=tv?tv.split(':').map(Number):[new Date().getHours(),new Date().getMinutes()];
+    let cum=depH*60+depM;
+    const legs=[]; let i=1;
+    while(i<res.path.length){
+        const seg=res.path[i]; const startStn=res.path[i-1].station;
+        let endStn=seg.station,lm=seg.mins,j=i+1;
+        while(j<res.path.length&&res.path[j].line===seg.line){lm+=res.path[j].mins;endStn=res.path[j].station;j++;}
+        legs.push({from:startStn,to:endStn,line:seg.line,color:seg.color,mins:lm}); i=j;
+    }
+    let lHtml=''; const tt=legs.length-1;
+    legs.forEach((leg,li)=>{
+        const dt=`${String(Math.floor(cum/60)%24).padStart(2,'0')}:${String(cum%60).padStart(2,'0')}`;
+        const ldH=Math.floor(cum/60)%24,ldM=cum%60;
+        cum+=leg.mins+2;
+        const at=`${String(Math.floor(cum/60)%24).padStart(2,'0')}:${String(cum%60).padStart(2,'0')}`;
+        const sk=leg.line==='S11'?(leg.to.includes('Villotal')||leg.to==='Güntringen Hbf'||leg.to==='Villotal Süd'?'S11_Villotal':'S11_Lixen')
+                :leg.line===14?(leg.to==='Sonnenstadt'||leg.to==='Seenring'||leg.to==='Technopolis'||leg.to==='Sonnenwald'?'14_Sonnenstadt':'14_Falkenberg')
+                :leg.line===15?'15_Westende':'16_Hügelbezirk';
+        lHtml+=`<div class="route-leg" onclick="openTripDrawer('${leg.line}','${leg.to}','${leg.color}','${sk}',0,${ldH},${ldM})">
+            <div class="route-leg-icon" style="background:${leg.color}">${leg.line}</div>
+            <div style="flex:1;"><div style="font-weight:bold;">${leg.from} → ${leg.to}</div><div class="route-leg-times">${dt} → ${at} · ${leg.mins} Min.</div></div>
+            <div style="font-size:11px;color:var(--accent);flex-shrink:0;">Details ›</div>
+        </div>${li<legs.length-1?`<div style="display:flex;align-items:center;gap:8px;padding:7px 6px;font-size:11px;color:var(--warn);">🔀 <span>Umstieg in <strong>${leg.to}</strong></span></div>`:''}`;
+        // record journey in Firebase
+        recordJourney(String(leg.line),leg.from,leg.to,leg.mins);
+    });
+    const tot=res.totalMins+tt*2;
+    const fa=`${String(Math.floor((depH*60+depM+tot)/60)%24).padStart(2,'0')}:${String((depH*60+depM+tot)%60).padStart(2,'0')}`;
+    container.innerHTML=`<div class="route-card"><h3>Verbindung gefunden</h3>
+        <div class="trip-summary" style="margin-bottom:13px;">
+            <div class="ts-item"><div class="ts-val">${String(depH).padStart(2,'0')}:${String(depM).padStart(2,'0')}</div><div class="ts-lbl">Abfahrt</div></div>
+            <div class="ts-item"><div class="ts-val">${tot}m</div><div class="ts-lbl">Gesamt</div></div>
+            <div class="ts-item"><div class="ts-val">${fa}</div><div class="ts-lbl">Ankunft</div></div>
+            <div class="ts-item"><div class="ts-val">${tt}</div><div class="ts-lbl">Umstieg</div></div>
+        </div>
+        ${lHtml}
+        <p style="font-size:10px;color:var(--text-dim);margin-top:9px;">↑ Antippen für Reisedetails</p>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════
+//  JOURNEY HISTORY  (stored in Firebase)
+// ════════════════════════════════════════════════
+async function recordJourney(line, from, to, mins) {
+    if (!uid()) return;
+    const { db, ref, push, serverTimestamp } = fb();
+    await push(ref(db,`users/${uid()}/journeyLog`), {
+        line, from, to, mins,
+        ts: serverTimestamp(),
+        dateStr: new Date().toLocaleDateString('de-DE'),
+        timeStr: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),
+    });
+    // increment counters
+    const jc = (userData.journeys||0)+1;
+    const km = (userData.km||0)+Math.round(mins*0.8);
+    await dbUpdate(`users/${uid()}`,{journeys:jc,km});
+}
+
+function renderJourneyHistory(data) {
+    const el=document.getElementById('journey-history'); if(!el) return;
+    // Attach a live listener to journeyLog
+    const { db, ref, onValue } = fb();
+    onValue(ref(db,`users/${uid()}/journeyLog`), snap=>{
+        const raw=snap.val();
+        if (!raw) { el.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:6px 0;">Noch keine Fahrten aufgezeichnet.</div>'; return; }
+        const entries=Object.values(raw).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,10);
+        el.innerHTML=entries.map(j=>`
+            <div class="journey-item">
+                <div class="ji-line" style="background:${LINE_COLORS[j.line]||'#555'}">${j.line}</div>
+                <div class="ji-route">
+                    <div class="ji-route-main">${j.from} → ${j.to}</div>
+                    <div class="ji-route-sub">${j.dateStr||''} · ${j.timeStr||''}</div>
+                </div>
+            </div>`).join('');
+    }, {onlyOnce:false});
+}
+
+// ════════════════════════════════════════════════
+//  SHOP
+// ════════════════════════════════════════════════
+function renderShop(data) {
+    const ownedIds = data?.tickets ? Object.keys(data.tickets) : [];
+    const mapItems=(items,targetId)=>{
+        document.getElementById(targetId).innerHTML=items.map(item=>{
+            const owned=ownedIds.includes(item.id);
+            return `<div class="ticket-item">
+                <div class="ticket-info"><h3>${item.name}</h3><p>${item.desc}</p></div>
+                <div class="buy-box">
+                    <button class="btn-buy ${owned?'owned':''}" onclick="${owned?'':` openBuyModal('${item.id}','${item.name}',${item.price})`}">${owned?'✓ Aktiv':'G$ '+item.price.toFixed(2)}</button>
+                    ${!owned?`<span class="eur-sub">${(item.price*GUN_TO_EUR).toFixed(2)} €</span>`:''}
+                </div>
+            </div>`;
+        }).join('');
+    };
+    mapItems(TARIFE.single,'shop-single');
+    mapItems(TARIFE.abo,   'shop-abo');
+    mapItems(TARIFE.junior,'shop-junior');
+}
+
+// ════════════════════════════════════════════════
+//  WALLET TICKETS
+// ════════════════════════════════════════════════
+function renderWalletTickets(data) {
+    const el=document.getElementById('wallet-tickets-list');
+    const tickets=data?.tickets;
+    if (!tickets||!Object.keys(tickets).length) {
+        el.innerHTML='<div style="padding:18px;text-align:center;color:var(--text-dim);font-size:12px;">Noch keine Tickets gekauft.</div>';
+        return;
+    }
+    el.innerHTML=Object.values(tickets).map(t=>`
+        <div class="wallet-ticket-row">
+            <div class="wt-icon">🎫</div>
+            <div><div class="wt-name">${t.name}</div><div class="wt-exp">Gekauft am ${t.date}</div></div>
+            <div class="wt-badge">Aktiv</div>
+        </div>`).join('');
+}
+
+// ════════════════════════════════════════════════
+//  THEME
+// ════════════════════════════════════════════════
+let currentTheme = localStorage.getItem('guen_theme')||'system';
+const THEME_ICONS = {dark:'🌙',light:'☀️',system:'⚙️'};
+function applyTheme(t) {
+    const r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;
+    document.documentElement.setAttribute('data-theme',r);
+    document.getElementById('theme-btn').textContent=THEME_ICONS[t];
+    document.querySelectorAll('.tp-btn').forEach(b=>b.classList.remove('active'));
+    const el=document.getElementById(`tp-${t}`); if(el) el.classList.add('active');
+}
+function setTheme(t) { currentTheme=t; localStorage.setItem('guen_theme',t); applyTheme(t); }
+function cycleTheme() { const o=['dark','light','system']; setTheme(o[(o.indexOf(currentTheme)+1)%o.length]); }
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if(currentTheme==='system') applyTheme('system'); });
+applyTheme(currentTheme);
+
+// ════════════════════════════════════════════════
+//  MODAL / VIEW UTILS
+// ════════════════════════════════════════════════
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+function showView(id,el) {
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('view-'+id).classList.add('active');
+    if(el) el.classList.add('active');
+}
+
+// ════════════════════════════════════════════════
+//  TOAST QUEUE
+// ════════════════════════════════════════════════
+function showToast(msg,type='') {
+    const c=document.getElementById('toast-container');
+    const t=document.createElement('div');
+    t.className='toast-msg'+(type?' '+type:'');
+    t.textContent=msg;
+    c.appendChild(t);
+    setTimeout(()=>{ t.classList.add('exit'); setTimeout(()=>t.remove(),240); },2500);
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+// Route time default
+const _now=new Date();
+const rtEl=document.getElementById('route-time');
+if(rtEl) rtEl.value=`${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
+
+// Route inputs default
+document.getElementById('route-from-input').value='Güntringen Hbf';
+document.getElementById('route-to-input').value='Villotal Hbf';
+</script>
+</body>
+</html>
