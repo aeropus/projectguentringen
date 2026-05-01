@@ -1651,6 +1651,7 @@ function calcRoute() {
     }
     let [depH,depM]=timeVal?timeVal.split(':').map(Number):[new Date().getHours(),new Date().getMinutes()];
     let cumMins=depH*60+depM;
+    // Build legs
     const legs=[]; let i=1;
     while(i<result.path.length){
         const seg=result.path[i]; const startStn=result.path[i-1].station;
@@ -1658,26 +1659,141 @@ function calcRoute() {
         while(j<result.path.length&&result.path[j].line===seg.line){ lineMins+=result.path[j].mins; endStn=result.path[j].station; j++; }
         legs.push({from:startStn,to:endStn,line:seg.line,color:seg.color,mins:lineMins}); i=j;
     }
-    let legsHtml=''; const totalTransfers=legs.length-1;
-    legs.forEach((leg,li)=>{
-        const depTime=`${String(Math.floor(cumMins/60)%24).padStart(2,'0')}:${String(cumMins%60).padStart(2,'0')}`;
-        const legDepH=Math.floor(cumMins/60)%24, legDepM=cumMins%60;
-        cumMins+=leg.mins+2;
-        const arrTime=`${String(Math.floor(cumMins/60)%24).padStart(2,'0')}:${String(cumMins%60).padStart(2,'0')}`;
-        const sk=leg.line==='S11'?(leg.to.includes('Villotal')||leg.to==='Güntringen Hbf'||leg.to==='Villotal Süd'?'S11_Villotal':'S11_Lixen')
-                :leg.line===14?(leg.to==='Sonnenstadt'||leg.to==='Seenring'||leg.to==='Technopolis'||leg.to==='Sonnenwald'?'14_Sonnenstadt':'14_Falkenberg')
-                :leg.line===15?'15_Westende':'16_Hügelbezirk';
-        legsHtml+=`<div class="route-leg" onclick="openTripDrawer('${leg.line}','${leg.to}','${leg.color}','${sk}',0,${legDepH},${legDepM})">
-            <div class="route-leg-icon" style="background:${leg.color}">${leg.line}</div>
-            <div style="flex:1;"><div style="font-weight:bold;">${leg.from} → ${leg.to}</div><div class="route-leg-times">${depTime} → ${arrTime} · ${leg.mins} Min.</div></div>
-            <div style="font-size:11px;color:var(--accent);flex-shrink:0;">Details ›</div>
-        </div>
-        ${li<legs.length-1?`<div style="display:flex;align-items:center;gap:8px;padding:8px 6px;font-size:11px;color:var(--warn);">🔀 <span>Umstieg in <strong>${leg.to}</strong> · ca. 2 Min.</span></div>`:''}`;
-        // Log journey
-        recordJourney(leg.line, leg.from, leg.to);
-    });
+    const totalTransfers=legs.length-1;
     const totalMins=result.totalMins+totalTransfers*2;
     const finalArr=`${String(Math.floor((depH*60+depM+totalMins)/60)%24).padStart(2,'0')}:${String((depH*60+depM+totalMins)%60).padStart(2,'0')}`;
+
+    // Price calculation
+    const lineZones = {'S11':2,'14':1,'15':1,'16':2,'17':1};
+    let totalZones = 0;
+    legs.forEach(leg=>{ totalZones += lineZones[String(leg.line)]||1; });
+    const uniqueLines = [...new Set(legs.map(l=>String(l.line)))];
+    let price, ticketName, ticketBadge;
+    if(totalMins<=60) {
+        price = uniqueLines.includes('S11')||uniqueLines.includes('16') ? 2.30 : 1.20;
+        ticketName = 'Kurzzeit-Ticket'; ticketBadge = '60 Min';
+    } else if(totalMins<=120) {
+        price = uniqueLines.includes('S11')||uniqueLines.includes('16') ? (legs.length>1?3.30:4.30) : 2.30;
+        ticketName = legs.length>1?'Basis Kombi':'Basis-Ticket'; ticketBadge = '120 Min';
+    } else {
+        price = legs.length>1 ? 10.00 : 5.00;
+        ticketName = legs.length>1?'Langzeit Kombi':'Langzeit-Ticket'; ticketBadge = '300 Min';
+    }
+
+    // Build full timeline HTML per leg
+    const LINE_STOP_DATA = {
+        'S11_Villotal': LINE_FULL_STOPS['S11_Villotal'],
+        'S11_Lixen':    LINE_FULL_STOPS['S11_Lixen'],
+        '14_Sonnenstadt': LINE_FULL_STOPS['14_Sonnenstadt'],
+        '14_Falkenberg':  LINE_FULL_STOPS['14_Falkenberg'],
+        '15_Westende':    LINE_FULL_STOPS['15_Westende'],
+        '16_Hügelbezirk': LINE_FULL_STOPS['16_Hügelbezirk'],
+        '17_Oktratal':    LINE_FULL_STOPS['17_Oktratal'],
+        '17_Hbf':         LINE_FULL_STOPS['17_Hbf'],
+    };
+
+    function getStopKey(lineId, toStn) {
+        if(lineId==='S11') return toStn.includes('Villotal')||toStn==='Güntringen Hbf'||toStn==='Villotal Süd'?'S11_Villotal':'S11_Lixen';
+        if(lineId==14||lineId==='14') return (toStn==='Sonnenstadt'||toStn==='Seenring'||toStn==='Technopolis'||toStn==='Sonnenwald')?'14_Sonnenstadt':'14_Falkenberg';
+        if(lineId==15||lineId==='15') return '15_Westende';
+        if(lineId==16||lineId==='16') return '16_Hügelbezirk';
+        if(lineId==17||lineId==='17') return toStn==='Oktratal'?'17_Oktratal':'17_Hbf';
+        return null;
+    }
+
+    let legsHtml='';
+    legs.forEach((leg, li)=>{
+        const legDepMins = cumMins;
+        const legDepStr = `${String(Math.floor(legDepMins/60)%24).padStart(2,'0')}:${String(legDepMins%60).padStart(2,'0')}`;
+        const legArrMins = cumMins + leg.mins;
+        const legArrStr = `${String(Math.floor(legArrMins/60)%24).padStart(2,'0')}:${String(legArrMins%60).padStart(2,'0')}`;
+        const legDepH = Math.floor(legDepMins/60)%24, legDepM = legDepMins%60;
+
+        // Get intermediate stops for this leg
+        const sk = getStopKey(leg.line, leg.to);
+        const fullStops = sk ? (LINE_STOP_DATA[sk]||[]) : [];
+        // Find start/end indices
+        const fromIdx = fullStops.findIndex(s=>s.name===leg.from);
+        const toIdx   = fullStops.findIndex(s=>s.name===leg.to);
+        const legStops = fromIdx>=0&&toIdx>=0&&toIdx>fromIdx ? fullStops.slice(fromIdx,toIdx+1)
+                       : fromIdx>=0&&toIdx>=0&&toIdx<fromIdx ? fullStops.slice(toIdx,fromIdx+1).reverse()
+                       : [{name:leg.from,gleis:'–',transfer:null},{name:leg.to,gleis:'–',transfer:null}];
+
+        // Compute times per stop using schedule offsets
+        const sched = SCHEDULES[leg.line];
+        const dir = sched ? sched.directions.find(d=>{ const sk2=getStopKey(leg.line,leg.to); return d.stopKey===sk2; }) : null;
+        const offsets = {};
+        if(dir) dir.stations.forEach(s=>offsets[s.name]=s.offset);
+        const baseOffset = offsets[leg.from]||0;
+
+        // Build stop timeline
+        let stopRows='';
+        legStops.forEach((s,idx)=>{
+            const isFirst=idx===0, isLast=idx===legStops.length-1;
+            const relOff = (offsets[s.name]||0) - baseOffset;
+            const absM = (legDepMins + relOff + 60*24)%(60*24);
+            const timeStr = `${String(Math.floor(absM/60)%24).padStart(2,'0')}:${String(absM%60).padStart(2,'0')}`;
+            stopRows+=`
+            <div style="display:flex;gap:12px;position:relative;">
+                <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:26px;position:relative;z-index:1;">
+                    <div style="width:18px;height:18px;border-radius:50%;border:2.5px solid ${leg.color};background:${isFirst||isLast?leg.color:'var(--card)'};display:flex;align-items:center;justify-content:center;margin-top:4px;flex-shrink:0;">
+                        ${isFirst||isLast?`<div style="width:6px;height:6px;border-radius:50%;background:#fff;"></div>`:`<div style="width:5px;height:5px;border-radius:50%;background:${leg.color};opacity:.7;"></div>`}
+                    </div>
+                    ${!isLast?`<div style="width:2px;flex:1;min-height:20px;background:${leg.color};opacity:.25;margin-top:2px;"></div>`:''}
+                </div>
+                <div style="padding:3px 0 ${isLast?'0':'14px'};flex:1;min-width:0;">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+                        <div style="font-size:13px;font-weight:${isFirst||isLast?'bold':'normal'};color:${isFirst||isLast?'var(--text)':'var(--text-dim)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
+                        <div style="font-family:'B612 Mono',monospace;font-size:11px;color:${isFirst||isLast?'var(--success)':'var(--text-dim)'};flex-shrink:0;">${timeStr}</div>
+                    </div>
+                    ${s.gleis&&s.gleis!=='–'?`<div style="font-size:10px;color:var(--text-dim);margin-top:1px;">Gleis ${s.gleis}${s.transfer?' · '+s.transfer:''}</div>`:''}
+                </div>
+            </div>`;
+        });
+
+        legsHtml+=`
+        <div style="background:var(--card);border-radius:14px;border:1px solid var(--input-border);margin-bottom:10px;overflow:hidden;">
+            <!-- Leg header -->
+            <div style="background:${leg.color}18;border-bottom:1px solid ${leg.color}30;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="openTripDrawer('${leg.line}','${leg.to}','${leg.color}','${sk}',0,${legDepH},${legDepM})">
+                <div style="width:32px;height:20px;border-radius:5px;background:${leg.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;flex-shrink:0;">${leg.line}</div>
+                <div style="flex:1;">
+                    <div style="font-weight:bold;font-size:13px;color:var(--text);">Linie ${leg.line} · Richtung ${leg.to}</div>
+                    <div style="font-size:10px;color:var(--text-dim);margin-top:2px;font-family:'B612 Mono',monospace;">${legDepStr} – ${legArrStr} · ${leg.mins} Min.</div>
+                </div>
+                <div style="font-size:11px;color:var(--accent);flex-shrink:0;">Details ›</div>
+            </div>
+            <!-- Stop timeline -->
+            <div style="padding:14px 14px 10px;">
+                ${stopRows}
+            </div>
+        </div>
+        ${li<legs.length-1?`
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 14px 10px;font-size:11px;color:var(--warn);">
+            <div style="width:22px;height:22px;border-radius:6px;background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔀</div>
+            <span>Umstieg in <strong>${leg.to}</strong> · ca. 2 Min. Umstiegszeit</span>
+        </div>`:''}`;
+
+        cumMins += leg.mins + 2;
+        recordJourney(leg.line, leg.from, leg.to);
+    });
+
+    // Price box
+    const priceBoxHtml=`
+    <div style="background:var(--card);border-radius:14px;border:1px solid var(--input-border);padding:14px;margin-bottom:10px;">
+        <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:10px;">🎟️ Empfohlenes Ticket</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <div style="font-weight:bold;font-size:14px;">${ticketName}</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${ticketBadge} · ${uniqueLines.map(l=>`L${l}`).join(', ').replace('LS11','S11')}</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-family:'B612 Mono',monospace;font-size:18px;font-weight:bold;color:var(--vil-color);">${price.toFixed(2)} VIL</div>
+                <div style="font-size:10px;color:var(--eur-color);">${(price*0.75).toFixed(2).replace('.',',')} €</div>
+            </div>
+        </div>
+        <button onclick="showView('shop',document.querySelector('[data-view=shop]'))" style="width:100%;margin-top:11px;padding:10px;border-radius:9px;background:var(--accent);color:#fff;border:none;font-weight:800;font-family:'Barlow',sans-serif;font-size:13px;text-transform:uppercase;cursor:pointer;letter-spacing:.5px;">Im Shop kaufen →</button>
+    </div>`;
+
     container.innerHTML=`<div class="route-card">
         <h3>Verbindung gefunden</h3>
         <div class="trip-summary" style="margin-bottom:14px;">
@@ -1686,8 +1802,10 @@ function calcRoute() {
             <div class="ts-item"><div class="ts-val">${finalArr}</div><div class="ts-lbl">Ankunft</div></div>
             <div class="ts-item"><div class="ts-val">${totalTransfers}</div><div class="ts-lbl">Umstieg</div></div>
         </div>
+        ${priceBoxHtml}
+        <div style="font-size:10px;color:var(--section-title);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Streckenverlauf</div>
         ${legsHtml}
-        <p style="font-size:10px;color:var(--text-dim);margin-top:10px;">↑ Segment antippen für Reisedetails</p>
+        <p style="font-size:10px;color:var(--text-dim);margin-top:6px;text-align:center;">↑ Linie antippen für detaillierten Fahrtverlauf</p>
     </div>`;
 }
 
