@@ -534,26 +534,29 @@
 <!-- ===== REISEBEGLEITER ===== -->
 <section id="view-begleiter" class="view">
     <p class="section-title">Reisebegleiter</p>
-    <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">Live-Anweisungen für deine aktuelle Fahrt – linienübergreifend.</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">Live-Anweisungen für deine aktuelle Fahrt.</div>
 
-    <!-- Setup -->
+    <!-- Linie / Station auswählen -->
     <div id="rb-setup" style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid var(--input-border);">
         <div class="section-title" style="margin-bottom:10px;">Fahrt einrichten</div>
         <div style="margin-bottom:10px;">
-            <div class="route-label">Ich bin an</div>
-            <div class="autocomplete-wrap">
-                <input class="autocomplete-input" id="rb-from-input" type="text" placeholder="Startstation…" autocomplete="off"
-                    oninput="rbAcSearch('from',this.value)" onfocus="rbAcSearch('from',this.value)">
-                <div class="autocomplete-list" id="rb-ac-from"></div>
-            </div>
+            <div class="route-label">Ich sitze in</div>
+            <select class="route-input" id="rb-line" style="margin-top:5px;" onchange="rbUpdateStations()">
+                <option value="">Linie wählen…</option>
+                <option value="S11">S11</option>
+                <option value="14">Linie 14</option>
+                <option value="15">Linie 15</option>
+                <option value="16">Linie 16 (Premium)</option>
+                <option value="17">Linie 17</option>
+            </select>
+        </div>
+        <div style="margin-bottom:10px;">
+            <div class="route-label">Aktuelle Haltestelle</div>
+            <select class="route-input" id="rb-current" style="margin-top:5px;"></select>
         </div>
         <div style="margin-bottom:14px;">
-            <div class="route-label">Ich möchte nach</div>
-            <div class="autocomplete-wrap">
-                <input class="autocomplete-input" id="rb-to-input" type="text" placeholder="Zielstation…" autocomplete="off"
-                    oninput="rbAcSearch('to',this.value)" onfocus="rbAcSearch('to',this.value)">
-                <div class="autocomplete-list" id="rb-ac-to"></div>
-            </div>
+            <div class="route-label">Ziel</div>
+            <select class="route-input" id="rb-dest" style="margin-top:5px;"></select>
         </div>
         <button class="route-go-btn" onclick="rbStart()">Reisebegleiter starten</button>
     </div>
@@ -727,14 +730,14 @@
     </div>
     <div class="setting-group">
         <h2>Benachrichtigungen</h2>
-        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Verspätungen (S11)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" id="ntog-delay-s11" onclick="toggleNotif('delay-s11',this)"></div></div>
-        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Verspätungen (L14)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" id="ntog-delay-l14" onclick="toggleNotif('delay-l14',this)"></div></div>
-        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Angebote &amp; Aktionen</div><p>Junior-Specials und Rabatte</p></div><div class="toggle on" id="ntog-offers" onclick="toggleNotif('offers',this)"></div></div>
-        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Ticket läuft ab</div><p>3 Tage vor Ablauf erinnern</p></div><div class="toggle on" id="ntog-expiry" onclick="toggleNotif('expiry',this)"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Verspätungen (S11)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Verspätungen (L14)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Angebote &amp; Aktionen</div><p>Junior-Specials und Rabatte</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Ticket läuft ab</div><p>3 Tage vor Ablauf erinnern</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
     </div>
     <div class="setting-group">
         <h2>App-Info</h2>
-        <div class="setting-row"><div><div style="font-weight:bold;">Version</div></div><span class="val">9.0.0 (Firebase)</span></div>
+        <div class="setting-row"><div><div style="font-weight:bold;">Version</div></div><span class="val">8.0.0 (Firebase)</span></div>
         <div class="setting-row" onclick="doLogout()" style="border-left:2px solid var(--premium);">
             <div><div style="font-weight:bold;color:var(--premium);">Abmelden</div><p>Session beenden</p></div>
             <span class="arrow" style="color:var(--premium);">›</span>
@@ -892,59 +895,38 @@ const HOME_STATIONS = [
     { id:'Oktratal',            label:'Oktratal',            sub:'L17 · Vorort-Endstation' },
 ];
 
-// ====== DYNAMIC FIS BUILDER ======
-// Gleise per Station+Linie+Richtung (hardcoded, da physisch fix)
-const STATION_GLEIS = {
-    'Güntringen Hbf': { 'S11_Villotal':'11', 'S11_Lixen':'12', '17_Oktratal':'7' },
-    'Altgün Dreieck': { 'S11_Villotal':'11', 'S11_Lixen':'12', '14_Sonnenstadt':'2', '14_Falkenberg':'3', '15_Westende':'4', '15_AltgünD':'18', '16_Hügelbezirk':'5' },
-    'Güntratal Süd':  { 'S11_Villotal':'1',  'S11_Lixen':'2',  '14_Sonnenstadt':'3', '15_Westende':'4' },
-    'Lixen':          { 'S11_Villotal':'1' },
-    'Villotal Hbf':   { 'S11_Lixen':'1' },
-    'Villotal Süd':   { 'S11_Villotal':'1',  'S11_Lixen':'2' },
-    'Falkenberg':     { '14_Sonnenstadt':'1','15_Westende':'2' },
-    'Sonnenstadt':    { '14_Falkenberg':'1' },
-};
-
-// Bus lines that are NOT derived from SCHEDULES (no offset system)
-const BUS_FIS = {
-    'Altgün Dreieck': [
-        { id:'Bus 11', dest:'Rundlauf',          col:'#7a4a00', m:[10,25,40,55] },
-        { id:'Bus 12', dest:'Technopolis',       col:'#004d4d', m:[12,42] },
-        { id:'Bus 12', dest:'Regierungsviertel', col:'#004d4d', m:[12,42] },
+const STATION_FIS = {
+    'Güntringen Hbf': [
+        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[4,34], gleis:'11', delay:true, delayMin:6 },
+        { id:'S11', dest:'Lixen',        col:'#c0392b', m:[19,49], gleis:'12' },
+        { id:'17',  dest:'Oktratal',     col:'#7b3fa0', m:[3,18,33,48], gleis:'7' },
     ],
+    'Altgün Dreieck': [
+        { id:'S11', dest:'Villotal Hbf',    col:'#c0392b', m:[10,40], gleis:'11', delay:true, delayMin:6 },
+        { id:'S11', dest:'Lixen',           col:'#c0392b', m:[25,55], gleis:'12' },
+        { id:'14',  dest:'Sonnenstadt',     col:'#003f8a', m:[0,10,20,30,40,50], gleis:'2' },
+        { id:'14',  dest:'Falkenberg',      col:'#003f8a', m:[5,15,25,35,45,55], gleis:'3' },
+        { id:'15',  dest:'Westende',        col:'#6b1e1e', m:[1,9,11,19,21,29,31,39,41,49,51,59], gleis:'4' },
+        { id:'16',  dest:'Hügelbezirk Süd', col:'#174f17', m:[2,8,12,18,22,28,32,38,42,48,52,58], gleis:'5' },
+    ],
+    'Güntratal Süd': [
+        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[18,48], gleis:'1', delay:true, delayMin:6 },
+        { id:'S11', dest:'Lixen',        col:'#c0392b', m:[11,41], gleis:'2' },
+        { id:'14',  dest:'Sonnenstadt',  col:'#003f8a', m:[10,20,30,40,50,0], gleis:'3' },
+        { id:'15',  dest:'Altgün Dreieck', col:'#6b1e1e', m:[9,19,29,39,49,59], gleis:'4' },
+    ],
+    'Lixen':       [{ id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[4,34], gleis:'1' }],
+    'Villotal Hbf':[{ id:'S11', dest:'Lixen', col:'#c0392b', m:[19,49], gleis:'1' }],
+    'Villotal Süd':[
+        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[13,43], gleis:'1' },
+        { id:'S11', dest:'Lixen',        col:'#c0392b', m:[28,58], gleis:'2' },
+    ],
+    'Falkenberg':  [
+        { id:'14', dest:'Sonnenstadt', col:'#003f8a', m:[0,10,20,30,40,50], gleis:'1' },
+        { id:'15', dest:'Altgün Dreieck', col:'#6b1e1e', m:[1,11,21,31,41,51], gleis:'2' },
+    ],
+    'Sonnenstadt': [{ id:'14', dest:'Falkenberg', col:'#003f8a', m:[0,10,20,30,40,50], gleis:'1' }],
 };
-
-// Build FIS entries dynamically from SCHEDULES for a given station
-function buildFIS(stationName) {
-    const entries = [];
-    const lineColors = { 'S11':'#c0392b', 14:'#003f8a', 15:'#6b1e1e', 16:'#174f17', 17:'#7b3fa0' };
-    const gleisMap = STATION_GLEIS[stationName] || {};
-
-    for (const [lineKey, sched] of Object.entries(SCHEDULES)) {
-        for (const dir of sched.directions) {
-            // Find this station in this direction
-            const stIdx = dir.stations.findIndex(s => s.name === stationName);
-            if (stIdx < 0) continue;
-            // Only show if there are stops after this station (i.e. not the terminus for this direction)
-            const stopsAfter = dir.stations.slice(stIdx + 1).filter(s => !s.skip);
-            if (stopsAfter.length === 0) continue;
-
-            const offset = dir.stations[stIdx].offset;
-            const dest = dir.stations[dir.stations.length - 1].name;
-            const col = lineColors[lineKey] || '#555';
-            // Departures at this station = (baseDep + offset) % 60 for each base departure
-            const depMins = sched.departures.map(d => (d + offset) % 60).sort((a,b)=>a-b);
-            const gleisKey = `${lineKey}_${dir.stopKey.split('_')[1]}`;
-            const gleis = gleisMap[dir.stopKey] || gleisMap[gleisKey] || null;
-            entries.push({ id: String(lineKey), dest, col, m: depMins, gleis, stopKey: dir.stopKey });
-        }
-    }
-
-    // Add bus lines if defined for this station
-    (BUS_FIS[stationName] || []).forEach(b => entries.push({ ...b, stopKey: null }));
-
-    return entries;
-}
 
 const ALL_STATIONS = [
     'Falkenberg','Neuer Ring','Regierungsviertel','Altgüner Vorstadt','Altgün Mitte',
@@ -1157,40 +1139,6 @@ const TARIFE = {
     ]
 };
 
-const LINE_GRAPH = {
-    'Lixen':             {'Güntratal Süd':{line:'S11',color:'#c0392b',mins:8}},
-    'Güntratal Süd':     {'Lixen':{line:'S11',color:'#c0392b',mins:8},'Altgün Dreieck':{line:'S11',color:'#c0392b',mins:10}},
-    'Altgün Dreieck':    {'Güntratal Süd':{line:'S11',color:'#c0392b',mins:10},'Güntringen Hbf':{line:'S11',color:'#c0392b',mins:6},'Altgün Mitte':{line:14,color:'#003f8a',mins:2},'Seenring':{line:14,color:'#003f8a',mins:2},'Altgün-Center':{line:15,color:'#6b1e1e',mins:2},'Krakingerallee':{line:16,color:'#174f17',mins:4}},
-    'Güntringen Hbf':    {'Altgün Dreieck':{line:'S11',color:'#c0392b',mins:6},'Villotal Süd':{line:'S11',color:'#c0392b',mins:11},'Südstern':{line:17,color:'#7b3fa0',mins:4}},
-    'Villotal Süd':      {'Güntringen Hbf':{line:'S11',color:'#c0392b',mins:11},'Villotal Hbf':{line:'S11',color:'#c0392b',mins:9}},
-    'Villotal Hbf':      {'Villotal Süd':{line:'S11',color:'#c0392b',mins:9}},
-    'Falkenberg':        {'Neuer Ring':{line:14,color:'#003f8a',mins:2}},
-    'Neuer Ring':        {'Falkenberg':{line:14,color:'#003f8a',mins:2},'Regierungsviertel':{line:14,color:'#003f8a',mins:2}},
-    'Regierungsviertel': {'Neuer Ring':{line:14,color:'#003f8a',mins:2},'Altgüner Vorstadt':{line:14,color:'#003f8a',mins:2},'Falkenberger Allee':{line:15,color:'#6b1e1e',mins:2}},
-    'Altgüner Vorstadt': {'Regierungsviertel':{line:14,color:'#003f8a',mins:2},'Altgün Mitte':{line:14,color:'#003f8a',mins:2},'Sâscha-Okto-Ring':{line:15,color:'#6b1e1e',mins:2}},
-    'Altgün Mitte':      {'Altgüner Vorstadt':{line:14,color:'#003f8a',mins:2},'Altgün Dreieck':{line:14,color:'#003f8a',mins:2}},
-    'Seenring':          {'Altgün Dreieck':{line:14,color:'#003f8a',mins:2},'Sonnenwald':{line:14,color:'#003f8a',mins:2}},
-    'Sonnenwald':        {'Seenring':{line:14,color:'#003f8a',mins:2},'Technopolis':{line:14,color:'#003f8a',mins:2}},
-    'Technopolis':       {'Sonnenwald':{line:14,color:'#003f8a',mins:2},'Sonnenstadt':{line:14,color:'#003f8a',mins:2},'Südtor':{line:17,color:'#7b3fa0',mins:5},'Oktratal':{line:17,color:'#7b3fa0',mins:6}},
-    'Sonnenstadt':       {'Technopolis':{line:14,color:'#003f8a',mins:2}},
-    'Westende':          {'ZOB Flussbezirk':{line:15,color:'#6b1e1e',mins:2}},
-    'ZOB Flussbezirk':   {'Westende':{line:15,color:'#6b1e1e',mins:2},'Falkenberger Allee':{line:15,color:'#6b1e1e',mins:2}},
-    'Falkenberger Allee':{'ZOB Flussbezirk':{line:15,color:'#6b1e1e',mins:2},'Regierungsviertel':{line:15,color:'#6b1e1e',mins:2}},
-    'Sâscha-Okto-Ring':  {'Altgüner Vorstadt':{line:15,color:'#6b1e1e',mins:2},'Vûlfja-Hüpel-Allee':{line:15,color:'#6b1e1e',mins:2}},
-    'Vûlfja-Hüpel-Allee':{'Sâscha-Okto-Ring':{line:15,color:'#6b1e1e',mins:2},'Altgün-Markt':{line:15,color:'#6b1e1e',mins:2}},
-    'Altgün-Markt':      {'Vûlfja-Hüpel-Allee':{line:15,color:'#6b1e1e',mins:2},'Altgün-Center':{line:15,color:'#6b1e1e',mins:2}},
-    'Altgün-Center':     {'Altgün-Markt':{line:15,color:'#6b1e1e',mins:2},'Altgün Dreieck':{line:15,color:'#6b1e1e',mins:2}},
-    'Krakingerallee':    {'Altgün Dreieck':{line:16,color:'#174f17',mins:4},'Burg':{line:16,color:'#174f17',mins:2}},
-    'Burg':              {'Krakingerallee':{line:16,color:'#174f17',mins:2},'Vélicherring':{line:16,color:'#174f17',mins:2}},
-    'Vélicherring':      {'Burg':{line:16,color:'#174f17',mins:2},'Osttal':{line:16,color:'#174f17',mins:2}},
-    'Osttal':            {'Vélicherring':{line:16,color:'#174f17',mins:2},'Villenviertel':{line:16,color:'#174f17',mins:2}},
-    'Villenviertel':     {'Osttal':{line:16,color:'#174f17',mins:2},'Hügelbezirk Süd':{line:16,color:'#174f17',mins:4}},
-    'Hügelbezirk Süd':   {'Villenviertel':{line:16,color:'#174f17',mins:2}},
-    'Südstern':          {'Güntringen Hbf':{line:17,color:'#7b3fa0',mins:4},'Südtor':{line:17,color:'#7b3fa0',mins:3}},
-    'Südtor':            {'Südstern':{line:17,color:'#7b3fa0',mins:3},'Technopolis':{line:17,color:'#7b3fa0',mins:5}},
-    'Oktratal':          {'Technopolis':{line:17,color:'#7b3fa0',mins:6}},
-};
-
 // ====== AUTH – LOGIN / REGISTER ======
 let loginMode = 'login';
 function switchLoginTab(mode) {
@@ -1267,9 +1215,6 @@ window._onLogin = async function(user) {
         if (userData.balance==null) userData.balance = 0;
         if (!userData.homeStation)  userData.homeStation = 'Güntringen Hbf';
         renderUserUI(user, userData);
-        applySettingsUI(userData.settings || {});
-        // Restore theme from Firebase (overrides localStorage)
-        if (userData.settings?.theme) { currentTheme = userData.settings.theme; localStorage.setItem('guen_theme', currentTheme); applyTheme(currentTheme); }
     });
 
     if (unsubDelays) unsubDelays();
@@ -1314,9 +1259,6 @@ function renderUserUI(user, data) {
     document.getElementById('fis-station-label').textContent    = data.homeStation||'Güntringen Hbf';
     document.getElementById('route-from-input').value           = data.homeStation||'Güntringen Hbf';
     routeFromVal = data.homeStation||'Güntringen Hbf';
-    // Pre-fill Reisebegleiter start
-    document.getElementById('rb-from-input').value = data.homeStation||'Güntringen Hbf';
-    rbFromVal = data.homeStation||'Güntringen Hbf';
 
     const qrData = `GVB-${uid4}-${initials}`;
     document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
@@ -1353,9 +1295,16 @@ function openHomeStationModal() {
     document.getElementById('home-station-modal').style.display='flex';
 }
 async function selectHomeStation(id) {
-    await dbUpdate(`users/${uid()}`,{homeStation:id});
-    closeModal('home-station-modal');
-    showToast(`📍 Heimatbahnhof: ${id}`);
+    if (!uid()) return;
+    try {
+        await dbUpdate(`users/${uid()}`,{homeStation:id});
+        // Update FIS immediately without waiting for onValue round-trip
+        document.getElementById('setting-home-station').textContent = id;
+        document.getElementById('fis-station-label').textContent    = id;
+        updateFIS(id);
+        closeModal('home-station-modal');
+        showToast(`📍 Heimatbahnhof: ${id}`);
+    } catch(e) { showToast('Fehler: '+e.message,'error'); }
 }
 
 // ====== NAME EDIT ======
@@ -1380,10 +1329,13 @@ async function saveName() {
 // ====== RECHARGE ======
 function openRechargeModal() { document.getElementById('recharge-modal').style.display='flex'; }
 async function recharge(amount) {
-    const newBalance=(userData?.balance||0)+amount;
-    await dbUpdate(`users/${uid()}`,{balance:newBalance});
-    closeModal('recharge-modal');
-    showToast(`✓ ${amount.toFixed(2)} VIL aufgeladen!`);
+    if (!uid()) return;
+    const newBalance = Math.round(((userData?.balance||0) + amount)*100)/100;
+    try {
+        await dbUpdate(`users/${uid()}`,{balance:newBalance});
+        closeModal('recharge-modal');
+        showToast(`✓ ${amount.toFixed(2)} VIL aufgeladen!`);
+    } catch(e) { showToast('Fehler: '+e.message,'error'); }
 }
 
 // ====== DELAY ADMIN ======
@@ -1429,7 +1381,7 @@ function applyTheme(theme) {
     document.querySelectorAll('.tp-btn').forEach(b=>b.classList.remove('active'));
     const el = document.getElementById(`tp-${theme}`); if(el) el.classList.add('active');
 }
-function setTheme(t) { currentTheme=t; localStorage.setItem('guen_theme',t); applyTheme(t); if(uid()) dbUpdate(`users/${uid()}/settings`,{theme:t}); }
+function setTheme(t) { currentTheme=t; localStorage.setItem('guen_theme',t); applyTheme(t); }
 function cycleTheme() { const o=['dark','light','system']; setTheme(o[(o.indexOf(currentTheme)+1)%o.length]); }
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if(currentTheme==='system') applyTheme('system'); });
 applyTheme(currentTheme);
@@ -1437,7 +1389,7 @@ applyTheme(currentTheme);
 // ====== FIS with live countdown + Firebase delays ======
 function updateFIS(stationId) {
     const sid = stationId || userData?.homeStation || 'Güntringen Hbf';
-    const fisData = buildFIS(sid);
+    const fisData = STATION_FIS[sid] || STATION_FIS['Güntringen Hbf'];
     const now = new Date();
     const nowM = now.getMinutes(), nowH = now.getHours(), nowSec = now.getSeconds();
     let html = '';
@@ -1456,14 +1408,18 @@ function updateFIS(stationId) {
         const totalSec = diff*60 - nowSec;
         const cdMin=Math.floor(totalSec/60), cdSec=Math.max(0,totalSec%60);
         const cdStr = diff===0?'🚉 Jetzt':`${cdMin}:${String(cdSec).padStart(2,'0')} min`;
-        const stopKey = l.stopKey || '';
-        const gleisText = l.gleis ? `Gleis ${l.gleis} · ` : '';
+        const isS11=l.id==='S11';
+        const stopKey=isS11?(l.dest.includes('Villotal')?'S11_Villotal':'S11_Lixen')
+                     :l.id==='14'?(l.dest==='Sonnenstadt'?'14_Sonnenstadt':'14_Falkenberg')
+                     :l.id==='15'?'15_Westende'
+                     :l.id==='17'?(l.dest==='Oktratal'?'17_Oktratal':'17_Hbf')
+                     :'16_Hügelbezirk';
         html+=`
-            <div class="fis-row" ${stopKey?`onclick="openTripDrawer('${l.id}','${l.dest}','${l.col}','${stopKey}',${delayMins},${nextHH},${nextMM})"`:''}>
-                <div class="line-badge" style="background:${l.col};font-size:${l.id.length>3?'9px':'11px'}">${l.id}</div>
+            <div class="fis-row" onclick="openTripDrawer('${l.id}','${l.dest}','${l.col}','${stopKey}',${delayMins},${nextHH},${nextMM})">
+                <div class="line-badge" style="background:${l.col}">${l.id}</div>
                 <div>
                     <div style="font-weight:bold;font-size:13px;">Richtung ${l.dest}</div>
-                    <div style="font-size:10px;color:var(--text-dim);">${gleisText}${nextTime} / ${n2Time}</div>
+                    <div style="font-size:10px;color:var(--text-dim);">Gleis ${l.gleis} · ${nextTime} / ${n2Time}</div>
                     ${delayMins>0?`<span class="delay-tag">+${delayMins} Min. Verspätung · nächster Zug</span>`:''}
                 </div>
                 <div class="eta-col">
@@ -1712,12 +1668,18 @@ function calcRoute() {
         '17_Hbf':         LINE_FULL_STOPS['17_Hbf'],
     };
 
-    function getStopKey(lineId, toStn) {
-        if(lineId==='S11') return toStn.includes('Villotal')||toStn==='Güntringen Hbf'||toStn==='Villotal Süd'?'S11_Villotal':'S11_Lixen';
-        if(lineId==14||lineId==='14') return (toStn==='Sonnenstadt'||toStn==='Seenring'||toStn==='Technopolis'||toStn==='Sonnenwald')?'14_Sonnenstadt':'14_Falkenberg';
-        if(lineId==15||lineId==='15') return '15_Westende';
-        if(lineId==16||lineId==='16') return '16_Hügelbezirk';
-        if(lineId==17||lineId==='17') return toStn==='Oktratal'?'17_Oktratal':'17_Hbf';
+    function getStopKey(lineId, fromStn, toStn) {
+        const lid = String(lineId);
+        const lineKey = lid==='S11'?'S11':lid;
+        const stops = RB_LINE_STOPS[lineKey] || [];
+        const fi = stops.indexOf(fromStn), ti = stops.indexOf(toStn);
+        const forward = ti >= fi;
+        if (lid === 'S11') return forward ? 'S11_Villotal' : 'S11_Lixen';
+        if (lid === '14')  return forward ? '14_Sonnenstadt' : '14_Falkenberg';
+        // L15, L16, L17: only one full-stops entry; use it in either direction
+        if (lid === '15')  return '15_Westende';
+        if (lid === '16')  return '16_Hügelbezirk';
+        if (lid === '17')  return forward ? '17_Oktratal' : '17_Hbf';
         return null;
     }
 
@@ -1729,30 +1691,31 @@ function calcRoute() {
         const legArrStr = `${String(Math.floor(legArrMins/60)%24).padStart(2,'0')}:${String(legArrMins%60).padStart(2,'0')}`;
         const legDepH = Math.floor(legDepMins/60)%24, legDepM = legDepMins%60;
 
-        // Get intermediate stops for this leg
-        const sk = getStopKey(leg.line, leg.to);
+        // Get stops for this leg in correct travel order
+        const sk = getStopKey(leg.line, leg.from, leg.to);
         const fullStops = sk ? (LINE_STOP_DATA[sk]||[]) : [];
-        // Find start/end indices
         const fromIdx = fullStops.findIndex(s=>s.name===leg.from);
         const toIdx   = fullStops.findIndex(s=>s.name===leg.to);
-        const legStops = fromIdx>=0&&toIdx>=0&&toIdx>fromIdx ? fullStops.slice(fromIdx,toIdx+1)
-                       : fromIdx>=0&&toIdx>=0&&toIdx<fromIdx ? fullStops.slice(toIdx,fromIdx+1).reverse()
-                       : [{name:leg.from,gleis:'–',transfer:null},{name:leg.to,gleis:'–',transfer:null}];
+        let legStops;
+        if (fromIdx>=0 && toIdx>=0) {
+            if (toIdx > fromIdx) legStops = fullStops.slice(fromIdx, toIdx+1);
+            else legStops = fullStops.slice(toIdx, fromIdx+1).reverse();
+        } else {
+            legStops = [{name:leg.from,gleis:'–',transfer:null},{name:leg.to,gleis:'–',transfer:null}];
+        }
 
-        // Compute times per stop using schedule offsets
-        const sched = SCHEDULES[leg.line];
-        const dir = sched ? sched.directions.find(d=>{ const sk2=getStopKey(leg.line,leg.to); return d.stopKey===sk2; }) : null;
-        const offsets = {};
-        if(dir) dir.stations.forEach(s=>offsets[s.name]=s.offset);
-        const baseOffset = offsets[leg.from]||0;
+        // Compute stop times using LINE_META absolute offsets; Math.abs handles reverse direction
+        const metaOffsets = LINE_META[String(leg.line)==='S11'?'S11':String(leg.line)]?.stopMins || {};
+        const firstMetaOff = metaOffsets[legStops[0]?.name] ?? 0;
 
         // Build stop timeline
         let stopRows='';
         legStops.forEach((s,idx)=>{
             const isFirst=idx===0, isLast=idx===legStops.length-1;
-            const relOff = (offsets[s.name]||0) - baseOffset;
-            const absM = (legDepMins + relOff + 60*24)%(60*24);
-            const timeStr = `${String(Math.floor(absM/60)%24).padStart(2,'0')}:${String(absM%60).padStart(2,'0')}`;
+            const sOff = metaOffsets[s.name] ?? 0;
+            const elapsed = Math.abs(sOff - firstMetaOff);
+            const absM = (legDepMins + elapsed) % (60*24);
+            const timeStr = `${String(Math.floor(absM/60)).padStart(2,'0')}:${String(absM%60).padStart(2,'0')}`;
             stopRows+=`
             <div style="display:flex;gap:12px;position:relative;">
                 <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:26px;position:relative;z-index:1;">
@@ -1861,7 +1824,7 @@ function renderJourneyHistory() {
         const raw=snap.val();
         if(!raw){ el.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Noch keine Fahrten aufgezeichnet.</div>'; return; }
         const entries=Object.values(raw).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,10);
-        const lineColors={'S11':'#c0392b','14':'#003f8a','15':'#6b1e1e','16':'#174f17'};
+        const lineColors={'S11':'#c0392b','14':'#003f8a','15':'#6b1e1e','16':'#174f17','17':'#7b3fa0'};
         el.innerHTML=entries.map(j=>`
             <div class="journey-item">
                 <div class="ji-line" style="background:${lineColors[String(j.line)]||'#555'}">${j.line}</div>
@@ -1942,15 +1905,22 @@ function openBuyModal(id,name,price) {
     document.getElementById('buy-modal').style.display = 'flex';
 }
 document.getElementById('confirm-buy').onclick = async () => {
-    if (!activePending) return;
+    if (!activePending||!uid()) return;
     const bal = userData?.balance||0;
     if (bal < activePending.price) { showToast('Nicht genügend VIL!','error'); closeModal('buy-modal'); return; }
-    const newBal = bal - activePending.price;
-    const tickets = userData.tickets ? {...userData.tickets} : {};
-    tickets[activePending.id] = { name:activePending.name, date:new Date().toLocaleDateString('de-DE') };
-    await dbUpdate(`users/${uid()}`,{balance:newBal, tickets});
-    closeModal('buy-modal');
-    showToast('✓ Kauf erfolgreich!');
+    const newBal = Math.round((bal - activePending.price)*100)/100;
+    const ticketData = { name:activePending.name, date:new Date().toLocaleDateString('de-DE'), price:activePending.price };
+    try {
+        const {db,ref,update} = fb();
+        await update(ref(db,`users/${uid()}`), {
+            balance: newBal,
+            [`tickets/${activePending.id}`]: ticketData
+        });
+        closeModal('buy-modal');
+        showToast('✓ Kauf erfolgreich!');
+    } catch(e) {
+        showToast('Fehler: '+e.message,'error');
+    }
 };
 
 // ====== WALLET TICKETS ======
@@ -1992,297 +1962,145 @@ function showView(id,el) {
 }
 
 
-// ====== REISEBEGLEITER – Linienstopps (für Segmentauflösung) ======
+// ====== REISEBEGLEITER ======
 const RB_LINE_STOPS = {
-    'S11': ['Lixen','Güntratal Süd','Altgün Dreieck','Güntringen Hbf','Villotal Süd','Villotal Hbf'],
-    '14':  ['Falkenberg','Neuer Ring','Regierungsviertel','Altgüner Vorstadt','Altgün Mitte','Altgün Dreieck','Seenring','Sonnenwald','Technopolis','Sonnenstadt'],
-    '15':  ['Altgün Dreieck','Altgün-Center','Altgün-Markt','Vûlfja-Hüpel-Allee','Sâscha-Okto-Ring','Altgüner Vorstadt','Regierungsviertel','Falkenberger Allee','ZOB Flussbezirk','Westende'],
-    '16':  ['Altgün Dreieck','Krakingerallee','Burg','Vélicherring','Osttal','Villenviertel','Hügelbezirk Süd'],
-    '17':  ['Güntringen Hbf','Südstern','Südtor','Technopolis','Oktratal'],
+    'S11':  ['Lixen','Güntratal Süd','Altgün Dreieck','Güntringen Hbf','Villotal Süd','Villotal Hbf'],
+    '14':   ['Falkenberg','Neuer Ring','Regierungsviertel','Altgüner Vorstadt','Altgün Mitte','Altgün Dreieck','Seenring','Sonnenwald','Technopolis','Sonnenstadt'],
+    '15':   ['Altgün Dreieck','Altgün-Center','Altgün-Markt','Vûlfja-Hüpel-Allee','Sâscha-Okto-Ring','Altgüner Vorstadt','Regierungsviertel','Falkenberger Allee','ZOB Flussbezirk','Westende'],
+    '16':   ['Altgün Dreieck','Krakingerallee','Burg','Vélicherring','Osttal','Villenviertel','Hügelbezirk Süd'],
+    '17':   ['Güntringen Hbf','Südstern','Südtor','Technopolis','Oktratal'],
+};
+const RB_TRANSFERS = {
+    'Altgün Dreieck': ['S11','14','15','16'],
+    'Güntratal Süd':  ['S11','14','15'],
+    'Güntringen Hbf': ['S11','17'],
+    'Altgüner Vorstadt': ['14','15'],
+    'Regierungsviertel': ['14','15'],
+    'Falkenberg': ['14','15'],
+    'Technopolis': ['14','17'],
 };
 
-// ====== SETTINGS PERSISTENCE ======
-async function toggleNotif(key, el) {
-    el.classList.toggle('on');
-    const val = el.classList.contains('on');
-    if (uid()) {
-        await dbUpdate(`users/${uid()}/settings`, { ['notif_'+key]: val });
+// ====== LINE_GRAPH – automatisch bidirektional aus RB_LINE_STOPS ======
+const LINE_META = {
+    'S11': { color:'#c0392b', stopMins:{ 'Lixen':0,'Güntratal Süd':8,'Altgün Dreieck':18,'Güntringen Hbf':24,'Villotal Süd':35,'Villotal Hbf':44 } },
+    '14':  { color:'#003f8a', stopMins:{ 'Falkenberg':0,'Neuer Ring':2,'Regierungsviertel':4,'Altgüner Vorstadt':6,'Altgün Mitte':8,'Altgün Dreieck':10,'Seenring':12,'Sonnenwald':14,'Technopolis':16,'Sonnenstadt':18 } },
+    '15':  { color:'#6b1e1e', stopMins:{ 'Altgün Dreieck':0,'Altgün-Center':2,'Altgün-Markt':4,'Vûlfja-Hüpel-Allee':6,'Sâscha-Okto-Ring':8,'Altgüner Vorstadt':10,'Regierungsviertel':12,'Falkenberger Allee':14,'ZOB Flussbezirk':16,'Westende':18 } },
+    '16':  { color:'#174f17', stopMins:{ 'Altgün Dreieck':0,'Krakingerallee':4,'Burg':6,'Vélicherring':8,'Osttal':10,'Villenviertel':12,'Hügelbezirk Süd':16 } },
+    '17':  { color:'#7b3fa0', stopMins:{ 'Güntringen Hbf':0,'Südstern':4,'Südtor':7,'Technopolis':12,'Oktratal':18 } },
+};
+function buildGraph() {
+    const G = {};
+    function addEdge(a, b, line, color, mins) {
+        if (!G[a]) G[a] = {};
+        if (!G[b]) G[b] = {};
+        if (!G[a][b] || G[a][b].mins > mins) G[a][b] = {line, color, mins};
+        if (!G[b][a] || G[b][a].mins > mins) G[b][a] = {line, color, mins};
     }
+    for (const [lineId, meta] of Object.entries(LINE_META)) {
+        const stops = RB_LINE_STOPS[lineId];
+        const offsets = meta.stopMins;
+        for (let i = 0; i < stops.length - 1; i++) {
+            const a = stops[i], b = stops[i+1];
+            const mins = Math.abs((offsets[b]||0) - (offsets[a]||0)) || 2;
+            addEdge(a, b, lineId==='S11'?'S11':Number(lineId), meta.color, mins);
+        }
+    }
+    return G;
 }
-function applySettingsUI(settings) {
-    const keys = ['delay-s11','delay-l14','offers','expiry'];
-    keys.forEach(k => {
-        const el = document.getElementById('ntog-'+k);
-        if (!el) return;
-        const val = settings?.['notif_'+k];
-        // default is on if undefined
-        el.classList.toggle('on', val !== false);
-        // Remove existing onclick to avoid double-binding, keep the HTML one
-    });
-}
+const LINE_GRAPH = buildGraph();
 
-
-// ====== REISEBEGLEITER (cross-line) ======
 let rbState = null;
-let rbFromVal = '', rbToVal = '';
 
-function rbAcSearch(field, q) {
-    const listId = field==='from' ? 'rb-ac-from' : 'rb-ac-to';
-    const list = document.getElementById(listId);
-    if (!q || q.length < 1) { list.classList.remove('open'); return; }
-    const matches = ALL_STATIONS.filter(s => s.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
-    if (!matches.length) { list.classList.remove('open'); return; }
-    list.innerHTML = matches.map(s => {
-        const hl = s.replace(new RegExp(q,'gi'), m=>`<mark>${m}</mark>`);
-        return `<div class="ac-item" onclick="rbAcSelect('${field}','${s}')">${hl}</div>`;
-    }).join('');
-    list.classList.add('open');
-}
-function rbAcSelect(field, value) {
-    if (field==='from') {
-        rbFromVal = value;
-        document.getElementById('rb-from-input').value = value;
-        document.getElementById('rb-ac-from').classList.remove('open');
-    } else {
-        rbToVal = value;
-        document.getElementById('rb-to-input').value = value;
-        document.getElementById('rb-ac-to').classList.remove('open');
-    }
-}
-
-// Build flat stop list from Dijkstra path, resolving intermediate stops per segment
-function buildRbRoute(from, to) {
-    const result = dijkstra(from, to);
-    if (!result) return null;
-    const { path } = result;
-    // Build segments: group consecutive same-line hops
-    const segments = [];
-    let i = 1;
-    while (i < path.length) {
-        const segLine = String(path[i].line);
-        const segStart = path[i-1].station;
-        // collect all stops on this line until line changes
-        let segEnd = path[i].station;
-        let j = i+1;
-        while (j < path.length && String(path[j].line) === segLine) {
-            segEnd = path[j].station;
-            j++;
-        }
-        // Find the full stop sequence for this segment from RB_LINE_STOPS
-        const rbKey = Object.keys(RB_LINE_STOPS).find(k => String(k) === segLine);
-        let fullStops;
-        if (rbKey) {
-            const allS = RB_LINE_STOPS[rbKey];
-            const fromIdx = allS.indexOf(segStart);
-            const toIdx = allS.indexOf(segEnd);
-            if (fromIdx >= 0 && toIdx >= 0) {
-                fullStops = fromIdx < toIdx ? allS.slice(fromIdx, toIdx+1) : allS.slice(toIdx, fromIdx+1).reverse();
-            }
-        }
-        if (!fullStops) fullStops = [segStart, segEnd];
-        segments.push({ line: segLine, stops: fullStops });
-        i = j;
-    }
-    return segments;
+function rbUpdateStations() {
+    const line = document.getElementById('rb-line').value;
+    const stops = RB_LINE_STOPS[line] || [];
+    const makeOpts = (id, placeholder) => {
+        document.getElementById(id).innerHTML = `<option value="">– wählen –</option>` +
+            stops.map(s=>`<option value="${s}">${s}</option>`).join('');
+    };
+    makeOpts('rb-current');
+    makeOpts('rb-dest');
 }
 
 function rbStart() {
-    const from = rbFromVal || document.getElementById('rb-from-input').value.trim();
-    const to   = rbToVal   || document.getElementById('rb-to-input').value.trim();
-    if (!from || !to) { showToast('Bitte Start und Ziel wählen','warn'); return; }
-    if (from === to)  { showToast('Start = Ziel!','warn'); return; }
-    const segments = buildRbRoute(from, to);
-    if (!segments) { showToast('Keine Verbindung gefunden','warn'); return; }
-    // Flatten into a single stops list with segment markers
-    const flatStops = [];
-    segments.forEach((seg, si) => {
-        seg.stops.forEach((stop, idx) => {
-            if (si > 0 && idx === 0) return;
-            flatStops.push({ name: stop, line: seg.line, segIdx: si });
-        });
-    });
-
-    // Calculate departure time from start using SCHEDULES
-    const startTime = rbCalcDeparture(from, String(segments[0].line));
-    rbState = { segments, flatStops, currentIdx: 0, from, to, startTime };
-    document.getElementById('rb-guidance').style.display = 'block';
-    document.getElementById('rb-setup').style.display = 'none';
-
-    if (rbIntervalId) clearInterval(rbIntervalId);
-    rbIntervalId = setInterval(rbRender, 1000);
+    const line = document.getElementById('rb-line').value;
+    const current = document.getElementById('rb-current').value;
+    const dest = document.getElementById('rb-dest').value;
+    if(!line||!current||!dest) { showToast('Bitte alle Felder ausfüllen','warn'); return; }
+    if(current===dest) { showToast('Start = Ziel!','warn'); return; }
+    const stops = RB_LINE_STOPS[line];
+    const fromIdx = stops.indexOf(current);
+    const toIdx = stops.indexOf(dest);
+    if(fromIdx<0||toIdx<0) { showToast('Ungültige Strecke','warn'); return; }
+    const forward = toIdx > fromIdx;
+    const routeStops = forward ? stops.slice(fromIdx, toIdx+1) : stops.slice(toIdx, fromIdx+1).reverse();
+    rbState = { line, routeStops, currentIdx: 0 };
+    document.getElementById('rb-guidance').style.display='block';
+    document.getElementById('rb-setup').style.display='none';
     rbRender();
 }
 
-// Returns absolute minutes (from midnight) of the next departure for a line at a station
-function rbCalcDeparture(stationName, lineKey) {
-    const sched = SCHEDULES[lineKey] || SCHEDULES[parseInt(lineKey)];
-    if (!sched) return null;
-    const now = new Date();
-    const nowAbs = now.getHours()*60 + now.getMinutes();
-    for (const dir of sched.directions) {
-        const stIdx = dir.stations.findIndex(s => s.name === stationName);
-        if (stIdx < 0) continue;
-        const stopsAfter = dir.stations.slice(stIdx+1).filter(s=>!s.skip);
-        if (stopsAfter.length === 0) continue;
-        const offset = dir.stations[stIdx].offset;
-        const depMins = sched.departures.map(d => (d + offset) % 60);
-        // find next departure >= now
-        let best = null;
-        for (const m of depMins) {
-            const abs = now.getHours()*60 + m;
-            const adjusted = abs < nowAbs ? abs + 60 : abs;
-            if (best === null || adjusted < best) best = adjusted;
-        }
-        return best; // absolute minutes
-    }
-    return nowAbs;
-}
-
-// Returns the scheduled arrival time at a stop given segment start time
-function rbStopTime(segLine, startStopName, targetStopName, departureAbsMin) {
-    const sched = SCHEDULES[segLine] || SCHEDULES[parseInt(segLine)];
-    if (!sched || departureAbsMin == null) return null;
-    for (const dir of sched.directions) {
-        const startIdx = dir.stations.findIndex(s => s.name === startStopName);
-        const targetIdx = dir.stations.findIndex(s => s.name === targetStopName);
-        if (startIdx < 0 || targetIdx < 0) continue;
-        const delta = dir.stations[targetIdx].offset - dir.stations[startIdx].offset;
-        return departureAbsMin + delta;
-    }
-    return departureAbsMin;
-}
-
 function rbRender() {
-    if (!rbState) return;
-    const { flatStops, currentIdx, segments } = rbState;
-    const isLast = currentIdx >= flatStops.length - 1;
-    const cur = flatStops[currentIdx];
-    const next = isLast ? null : flatStops[currentIdx + 1];
-    const remaining = flatStops.length - currentIdx - 1;
+    if(!rbState) return;
+    const { line, routeStops, currentIdx } = rbState;
+    const stops = routeStops;
+    const isLast = currentIdx >= stops.length - 1;
+    const currentStop = stops[currentIdx];
+    const nextStop = isLast ? null : stops[currentIdx + 1];
+    const remaining = stops.length - currentIdx - 1;
     const lineColors = {'S11':'#c0392b','14':'#003f8a','15':'#8b2020','16':'#174f17','17':'#7b3fa0'};
-    const col = lineColors[cur.line] || '#555';
-    const isNextTransfer = next && (next.segIdx > cur.segIdx);
+    const col = lineColors[line] || '#555';
 
-    // Compute arrival time at next stop
-    let nextTimeStr = '';
-    if (next) {
-        const seg = segments[next.segIdx];
-        const segFirstStop = seg.stops[0];
-        // departure time at start of this segment
-        let segDepAbs = rbState.startTime;
-        // for transfers, recalc departure from transfer station
-        if (next.segIdx > 0) {
-            const xferStation = seg.stops[0];
-            segDepAbs = rbCalcDeparture(xferStation, String(seg.line));
-        }
-        const arrAbs = rbStopTime(String(seg.line), segFirstStop, next.name, segDepAbs);
-        if (arrAbs != null) {
-            const hh = Math.floor(arrAbs / 60) % 24, mm = arrAbs % 60;
-            nextTimeStr = ` · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')} Uhr`;
-            // Also compute "in X min"
-            const now = new Date();
-            const nowAbs = now.getHours()*60 + now.getMinutes();
-            const diffMin = arrAbs - nowAbs;
-            if (diffMin > 0) nextTimeStr += ` (in ${diffMin} min)`;
-            else if (diffMin === 0) nextTimeStr += ` (jetzt)`;
-        }
-    }
+    // Transfer hints
+    const transfers = nextStop ? (RB_TRANSFERS[nextStop]||[]).filter(l=>l!==line) : [];
+    const transferHint = transfers.length ? `· Umstieg auf ${transfers.map(t=>`<strong style="color:var(--accent)">${t}</strong>`).join(', ')} möglich` : '';
 
     let icon='🚇', main='', sub='';
-    if (isLast) {
-        icon='🏁'; main='Ziel erreicht!'; sub=`Du bist an <strong>${cur.name}</strong> angekommen.`;
-    } else if (currentIdx === 0) {
-        const lineName = cur.line==='S11' ? 'S11' : 'Linie '+cur.line;
-        // next departure from start
-        const depAbs = rbState.startTime;
-        let depStr = '';
-        if (depAbs != null) {
-            const hh = Math.floor(depAbs/60)%24, mm = depAbs%60;
-            const now = new Date(); const nowAbs = now.getHours()*60+now.getMinutes();
-            const diffMin = depAbs - nowAbs;
-            depStr = ` · Abfahrt ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}${diffMin>0?' (in '+diffMin+' min)':' (jetzt)'}`;
-        }
-        icon='▶️'; main=`Einsteigen · ${lineName}`;
-        sub=`Nächster Halt: <strong>${next.name}</strong>${nextTimeStr}${depStr}`;
-        if (isNextTransfer) sub += `<br>⚠️ Gleich umsteigen auf Linie ${next.line}`;
-    } else if (isNextTransfer) {
-        const nextLineName = next.line==='S11' ? 'S11' : 'Linie '+next.line;
-        icon='🔀'; main=`An ${next.name} umsteigen`;
-        sub=`Wechsle auf <strong>${nextLineName}</strong>${nextTimeStr}. Noch ${remaining} Halt${remaining!==1?'e':''} bis Ziel.`;
-    } else if (remaining === 1) {
-        icon='⚠️'; main='Nächste Station aussteigen!';
-        sub=`Dein Ziel <strong>${next.name}</strong> ist der nächste Halt${nextTimeStr}.`;
+    if(isLast) {
+        icon='🏁'; main='Ziel erreicht!'; sub=`Du bist an ${currentStop} angekommen.`;
+    } else if(currentIdx===0) {
+        icon='▶️'; main=`Einsteigen · ${line}`; sub=`Fahre bis ${stops[stops.length-1]}. Nächster Halt: <strong>${nextStop}</strong> ${transferHint}`;
     } else {
-        icon='📍'; main=`Jetzt: ${cur.name}`;
-        sub=`Nächster Halt: <strong>${next.name}</strong>${nextTimeStr}<br>${remaining} Halt${remaining!==1?'e':''} bis Ziel`;
+        icon='📍'; main=`Jetzt: ${currentStop}`; sub=`Nächster Halt: <strong>${nextStop}</strong> ${transferHint}<br>${remaining} Halt${remaining!==1?'e':''} bis Ziel`;
+        // Ausstieg-Warnung
+        if(remaining===1) { icon='⚠️'; main=`Nächste Station aussteigen!`; sub=`Dein Ziel <strong>${nextStop}</strong> ist der nächste Halt.`; }
+        // Transfer instructions
+        if(transfers.length && remaining > 1) { icon='🔀'; main=`An ${nextStop} umsteigen`; sub=`Wechsle dort auf Linie ${transfers[0]}. Noch ${remaining} Halt${remaining!==1?'e':''} bis Umstieg.`; }
     }
 
-    document.getElementById('rb-icon').textContent = icon;
-    document.getElementById('rb-main').textContent = main;
-    document.getElementById('rb-sub').innerHTML = sub;
+    document.getElementById('rb-icon').textContent=icon;
+    document.getElementById('rb-main').textContent=main;
+    document.getElementById('rb-sub').innerHTML=sub;
 
-    // Stops list with times
-    document.getElementById('rb-stops-list').innerHTML = flatStops.map((s, i) => {
-        const cls = i < currentIdx ? 'done' : i === currentIdx ? 'current' : '';
-        const dotCls = i < currentIdx ? 'done' : i === currentIdx ? 'current' : '';
-        const lineCol = lineColors[s.line] || '#555';
-        const linePill = `<span style="background:${lineCol};color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:5px;">${s.line==='S11'?'S11':'L'+s.line}</span>`;
-        const isTransferStop = i > 0 && flatStops[i-1].line !== s.line;
-
-        // Compute time for this stop
-        let stopTimeStr = '';
-        const seg = segments[s.segIdx];
-        const segFirstStop = seg.stops[0];
-        let segDepAbs = rbState.startTime;
-        if (s.segIdx > 0) segDepAbs = rbCalcDeparture(segFirstStop, String(seg.line));
-        const arrAbs = rbStopTime(String(seg.line), segFirstStop, s.name, segDepAbs);
-        if (arrAbs != null) {
-            const hh = Math.floor(arrAbs/60)%24, mm = arrAbs%60;
-            const now = new Date(); const nowAbs = now.getHours()*60+now.getMinutes();
-            const diffMin = arrAbs - nowAbs;
-            const timeColor = diffMin <= 0 ? 'var(--success)' : diffMin <= 3 ? '#ffd166' : 'var(--text-dim)';
-            stopTimeStr = `<span style="font-family:'B612 Mono',monospace;font-size:10px;color:${timeColor};margin-left:auto;flex-shrink:0;">${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}</span>`;
-        }
-
+    // Stops list
+    document.getElementById('rb-stops-list').innerHTML = stops.map((s,i)=>{
+        const cls = i<currentIdx?'done':i===currentIdx?'current':'';
+        const dotCls = i<currentIdx?'done':i===currentIdx?'current':'';
         return `<div class="rb-stop-row ${cls}" onclick="rbAdvanceTo(${i})">
-            <div class="rb-stop-dot ${dotCls}" style="${i===currentIdx?'border-color:'+lineCol:''}"></div>
-            <div style="flex:1">
-                <div style="font-weight:${i===currentIdx?'bold':'normal'};font-size:13px;">${s.name}${linePill}</div>
-                ${isTransferStop?'<div style="font-size:10px;color:var(--warn);">🔀 Umstieg hier</div>':''}
-                ${i===currentIdx?'<div style="font-size:10px;color:var(--accent);">← Du bist hier</div>':''}
-            </div>
-            ${stopTimeStr}
-            ${i===flatStops.length-1?`<div style="font-size:9px;background:rgba(192,57,43,.1);color:var(--accent);border:1px solid rgba(192,57,43,.25);padding:2px 6px;border-radius:10px;margin-left:6px;">Ziel</div>`:''}
+            <div class="rb-stop-dot ${dotCls}"></div>
+            <div style="flex:1"><div style="font-weight:${i===currentIdx?'bold':'normal'};font-size:13px;">${s}</div>
+            ${i===currentIdx?'<div style="font-size:10px;color:var(--accent);">← Du bist hier</div>':''}</div>
+            ${i===stops.length-1?`<div style="font-size:9px;background:rgba(192,57,43,.1);color:var(--accent);border:1px solid rgba(192,57,43,.25);padding:2px 6px;border-radius:10px;">Ziel</div>`:''}
         </div>`;
     }).join('');
 }
 
-let rbIntervalId = null;
-
 function rbAdvanceTo(idx) {
-    if (!rbState) return;
-    if (idx > rbState.currentIdx) {
+    if(!rbState) return;
+    if(idx > rbState.currentIdx) {
         rbState.currentIdx = idx;
-        const cur = rbState.flatStops[idx];
-        // If we just crossed into a new segment (transfer), recalculate startTime
-        if (idx > 0 && rbState.flatStops[idx-1].line !== cur.line) {
-            const seg = rbState.segments[cur.segIdx];
-            rbState.startTime = rbCalcDeparture(seg.stops[0], String(seg.line));
-        }
         rbRender();
-        const remaining = rbState.flatStops.length - idx - 1;
-        if (idx === rbState.flatStops.length-1) showToast('🏁 Ziel erreicht!');
-        else if (remaining === 1) showToast('⚠️ Nächste Station aussteigen!','warn');
-        else if (idx > 0 && rbState.flatStops[idx-1].line !== cur.line) showToast(`🔀 Umstieg auf Linie ${cur.line}`,'warn');
-        else showToast(`📍 ${cur.name}`);
+        const remaining = rbState.routeStops.length - idx - 1;
+        if(idx===rbState.routeStops.length-1) showToast('🏁 Ziel erreicht!');
+        else if(remaining===1) showToast('⚠️ Nächste Station aussteigen!','warn');
+        else showToast(`📍 ${rbState.routeStops[idx]}`);
     }
 }
 
 function rbStop() {
     rbState = null;
-    if (rbIntervalId) { clearInterval(rbIntervalId); rbIntervalId = null; }
-    document.getElementById('rb-guidance').style.display = 'none';
-    document.getElementById('rb-setup').style.display = 'block';
+    document.getElementById('rb-guidance').style.display='none';
+    document.getElementById('rb-setup').style.display='block';
     showToast('Reise beendet');
 }
 
@@ -2292,6 +2110,7 @@ document.getElementById('route-from-input').value='Güntringen Hbf';
 document.getElementById('route-to-input').value='Villotal Hbf';
 const _now=new Date();
 document.getElementById('route-time').value=`${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
+
 // Render static parts immediately
 renderFahrplan();
 renderNotifications();
