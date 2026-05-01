@@ -384,6 +384,23 @@
         .rb-stop-dot.current { background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,57,43,.2); }
         @keyframes rb-pulse { 0%,100%{box-shadow:0 0 0 3px rgba(192,57,43,.2)} 50%{box-shadow:0 0 0 6px rgba(192,57,43,.08)} }
         .rb-stop-dot.current { animation:rb-pulse 1.8s infinite; }
+        /* ====== GLEISPLAN ====== */
+        .gleisplan-overlay { position:fixed; inset:0; background:var(--overlay-bg); z-index:2000; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn .2s ease; }
+        .gleisplan-overlay.hidden { display:none; }
+        .gleisplan-sheet { background:var(--modal-bg); border-radius:20px 20px 0 0; width:100%; max-width:480px; max-height:92vh; overflow-y:auto; padding:20px 18px 32px; }
+        .gleisplan-handle { width:36px; height:4px; background:var(--input-border); border-radius:2px; margin:0 auto 16px; }
+        .gleisplan-title { font-family:'Barlow',sans-serif; font-size:18px; font-weight:800; text-transform:uppercase; margin-bottom:4px; }
+        .gleisplan-sub { font-size:11px; color:var(--text-dim); margin-bottom:18px; }
+        .gleisplan-svg-wrap { background:var(--map-bg); border-radius:12px; overflow:hidden; padding:16px 10px; margin-bottom:14px; }
+        .gleisplan-legend { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+        .gl-leg-item { display:flex; align-items:center; gap:5px; font-size:10px; }
+        .gl-leg-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+        .gl-station-btn { background:var(--card); border:1px solid var(--input-border); border-radius:10px; padding:10px 14px; display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px; transition:background .15s; }
+        .gl-station-btn:hover { background:var(--row-hover); }
+        .gl-station-name { font-weight:bold; font-size:13px; flex:1; }
+        .gl-station-sub { font-size:10px; color:var(--text-dim); }
+        .weitere-infos-btn { width:100%; background:var(--card); border:1px solid var(--input-border); border-radius:12px; padding:13px 16px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:background .15s; margin-bottom:6px; }
+        .weitere-infos-btn:hover { background:var(--row-hover); }
     </style>
 </head>
 <body>
@@ -754,6 +771,41 @@
         <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Ticket läuft ab</div><p>3 Tage vor Ablauf erinnern</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
     </div>
     <div class="setting-group">
+        <h2>Weitere Infos</h2>
+        <div class="gl-station-btn" onclick="openGleisplan('Güntringen Hbf')">
+            <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#c0392b,#8b0000);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🚉</div>
+            <div style="flex:1;">
+                <div class="gl-station-name">Güntringen Hbf – Gleisplan</div>
+                <div class="gl-station-sub">S11 · S12 · L17 · OS11 · 13 Gleise</div>
+            </div>
+            <span style="color:var(--text-dim);font-size:16px;">›</span>
+        </div>
+        <div class="gl-station-btn" onclick="openGleisplan('Villotal Hbf')">
+            <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#1a6b9a,#0d3d5c);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🚉</div>
+            <div style="flex:1;">
+                <div class="gl-station-name">Villotal Hbf – Gleisplan</div>
+                <div class="gl-station-sub">S11 · S12 · OS11 · Fernverkehr · 8 Gleise</div>
+            </div>
+            <span style="color:var(--text-dim);font-size:16px;">›</span>
+        </div>
+        <div class="gl-station-btn" onclick="openGleisplan('Möhlen Hbf')">
+            <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#1a6b9a,#0d3d5c);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🚉</div>
+            <div style="flex:1;">
+                <div class="gl-station-name">Möhlen Hbf – Gleisplan</div>
+                <div class="gl-station-sub">S12 · Möhlen-Stadtbahn · 5 Gleise</div>
+            </div>
+            <span style="color:var(--text-dim);font-size:16px;">›</span>
+        </div>
+        <div class="gl-station-btn" onclick="openGleisplan('Möhlen Nord')">
+            <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#1a6b9a,#0d3d5c);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🚉</div>
+            <div style="flex:1;">
+                <div class="gl-station-name">Möhlen Nord – Gleisplan</div>
+                <div class="gl-station-sub">S12 · Endstation · P+R · 2 Gleise</div>
+            </div>
+            <span style="color:var(--text-dim);font-size:16px;">›</span>
+        </div>
+    </div>
+    <div class="setting-group">
         <h2>App-Info</h2>
         <div class="setting-row"><div><div style="font-weight:bold;">Version</div></div><span class="val">9.0.0 (Firebase)</span></div>
         <div class="setting-row" onclick="doLogout()" style="border-left:2px solid var(--premium);">
@@ -853,8 +905,19 @@
     <div id="notif-list"></div>
 </div>
 
-<!-- TOAST QUEUE -->
-<div id="toast-container"></div>
+<!-- GLEISPLAN MODAL -->
+<div class="gleisplan-overlay hidden" id="gleisplan-overlay" onclick="closeGleisplan(event)">
+    <div class="gleisplan-sheet" id="gleisplan-sheet">
+        <div class="gleisplan-handle"></div>
+        <div class="gleisplan-title" id="gleisplan-title">Gleisplan</div>
+        <div class="gleisplan-sub" id="gleisplan-sub"></div>
+        <div class="gleisplan-svg-wrap" id="gleisplan-svg"></div>
+        <div class="gleisplan-legend" id="gleisplan-legend"></div>
+        <button onclick="closeGleisplan()" style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--input-border);background:var(--card);color:var(--text-dim);font-weight:bold;cursor:pointer;font-size:13px;">Schließen</button>
+    </div>
+</div>
+
+
 
 <script>
 // ====== CONSTANTS ======
@@ -908,10 +971,12 @@ const HOME_STATIONS = [
     { id:'Westende',            label:'Westende',            sub:'L15 · Endstation' },
     // L16
     { id:'Krakingerallee',      label:'Krakingerallee',      sub:'L16' },
+    { id:'Altgün-Ost',          label:'Altgün-Ost',          sub:'L16 · (übersprungen)' },
     { id:'Burg',                label:'Burg',                sub:'L16' },
     { id:'Vélicherring',        label:'Vélicherring',        sub:'L16' },
     { id:'Osttal',              label:'Osttal',              sub:'L16' },
     { id:'Villenviertel',       label:'Villenviertel',       sub:'L16' },
+    { id:'Ostrich',             label:'Ostrich',             sub:'L16 · (übersprungen)' },
     { id:'Hügelbezirk Süd',    label:'Hügelbezirk Süd',    sub:'L16 · Endstation' },
     // L17
     { id:'Südstern',            label:'Südstern',            sub:'L17' },
@@ -926,15 +991,15 @@ const STATION_FIS = {
         { id:'S12', dest:'Möhlen Nord',  col:'#1a6b9a', m:[7,37], gleis:'10' },
         { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[9,39], gleis:'9', note:'Ankunft' },
         { id:'17',  dest:'Oktratal',     col:'#7b3fa0', m:[3,18,33,48], gleis:'7' },
-        { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'–', preview:true },
+        { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'3', preview:true },
     ],
     'Altgün Dreieck': [
         { id:'S11', dest:'Villotal Hbf',    col:'#c0392b', m:[10,40], gleis:'4' },
         { id:'S11', dest:'Lixen',           col:'#c0392b', m:[25,55], gleis:'5' },
         { id:'14',  dest:'Sonnenstadt',     col:'#003f8a', m:[0,10,20,30,40,50], gleis:'Etage +1' },
         { id:'14',  dest:'Falkenberg',      col:'#003f8a', m:[5,15,25,35,45,55], gleis:'Etage +1' },
-        { id:'15',  dest:'Westende',        col:'#6b1e1e', m:[1,9,11,19,21,29,31,39,41,49,51,59], gleis:'Etage +2' },
-        { id:'16',  dest:'Hügelbezirk Süd', col:'#174f17', m:[2,8,12,18,22,28,32,38,42,48,52,58], gleis:'Etage +3' },
+        { id:'15',  dest:'Westende',        col:'#6b1e1e', m:[1,11,21,31,41,51], gleis:'Etage +2' },
+        { id:'16',  dest:'Hügelbezirk Süd', col:'#174f17', m:[2,12,22,32,42,52], gleis:'Etage +3' },
     ],
     'Güntratal Süd': [
         { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[18,48], gleis:'1' },
@@ -964,7 +1029,7 @@ const STATION_FIS = {
         { id:'S11', dest:'Lixen',        col:'#c0392b', m:[19,49], gleis:'1' },
         { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[3,33], gleis:'6' },
         { id:'S12', dest:'Möhlen Nord',  col:'#1a6b9a', m:[36,6],  gleis:'5' },
-        { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'–', preview:true },
+        { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'4', preview:true },
     ],
     'Villotal Süd':[
         { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[13,43], gleis:'1' },
@@ -984,8 +1049,8 @@ const ALL_STATIONS = [
     'Altgün Dreieck','Seenring','Sonnenwald','Technopolis','Sonnenstadt',
     'Westende','ZOB Flussbezirk','Falkenberger Allee','Sâscha-Okto-Ring',
     'Vûlfja-Hüpel-Allee','Altgün-Markt','Altgün-Center',
-    'Krakingerallee','Burg','Vélicherring','Osttal',
-    'Villenviertel','Hügelbezirk Süd',
+    'Krakingerallee','Burg','Vélicherring','Osttal','Altgün-Ost',
+    'Villenviertel','Ostrich','Hügelbezirk Süd',
     'Lixen','Güntratal Süd','Güntringen Hbf','Villotal Süd','Villotal Hbf',
     'Lünberg','Gemberg','Sternberg','Möhlen Hbf','Möhlen Nord',
     'Südstern','Südtor','Oktratal'
@@ -1045,11 +1110,30 @@ const LINE_FULL_STOPS = {
         {name:'Regierungsviertel',gleis:'1',transfer:'L14 Umstieg'},{name:'Falkenberger Allee',gleis:'1',transfer:null},
         {name:'ZOB Flussbezirk',gleis:'1',transfer:null},{name:'Westende',gleis:'2',transfer:'Hafenpromenade'},
     ],
+    '15_Dreieck': [
+        {name:'Westende',gleis:'2',transfer:'Hafenpromenade'},{name:'ZOB Flussbezirk',gleis:'1',transfer:null},
+        {name:'Falkenberger Allee',gleis:'1',transfer:null},{name:'Regierungsviertel',gleis:'1',transfer:'L14 Umstieg'},
+        {name:'Altgüner Vorstadt',gleis:'1',transfer:'L14 Umstieg'},{name:'Sâscha-Okto-Ring',gleis:'1',transfer:null},
+        {name:'Vûlfja-Hüpel-Allee',gleis:'1',transfer:null},{name:'Altgün-Markt',gleis:'1',transfer:null},
+        {name:'Altgün-Center',gleis:'1',transfer:null},{name:'Altgün Dreieck',gleis:'Etage +2',transfer:'S11 Bahnhof nebenan, L14 Etage +1, L16 Etage +3'},
+    ],
     '16_Hügelbezirk': [
-        {name:'Altgün Dreieck',gleis:'Etage +3',transfer:'S11 Bahnhof nebenan, L14 Etage +1, L15 Etage +2'},{name:'Krakingerallee',gleis:'1',transfer:null},
+        {name:'Altgün Dreieck',gleis:'Etage +3',transfer:'S11 Bahnhof nebenan, L14 Etage +1, L15 Etage +2'},
+        {name:'Altgün-Ost',gleis:'1',transfer:null,skip:true},
+        {name:'Krakingerallee',gleis:'1',transfer:null},
         {name:'Burg',gleis:'1',transfer:null},{name:'Vélicherring',gleis:'1',transfer:null},
         {name:'Osttal',gleis:'1',transfer:null},{name:'Villenviertel',gleis:'1',transfer:null},
+        {name:'Ostrich',gleis:'1',transfer:null,skip:true},
         {name:'Hügelbezirk Süd',gleis:'1',transfer:'Fußweg Villenviertel 5 Min.'},
+    ],
+    '16_Dreieck': [
+        {name:'Hügelbezirk Süd',gleis:'1',transfer:'Fußweg Villenviertel 5 Min.'},
+        {name:'Ostrich',gleis:'1',transfer:null,skip:true},
+        {name:'Villenviertel',gleis:'1',transfer:null},{name:'Osttal',gleis:'1',transfer:null},
+        {name:'Vélicherring',gleis:'1',transfer:null},{name:'Burg',gleis:'1',transfer:null},
+        {name:'Krakingerallee',gleis:'1',transfer:null},
+        {name:'Altgün-Ost',gleis:'1',transfer:null,skip:true},
+        {name:'Altgün Dreieck',gleis:'Etage +3',transfer:'S11 Bahnhof nebenan, L14 Etage +1, L15 Etage +2'},
     ],
     'S12_Moehlen': [
         {name:'Güntringen Hbf',gleis:'10',transfer:'S11 Gl.11/12, L17 Gl.7'},{name:'Villotal Süd',gleis:'2',transfer:'Regionalbus'},
@@ -1105,34 +1189,40 @@ const SCHEDULES = {
                 {name:'Sâscha-Okto-Ring',skip:false,offset:8},{name:'Altgüner Vorstadt',skip:false,offset:10},
                 {name:'Regierungsviertel',skip:false,offset:12},{name:'Falkenberger Allee',skip:false,offset:14},
                 {name:'ZOB Flussbezirk',skip:false,offset:16},{name:'Westende',skip:false,offset:18},
-            ]},
-            { label:'Richtung Altgün Dreieck', stopKey:'15_Westende', stations:[
+            ], departures:[1,11,21,31,41,51]},
+            { label:'Richtung Altgün Dreieck', stopKey:'15_Dreieck', stations:[
                 {name:'Westende',skip:false,offset:0},{name:'ZOB Flussbezirk',skip:false,offset:2},
                 {name:'Falkenberger Allee',skip:false,offset:4},{name:'Regierungsviertel',skip:false,offset:6},
                 {name:'Altgüner Vorstadt',skip:false,offset:8},{name:'Sâscha-Okto-Ring',skip:false,offset:10},
                 {name:'Vûlfja-Hüpel-Allee',skip:false,offset:12},{name:'Altgün-Markt',skip:false,offset:14},
                 {name:'Altgün-Center',skip:false,offset:16},{name:'Altgün Dreieck',skip:false,offset:18},
-            ]}
+            ], departures:[42,52,2,12,22,32]}
         ],
-        departures:[1,9,11,19,21,29,31,39,41,49,51,59]
+        departures:[1,11,21,31,41,51]
     },
     16: {
         name:'Linie 16', color:'#174f17',
         directions:[
             { label:'Richtung Hügelbezirk Süd', stopKey:'16_Hügelbezirk', stations:[
-                {name:'Altgün Dreieck',skip:false,offset:0},{name:'Krakingerallee',skip:false,offset:4},
+                {name:'Altgün Dreieck',skip:false,offset:0},
+                {name:'Altgün-Ost',skip:true,offset:2},
+                {name:'Krakingerallee',skip:false,offset:4},
                 {name:'Burg',skip:false,offset:6},{name:'Vélicherring',skip:false,offset:8},
                 {name:'Osttal',skip:false,offset:10},{name:'Villenviertel',skip:false,offset:12},
+                {name:'Ostrich',skip:true,offset:14},
                 {name:'Hügelbezirk Süd',skip:false,offset:16},
-            ]},
-            { label:'Richtung Altgün Dreieck', stopKey:'16_Hügelbezirk', stations:[
-                {name:'Hügelbezirk Süd',skip:false,offset:0},{name:'Villenviertel',skip:false,offset:4},
+            ], departures:[2,12,22,32,42,52]},
+            { label:'Richtung Altgün Dreieck', stopKey:'16_Dreieck', stations:[
+                {name:'Hügelbezirk Süd',skip:false,offset:0},
+                {name:'Ostrich',skip:true,offset:2},
+                {name:'Villenviertel',skip:false,offset:4},
                 {name:'Osttal',skip:false,offset:6},{name:'Vélicherring',skip:false,offset:8},
                 {name:'Burg',skip:false,offset:10},{name:'Krakingerallee',skip:false,offset:12},
+                {name:'Altgün-Ost',skip:true,offset:14},
                 {name:'Altgün Dreieck',skip:false,offset:16},
-            ]}
+            ], departures:[45,55,5,15,25,35]}
         ],
-        departures:[2,8,12,18,22,28,32,38,42,48,52,58]
+        departures:[2,12,22,32,42,52]
     },
     'S11': {
         name:'S11', color:'#c0392b',
@@ -1631,7 +1721,7 @@ function renderFahrplan() {
     const dirs=sched.directions;
     document.getElementById('fp-directions').innerHTML=dirs.map((d,i)=>`<div class="dir-btn ${i===activeDir?'active':''}" onclick="setDir(${i})">${d.label}</div>`).join('');
     const dir=dirs[activeDir];
-    const departures=sched.departures;
+    const departures = dir.departures || sched.departures;
     const now=new Date();
     const nowM=now.getHours()*60+now.getMinutes();
     const nextDeps=[];
@@ -1771,7 +1861,9 @@ function calcRoute() {
         '14_Sonnenstadt': LINE_FULL_STOPS['14_Sonnenstadt'],
         '14_Falkenberg':  LINE_FULL_STOPS['14_Falkenberg'],
         '15_Westende':    LINE_FULL_STOPS['15_Westende'],
+        '15_Dreieck':     LINE_FULL_STOPS['15_Dreieck'],
         '16_Hügelbezirk': LINE_FULL_STOPS['16_Hügelbezirk'],
+        '16_Dreieck':     LINE_FULL_STOPS['16_Dreieck'],
         '17_Oktratal':    LINE_FULL_STOPS['17_Oktratal'],
         '17_Hbf':         LINE_FULL_STOPS['17_Hbf'],
     };
@@ -1785,9 +1877,8 @@ function calcRoute() {
         if (lid === 'S11') return forward ? 'S11_Villotal' : 'S11_Lixen';
         if (lid === 'S12') return forward ? 'S12_Moehlen' : 'S12_Guentringen';
         if (lid === '14')  return forward ? '14_Sonnenstadt' : '14_Falkenberg';
-        // L15, L16, L17: only one full-stops entry; use it in either direction
-        if (lid === '15')  return '15_Westende';
-        if (lid === '16')  return '16_Hügelbezirk';
+        if (lid === '15')  return forward ? '15_Westende' : '15_Dreieck';
+        if (lid === '16')  return forward ? '16_Hügelbezirk' : '16_Dreieck';
         if (lid === '17')  return forward ? '17_Oktratal' : '17_Hbf';
         return null;
     }
@@ -2077,7 +2168,7 @@ const RB_LINE_STOPS = {
     'S12':  ['Güntringen Hbf','Villotal Süd','Lünberg','Villotal Hbf','Gemberg','Sternberg','Möhlen Hbf','Möhlen Nord'],
     '14':   ['Falkenberg','Neuer Ring','Regierungsviertel','Altgüner Vorstadt','Altgün Mitte','Altgün Dreieck','Seenring','Sonnenwald','Technopolis','Sonnenstadt'],
     '15':   ['Altgün Dreieck','Altgün-Center','Altgün-Markt','Vûlfja-Hüpel-Allee','Sâscha-Okto-Ring','Altgüner Vorstadt','Regierungsviertel','Falkenberger Allee','ZOB Flussbezirk','Westende'],
-    '16':   ['Altgün Dreieck','Krakingerallee','Burg','Vélicherring','Osttal','Villenviertel','Hügelbezirk Süd'],
+    '16':   ['Altgün Dreieck','Altgün-Ost','Krakingerallee','Burg','Vélicherring','Osttal','Villenviertel','Ostrich','Hügelbezirk Süd'],
     '17':   ['Güntringen Hbf','Südstern','Südtor','Technopolis','Oktratal'],
 };
 const RB_TRANSFERS = {
@@ -2098,7 +2189,7 @@ const LINE_META = {
     'S12': { color:'#1a6b9a', stopMins:{ 'Güntringen Hbf':0,'Villotal Süd':11,'Lünberg':20,'Villotal Hbf':29,'Gemberg':39,'Sternberg':47,'Möhlen Hbf':55,'Möhlen Nord':62 } },
     '14':  { color:'#003f8a', stopMins:{ 'Falkenberg':0,'Neuer Ring':2,'Regierungsviertel':4,'Altgüner Vorstadt':6,'Altgün Mitte':8,'Altgün Dreieck':10,'Seenring':12,'Sonnenwald':14,'Technopolis':16,'Sonnenstadt':18 } },
     '15':  { color:'#6b1e1e', stopMins:{ 'Altgün Dreieck':0,'Altgün-Center':2,'Altgün-Markt':4,'Vûlfja-Hüpel-Allee':6,'Sâscha-Okto-Ring':8,'Altgüner Vorstadt':10,'Regierungsviertel':12,'Falkenberger Allee':14,'ZOB Flussbezirk':16,'Westende':18 } },
-    '16':  { color:'#174f17', stopMins:{ 'Altgün Dreieck':0,'Krakingerallee':4,'Burg':6,'Vélicherring':8,'Osttal':10,'Villenviertel':12,'Hügelbezirk Süd':16 } },
+    '16':  { color:'#174f17', stopMins:{ 'Altgün Dreieck':0,'Altgün-Ost':2,'Krakingerallee':4,'Burg':6,'Vélicherring':8,'Osttal':10,'Villenviertel':12,'Ostrich':14,'Hügelbezirk Süd':16 } },
     '17':  { color:'#7b3fa0', stopMins:{ 'Güntringen Hbf':0,'Südstern':4,'Südtor':7,'Technopolis':12,'Oktratal':18 } },
 };
 function buildGraph() {
@@ -2115,7 +2206,7 @@ function buildGraph() {
         for (let i = 0; i < stops.length - 1; i++) {
             const a = stops[i], b = stops[i+1];
             const mins = Math.abs((offsets[b]||0) - (offsets[a]||0)) || 2;
-            addEdge(a, b, lineId==='S11'?'S11':Number(lineId), meta.color, mins);
+            addEdge(a, b, lineId==='S11'||lineId==='S12'?lineId:Number(lineId), meta.color, mins);
         }
     }
     return G;
@@ -2204,7 +2295,7 @@ function rbRender() {
     if (!rbState) return;
     const { legs, activeLeg, stopIdx } = rbState;
     const leg = legs[activeLeg];
-    const lineColors = {'S11':'#c0392b','14':'#003f8a','15':'#8b2020','16':'#174f17','17':'#7b3fa0'};
+    const lineColors = {'S11':'#c0392b','S12':'#1a6b9a','14':'#003f8a','15':'#8b2020','16':'#174f17','17':'#7b3fa0'};
     const col = leg.color || lineColors[leg.line] || '#555';
     const stops = leg.stops;
     const isLastLeg = activeLeg >= legs.length - 1;
@@ -2330,7 +2421,332 @@ function rbStop() {
     showToast('Reise beendet');
 }
 
-// ====== INIT ======
+// ====== GLEISPLAN ======
+const GLEISPLAN_DATA = {
+    'Güntringen Hbf': {
+        sub: 'S11 · S12 · L17 · OS11 (geplant) · 13 Gleise',
+        legend: [
+            { color:'#c0392b', label:'S11' },
+            { color:'#1a6b9a', label:'S12' },
+            { color:'#7b3fa0', label:'L17' },
+            { color:'#b8860b', label:'OS11 (geplant)', dashed:true },
+            { color:'#555', label:'Abstellgleis' },
+        ],
+        svg: `<svg viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans,sans-serif">
+  <!-- Background rails (all tracks) -->
+  <!-- Track layout: 13 tracks side by side, labeled 1–13 from left -->
+  <!-- Tracks run top→bottom, platform edge on right side of each track pair -->
+
+  <defs>
+    <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="var(--map-label)"/>
+    </marker>
+  </defs>
+
+  <!-- Platform canopy -->
+  <rect x="8" y="30" width="324" height="180" rx="6" fill="var(--card)" stroke="var(--map-track)" stroke-width="1"/>
+
+  <!-- Track groups -->
+  <!-- Each track: x = 14 + (i*24), width 6 -->
+  <!-- Tracks 1–13 -->
+  <g id="tracks">
+    <!-- GL 1: S12 Ankunft (Güntringen Hbf), darkblue -->
+    <rect x="14"  y="36" width="6" height="168" rx="3" fill="#1a6b9a" opacity=".7"/>
+    <!-- GL 2: Abstellgleis -->
+    <rect x="38"  y="36" width="6" height="168" rx="3" fill="#555" opacity=".4"/>
+    <!-- GL 3: OS11 → Glücksburg (geplant) -->
+    <rect x="62"  y="36" width="6" height="168" rx="3" fill="#b8860b" opacity=".5" stroke-dasharray="4,3"/>
+    <!-- GL 4: Abstellgleis -->
+    <rect x="86"  y="36" width="6" height="168" rx="3" fill="#555" opacity=".4"/>
+    <!-- GL 5: Abstellgleis -->
+    <rect x="110" y="36" width="6" height="168" rx="3" fill="#555" opacity=".4"/>
+    <!-- GL 6: Abstellgleis -->
+    <rect x="134" y="36" width="6" height="168" rx="3" fill="#555" opacity=".4"/>
+    <!-- GL 7: L17 → Oktratal -->
+    <rect x="158" y="36" width="6" height="168" rx="3" fill="#7b3fa0" opacity=".7"/>
+    <!-- GL 8: L17 → Güntringen Hbf (Ankunft) -->
+    <rect x="182" y="36" width="6" height="168" rx="3" fill="#7b3fa0" opacity=".5"/>
+    <!-- GL 9: S12 → Möhlen Nord -->
+    <rect x="206" y="36" width="6" height="168" rx="3" fill="#1a6b9a" opacity=".7"/>
+    <!-- GL 10: S12 → Güntringen Hbf (Ankunft) -->
+    <rect x="230" y="36" width="6" height="168" rx="3" fill="#1a6b9a" opacity=".5"/>
+    <!-- GL 11: S11 → Lixen -->
+    <rect x="254" y="36" width="6" height="168" rx="3" fill="#c0392b" opacity=".7"/>
+    <!-- GL 12: S11 → Villotal Hbf -->
+    <rect x="278" y="36" width="6" height="168" rx="3" fill="#c0392b" opacity=".9"/>
+    <!-- GL 13: Abstellgleis -->
+    <rect x="302" y="36" width="6" height="168" rx="3" fill="#555" opacity=".4"/>
+  </g>
+
+  <!-- Platform edges -->
+  <rect x="11"  y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="35"  y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="59"  y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="83"  y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="107" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="131" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="155" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="179" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="203" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="227" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="251" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="275" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="299" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+  <rect x="323" y="34" width="3" height="172" rx="1" fill="var(--map-track)"/>
+
+  <!-- Track numbers -->
+  <text x="17"  y="220" text-anchor="middle" font-size="9" fill="var(--map-label)" font-weight="bold">1</text>
+  <text x="41"  y="220" text-anchor="middle" font-size="9" fill="var(--map-label)">2</text>
+  <text x="65"  y="220" text-anchor="middle" font-size="9" fill="#b8860b" font-weight="bold">3</text>
+  <text x="89"  y="220" text-anchor="middle" font-size="9" fill="var(--map-label)">4</text>
+  <text x="113" y="220" text-anchor="middle" font-size="9" fill="var(--map-label)">5</text>
+  <text x="137" y="220" text-anchor="middle" font-size="9" fill="var(--map-label)">6</text>
+  <text x="161" y="220" text-anchor="middle" font-size="9" fill="#7b3fa0" font-weight="bold">7</text>
+  <text x="185" y="220" text-anchor="middle" font-size="9" fill="#7b3fa0">8</text>
+  <text x="209" y="220" text-anchor="middle" font-size="9" fill="#1a6b9a" font-weight="bold">9</text>
+  <text x="233" y="220" text-anchor="middle" font-size="9" fill="#1a6b9a">10</text>
+  <text x="257" y="220" text-anchor="middle" font-size="9" fill="#c0392b" font-weight="bold">11</text>
+  <text x="281" y="220" text-anchor="middle" font-size="9" fill="#c0392b" font-weight="bold">12</text>
+  <text x="305" y="220" text-anchor="middle" font-size="9" fill="var(--map-label)">13</text>
+
+  <!-- Destination labels (rotated) -->
+  <g font-size="8" fill="var(--map-label)" text-anchor="start">
+    <text transform="translate(20,165) rotate(-70)">S12 Ankunft</text>
+    <text transform="translate(44,175) rotate(-70)" fill="#777">Abstell.</text>
+    <text transform="translate(68,165) rotate(-70)" fill="#b8860b">OS11 → Glücksburg</text>
+    <text transform="translate(92,175) rotate(-70)" fill="#777">Abstell.</text>
+    <text transform="translate(116,175) rotate(-70)" fill="#777">Abstell.</text>
+    <text transform="translate(140,175) rotate(-70)" fill="#777">Abstell.</text>
+    <text transform="translate(164,165) rotate(-70)" fill="#7b3fa0">L17 → Oktratal</text>
+    <text transform="translate(188,175) rotate(-70)" fill="#7b3fa0">L17 Ankunft</text>
+    <text transform="translate(212,165) rotate(-70)" fill="#1a6b9a">S12 → Möhlen Nord</text>
+    <text transform="translate(236,175) rotate(-70)" fill="#1a6b9a">S12 Ankunft</text>
+    <text transform="translate(260,165) rotate(-70)" fill="#c0392b">S11 → Lixen</text>
+    <text transform="translate(284,165) rotate(-70)" fill="#c0392b">S11 → Villotal Hbf</text>
+    <text transform="translate(308,175) rotate(-70)" fill="#777">Abstell.</text>
+  </g>
+
+  <!-- Station name banner -->
+  <rect x="8" y="4" width="324" height="22" rx="4" fill="var(--accent)" opacity=".12"/>
+  <text x="170" y="19" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--accent)" letter-spacing="1">GÜNTRINGEN HBF</text>
+
+  <!-- OS11 preview badge -->
+  <rect x="52" y="36" width="24" height="14" rx="3" fill="#b8860b" opacity=".18" stroke="#b8860b" stroke-width=".8" stroke-dasharray="3,2"/>
+  <text x="64" y="46" text-anchor="middle" font-size="7" fill="#b8860b" font-weight="bold">NEU</text>
+
+  <!-- Compass / direction indicator -->
+  <text x="170" y="240" text-anchor="middle" font-size="9" fill="var(--text-dim)">← Richtung Stadt · Gleise oben = Abfahrt · Gleise unten = Ankunft →</text>
+</svg>`
+    },
+
+    'Villotal Hbf': {
+        sub: 'S11 · S12 · OS11 (geplant) · Fernverkehr · 8 Gleise',
+        legend: [
+            { color:'#c0392b', label:'S11' },
+            { color:'#1a6b9a', label:'S12' },
+            { color:'#b8860b', label:'OS11 (geplant)', dashed:true },
+            { color:'#444', label:'Fernverkehr' },
+            { color:'#555', label:'U-Bahn (Zugang)' },
+        ],
+        svg: `<svg viewBox="0 0 280 250" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans,sans-serif">
+  <!-- Platform background -->
+  <rect x="8" y="30" width="264" height="170" rx="6" fill="var(--card)" stroke="var(--map-track)" stroke-width="1"/>
+
+  <!-- 8 tracks -->
+  <!-- GL 1: S11 → Lixen -->
+  <rect x="14"  y="36" width="6" height="158" rx="3" fill="#c0392b" opacity=".8"/>
+  <!-- GL 2: Abstellgleis -->
+  <rect x="42"  y="36" width="6" height="158" rx="3" fill="#555" opacity=".35"/>
+  <!-- GL 3: S12 → Güntringen Hbf -->
+  <rect x="70"  y="36" width="6" height="158" rx="3" fill="#1a6b9a" opacity=".8"/>
+  <!-- GL 4: OS11 → Glücksburg (geplant) -->
+  <rect x="98"  y="36" width="6" height="158" rx="3" fill="#b8860b" opacity=".5"/>
+  <!-- GL 5: S12 → Möhlen Nord -->
+  <rect x="126" y="36" width="6" height="158" rx="3" fill="#1a6b9a" opacity=".6"/>
+  <!-- GL 6: S12 Ankunft / Abstellung -->
+  <rect x="154" y="36" width="6" height="158" rx="3" fill="#1a6b9a" opacity=".4"/>
+  <!-- GL 7: Fernverkehr Durchfahrt -->
+  <rect x="182" y="36" width="6" height="158" rx="3" fill="#444" opacity=".55"/>
+  <!-- GL 8: Fernverkehr / Reserve -->
+  <rect x="210" y="36" width="6" height="158" rx="3" fill="#444" opacity=".35"/>
+
+  <!-- Platform edges -->
+  <rect x="11"  y="34" width="3" height="162" rx="1" fill="var(--map-track)"/>
+  <rect x="39"  y="34" width="3" height="162" rx="1" fill="var(--map-track)"/>
+  <rect x="67"  y="34" width="3" height="162" rx="1" fill="var(--map-track)"/>
+  <rect x="95"  y="34" width="3" height="162" rx="1" fill="var(--map-track)"/>
+  <rect x="123" y="34" width="3" height="162" rx="1" fill="var(--map-track)"/>
+  <rect x="151" y="34" width="3" height="162" rx="1" fill="var(--map-track)"/>
+  <rect x="179" y="34" width="3" height="162" rx="1" fill="var(--map-track)"/>
+  <rect x="207" y="34" width="3" height="162" rx="1" fill="var(--map-track)"/>
+  <rect x="235" y="34" width="3" height="162" rx="1" fill="var(--map-track)"/>
+
+  <!-- Track numbers -->
+  <text x="17"  y="208" text-anchor="middle" font-size="9" fill="#c0392b" font-weight="bold">1</text>
+  <text x="45"  y="208" text-anchor="middle" font-size="9" fill="var(--map-label)">2</text>
+  <text x="73"  y="208" text-anchor="middle" font-size="9" fill="#1a6b9a" font-weight="bold">3</text>
+  <text x="101" y="208" text-anchor="middle" font-size="9" fill="#b8860b" font-weight="bold">4</text>
+  <text x="129" y="208" text-anchor="middle" font-size="9" fill="#1a6b9a" font-weight="bold">5</text>
+  <text x="157" y="208" text-anchor="middle" font-size="9" fill="#1a6b9a">6</text>
+  <text x="185" y="208" text-anchor="middle" font-size="9" fill="#444" font-weight="bold">7</text>
+  <text x="213" y="208" text-anchor="middle" font-size="9" fill="#444">8</text>
+
+  <!-- Labels -->
+  <g font-size="8" fill="var(--map-label)" text-anchor="start">
+    <text transform="translate(17,155) rotate(-70)" fill="#c0392b">S11 → Lixen</text>
+    <text transform="translate(45,165) rotate(-70)" fill="#777">Abstell.</text>
+    <text transform="translate(73,155) rotate(-70)" fill="#1a6b9a">S12 → Güntringen</text>
+    <text transform="translate(101,155) rotate(-70)" fill="#b8860b">OS11 → Glücksburg</text>
+    <text transform="translate(129,155) rotate(-70)" fill="#1a6b9a">S12 → Möhlen Nord</text>
+    <text transform="translate(157,165) rotate(-70)" fill="#1a6b9a">S12 Ankunft</text>
+    <text transform="translate(185,160) rotate(-70)" fill="#444">Fernv. Durchfahrt</text>
+    <text transform="translate(213,165) rotate(-70)" fill="#444">Fernv. Reserve</text>
+  </g>
+
+  <!-- U-Bahn indicator -->
+  <rect x="240" y="50" width="26" height="50" rx="4" fill="var(--card)" stroke="var(--map-track)" stroke-width="1"/>
+  <text x="253" y="69" text-anchor="middle" font-size="8" fill="var(--text-dim)">U</text>
+  <rect x="244" y="72" width="18" height="4" rx="2" fill="#0055aa" opacity=".7"/>
+  <text x="253" y="88" text-anchor="middle" font-size="7" fill="var(--text-dim)">Zugang</text>
+  <text x="253" y="97" text-anchor="middle" font-size="7" fill="var(--text-dim)">↓ Ebene</text>
+
+  <!-- OS11 badge -->
+  <rect x="88" y="36" width="24" height="14" rx="3" fill="#b8860b" opacity=".18" stroke="#b8860b" stroke-width=".8" stroke-dasharray="3,2"/>
+  <text x="100" y="46" text-anchor="middle" font-size="7" fill="#b8860b" font-weight="bold">NEU</text>
+
+  <!-- Banner -->
+  <rect x="8" y="4" width="264" height="22" rx="4" fill="#1a6b9a" opacity=".12"/>
+  <text x="140" y="19" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a6b9a" letter-spacing="1">VILLOTAL HBF</text>
+
+  <text x="140" y="238" text-anchor="middle" font-size="9" fill="var(--text-dim)">Fernbahnhof · Anschluss U-Bahn · Fernverkehr Gl. 7–8</text>
+</svg>`
+    },
+
+    'Möhlen Hbf': {
+        sub: 'S12 · Möhlen-Stadtbahn · 5 Gleise',
+        legend: [
+            { color:'#1a6b9a', label:'S12' },
+            { color:'#e67e22', label:'Möhlen-Stadtbahn' },
+            { color:'#555', label:'Abstellgleis' },
+        ],
+        svg: `<svg viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans,sans-serif">
+  <rect x="8" y="30" width="200" height="165" rx="6" fill="var(--card)" stroke="var(--map-track)" stroke-width="1"/>
+
+  <!-- GL 1: S12 → Möhlen Nord -->
+  <rect x="18"  y="36" width="6" height="153" rx="3" fill="#1a6b9a" opacity=".8"/>
+  <!-- GL 2: S12 → Güntringen Hbf -->
+  <rect x="54"  y="36" width="6" height="153" rx="3" fill="#1a6b9a" opacity=".6"/>
+  <!-- GL 3: Abstellgleis -->
+  <rect x="90"  y="36" width="6" height="153" rx="3" fill="#555" opacity=".35"/>
+  <!-- GL 4: Stadtbahn Richtung Möhlen Mitte -->
+  <rect x="126" y="36" width="6" height="153" rx="3" fill="#e67e22" opacity=".75"/>
+  <!-- GL 5: Stadtbahn Richtung Möhlen Ost -->
+  <rect x="162" y="36" width="6" height="153" rx="3" fill="#e67e22" opacity=".5"/>
+
+  <!-- Platform edges -->
+  <rect x="15"  y="34" width="3" height="157" rx="1" fill="var(--map-track)"/>
+  <rect x="51"  y="34" width="3" height="157" rx="1" fill="var(--map-track)"/>
+  <rect x="87"  y="34" width="3" height="157" rx="1" fill="var(--map-track)"/>
+  <rect x="123" y="34" width="3" height="157" rx="1" fill="var(--map-track)"/>
+  <rect x="159" y="34" width="3" height="157" rx="1" fill="var(--map-track)"/>
+  <rect x="195" y="34" width="3" height="157" rx="1" fill="var(--map-track)"/>
+
+  <!-- Track numbers -->
+  <text x="21"  y="202" text-anchor="middle" font-size="9" fill="#1a6b9a" font-weight="bold">1</text>
+  <text x="57"  y="202" text-anchor="middle" font-size="9" fill="#1a6b9a" font-weight="bold">2</text>
+  <text x="93"  y="202" text-anchor="middle" font-size="9" fill="var(--map-label)">3</text>
+  <text x="129" y="202" text-anchor="middle" font-size="9" fill="#e67e22" font-weight="bold">4</text>
+  <text x="165" y="202" text-anchor="middle" font-size="9" fill="#e67e22" font-weight="bold">5</text>
+
+  <g font-size="8" text-anchor="start">
+    <text transform="translate(21,155) rotate(-70)" fill="#1a6b9a">S12 → Möhlen Nord</text>
+    <text transform="translate(57,160) rotate(-70)" fill="#1a6b9a">S12 → Güntringen</text>
+    <text transform="translate(93,165) rotate(-70)" fill="#777">Abstell.</text>
+    <text transform="translate(129,155) rotate(-70)" fill="#e67e22">Stadtbahn → Mitte</text>
+    <text transform="translate(165,155) rotate(-70)" fill="#e67e22">Stadtbahn → Ost</text>
+  </g>
+
+  <!-- Banner -->
+  <rect x="8" y="4" width="200" height="22" rx="4" fill="#1a6b9a" opacity=".12"/>
+  <text x="110" y="19" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a6b9a" letter-spacing="1">MÖHLEN HBF</text>
+
+  <!-- P+R indicator -->
+  <rect x="10" y="218" width="196" height="16" rx="4" fill="var(--card)" stroke="var(--input-border)" stroke-width="1"/>
+  <text x="110" y="230" text-anchor="middle" font-size="9" fill="var(--text-dim)">P+R 200 Stellplätze · Zugang Stadtbahn Ebene –1</text>
+</svg>`
+    },
+
+    'Möhlen Nord': {
+        sub: 'S12 · Endstation · P+R · 2 Gleise',
+        legend: [
+            { color:'#1a6b9a', label:'S12' },
+            { color:'#555', label:'Abstellanlage' },
+        ],
+        svg: `<svg viewBox="0 0 180 230" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans,sans-serif">
+  <rect x="8" y="30" width="160" height="155" rx="6" fill="var(--card)" stroke="var(--map-track)" stroke-width="1"/>
+
+  <!-- GL 1: S12 → Güntringen Hbf (Hauptgleis) -->
+  <rect x="30"  y="36" width="8" height="143" rx="4" fill="#1a6b9a" opacity=".85"/>
+  <!-- Prellbock -->
+  <rect x="28"  y="174" width="12" height="6" rx="2" fill="#1a6b9a" opacity=".9"/>
+  <line x1="26" y1="177" x2="42" y2="177" stroke="#1a6b9a" stroke-width="2.5" opacity=".9"/>
+
+  <!-- GL 2: Abstellgleis / Wendegleis -->
+  <rect x="76"  y="60" width="6" height="119" rx="3" fill="#555" opacity=".4"/>
+  <!-- Prellbock -->
+  <rect x="74"  y="174" width="10" height="5" rx="2" fill="#555" opacity=".5"/>
+  <line x1="72" y1="176.5" x2="86" y2="176.5" stroke="#555" stroke-width="2" opacity=".5"/>
+
+  <!-- Platform -->
+  <rect x="11"  y="34" width="3" height="147" rx="1" fill="var(--map-track)"/>
+  <rect x="54"  y="34" width="3" height="147" rx="1" fill="var(--map-track)"/>
+  <rect x="72"  y="58" width="3" height="123" rx="1" fill="var(--map-track)"/>
+  <rect x="100" y="58" width="3" height="123" rx="1" fill="var(--map-track)"/>
+
+  <!-- Track numbers -->
+  <text x="34"  y="195" text-anchor="middle" font-size="10" fill="#1a6b9a" font-weight="bold">1</text>
+  <text x="79"  y="195" text-anchor="middle" font-size="10" fill="var(--map-label)">2</text>
+
+  <g font-size="9" text-anchor="start">
+    <text transform="translate(36,162) rotate(-65)" fill="#1a6b9a" font-weight="bold">S12 → Güntringen Hbf</text>
+    <text transform="translate(81,158) rotate(-65)" fill="#777">Abstellung / Wende</text>
+  </g>
+
+  <!-- Banner -->
+  <rect x="8" y="4" width="160" height="22" rx="4" fill="#1a6b9a" opacity=".12"/>
+  <text x="90" y="19" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a6b9a" letter-spacing="1">MÖHLEN NORD</text>
+
+  <!-- Endstation badge -->
+  <rect x="105" y="44" width="54" height="20" rx="4" fill="rgba(192,57,43,.1)" stroke="rgba(192,57,43,.3)" stroke-width="1"/>
+  <text x="132" y="58" text-anchor="middle" font-size="9" fill="var(--accent)" font-weight="bold">ENDSTATION</text>
+
+  <!-- P+R -->
+  <rect x="8" y="200" width="160" height="22" rx="4" fill="var(--card)" stroke="var(--input-border)" stroke-width="1"/>
+  <text x="90" y="215" text-anchor="middle" font-size="9" fill="var(--text-dim)">P+R 80 Stellplätze · Fahrradabstellanlage</text>
+</svg>`
+    }
+};
+
+function openGleisplan(stationName) {
+    const data = GLEISPLAN_DATA[stationName];
+    if (!data) return;
+    document.getElementById('gleisplan-title').textContent = stationName + ' – Gleisplan';
+    document.getElementById('gleisplan-sub').textContent = data.sub;
+    document.getElementById('gleisplan-svg').innerHTML = data.svg;
+    document.getElementById('gleisplan-legend').innerHTML = data.legend.map(l =>
+        `<div class="gl-leg-item">
+            <div class="gl-leg-dot" style="background:${l.color};${l.dashed?'outline:1.5px dashed '+l.color+';background:transparent;':''};"></div>
+            <span style="color:var(--text-dim);">${l.label}</span>
+        </div>`
+    ).join('');
+    document.getElementById('gleisplan-overlay').classList.remove('hidden');
+}
+function closeGleisplan(e) {
+    if (e && e.target !== document.getElementById('gleisplan-overlay')) return;
+    document.getElementById('gleisplan-overlay').classList.add('hidden');
+}
+
+
 // Route defaults (set on DOM load, will be overridden after login)
 document.getElementById('route-from-input').value='Güntringen Hbf';
 document.getElementById('route-to-input').value='Villotal Hbf';
