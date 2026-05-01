@@ -3,36 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GÜN App – v5</title>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;700;800&family=DM+Sans:wght@400;500;700&family=B612+Mono&display=swap" rel="stylesheet">
+    <title>GÜN App – v8</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,700;0,800;1,700&family=DM+Sans:wght@400;500;700&family=B612+Mono&display=swap" rel="stylesheet">
 
-    <!-- Firebase -->
+    <!-- ═══ FIREBASE ═══ -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile }
+        import { initializeApp }
+            from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+                 signOut, onAuthStateChanged, updateProfile }
             from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getDatabase, ref, onValue, set, get, update, push, serverTimestamp }
             from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC48nhhA47984Uq1wmP7rLTNA3VG1T2xOg",
-            authDomain: "projektguentringen.firebaseapp.com",
-            projectId: "projektguentringen",
-            storageBucket: "projektguentringen.firebasestorage.app",
+            apiKey:            "AIzaSyC48nhhA47984Uq1wmP7rLTNA3VG1T2xOg",
+            authDomain:        "projektguentringen.firebaseapp.com",
+            projectId:         "projektguentringen",
+            storageBucket:     "projektguentringen.firebasestorage.app",
             messagingSenderId: "614050838153",
-            appId: "1:614050838153:web:f3725e0b5c4840d5107858",
-            databaseURL: "https://projektguentringen-default-rtdb.europe-west1.firebasedatabase.app"
+            appId:             "1:614050838153:web:f3725e0b5c4840d5107858",
+            databaseURL:       "https://projektguentringen-default-rtdb.europe-west1.firebasedatabase.app"
         };
 
         const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db   = getDatabase(app);
 
-        // ── expose to global ──
-        window._fb = { auth, db, ref, onValue, set, get, update, push, serverTimestamp,
-            createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile };
+        // expose to global non-module script
+        window._fb = {
+            auth, db, ref, onValue, set, get, update, push, serverTimestamp,
+            createUserWithEmailAndPassword, signInWithEmailAndPassword,
+            signOut, onAuthStateChanged, updateProfile
+        };
 
-        // ── auth state listener ──
+        // Central auth state listener
         onAuthStateChanged(auth, user => {
             if (user) {
                 window._fbUser = user;
@@ -44,333 +49,357 @@
             }
         });
     </script>
-
     <style>
         :root {
-            --accent:#c0392b; --success:#27ae60; --premium:#e74c3c; --warn:#e67e22;
-            --vil-color:#c0392b; --eur-color:#27ae60;
+            --accent: #c0392b;
+            --accent2: #27ae60;
+            --accent-hover: #e74c3c;
+            --vil-color: #c0392b;
+            --eur-color: #27ae60;
+            --success: #27ae60;
+            --premium: #e74c3c;
+            --warn: #e67e22;
+            --s11-color: #c0392b;
+            --l14-color: #003f8a;
+            --l15-color: #6b1e1e;
+            --l16-color: #174f17;
+            --l17-color: #7b3fa0;
         }
         [data-theme="dark"] {
-            --bg:#0e0e0e; --card:#191919;
-            --header-bg:linear-gradient(to bottom,#1c1c1c,#0e0e0e);
-            --header-border:#252525; --tab-bg:#111; --tab-active-bg:#222;
-            --text:#f0f0f0; --text-dim:#888; --input-bg:#191919;
-            --input-border:#2a2a2a; --modal-bg:#1e1e1e;
-            --overlay-bg:rgba(0,0,0,0.92);
-            --row-hover:#1f1f1f; --setting-row-bg:#191919;
-            --notif-drawer-bg:#141414; --toggle-off:#333;
-            --stat-box-bg:#191919; --fp-header-bg:#1a1a1a;
-            --fp-border:#1f1f1f; --section-title:#888;
-            --shadow:rgba(0,0,0,0.5); --login-bg:#0e0e0e;
-            --drawer-border:#222;
+            --bg: #0e0e0e; --card: #191919;
+            --header-bg: linear-gradient(to bottom,#1c1c1c,#0e0e0e);
+            --header-border: #252525; --tab-bg: #111; --tab-active-bg: #222;
+            --text: #f0f0f0; --text-dim: #888; --input-bg: #191919;
+            --input-border: #2a2a2a; --modal-bg: #1e1e1e;
+            --overlay-bg: rgba(0,0,0,0.92); --drawer-bg: #141414;
+            --drawer-border: #222; --row-hover: #1f1f1f;
+            --setting-row-bg: #191919; --notif-drawer-bg: #141414;
+            --toggle-off: #333; --stat-box-bg: #191919;
+            --fp-header-bg: #1a1a1a; --fp-border: #1f1f1f;
+            --section-title: #888; --shadow: rgba(0,0,0,0.5);
+            --login-bg: #0e0e0e; --map-bg: #111;
+            --map-track: #333; --map-label: #ccc;
         }
         [data-theme="light"] {
-            --bg:#f2f2f2; --card:#fff;
-            --header-bg:linear-gradient(to bottom,#fff,#f2f2f2);
-            --header-border:#ddd; --tab-bg:#e8e8e8; --tab-active-bg:#fff;
-            --text:#111; --text-dim:#666; --input-bg:#fff;
-            --input-border:#ccc; --modal-bg:#fff;
-            --overlay-bg:rgba(0,0,0,0.5);
-            --row-hover:#f7f7f7; --setting-row-bg:#fff;
-            --notif-drawer-bg:#fafafa; --toggle-off:#bbb;
-            --stat-box-bg:#fff; --fp-header-bg:#f0f0f0;
-            --fp-border:#e8e8e8; --section-title:#888;
-            --shadow:rgba(0,0,0,0.12); --login-bg:#f2f2f2;
-            --drawer-border:#ddd;
+            --bg: #f2f2f2; --card: #fff;
+            --header-bg: linear-gradient(to bottom,#fff,#f2f2f2);
+            --header-border: #ddd; --tab-bg: #e8e8e8; --tab-active-bg: #fff;
+            --text: #111; --text-dim: #666; --input-bg: #fff;
+            --input-border: #ccc; --modal-bg: #fff;
+            --overlay-bg: rgba(0,0,0,0.5); --drawer-bg: #fafafa;
+            --drawer-border: #ddd; --row-hover: #f7f7f7;
+            --setting-row-bg: #fff; --notif-drawer-bg: #fafafa;
+            --toggle-off: #bbb; --stat-box-bg: #fff;
+            --fp-header-bg: #f0f0f0; --fp-border: #e8e8e8;
+            --section-title: #888; --shadow: rgba(0,0,0,0.12);
+            --login-bg: #f2f2f2; --map-bg: #f5f5f5;
+            --map-track: #ccc; --map-label: #333;
         }
-
         * { box-sizing:border-box; margin:0; padding:0; }
         body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; transition:background .3s,color .3s; }
-        h1,h2,h3 { font-family:'Barlow',sans-serif; font-weight:800; text-transform:uppercase; }
+        h1,h2,h3,.badge { font-family:'Barlow',sans-serif; font-weight:800; text-transform:uppercase; }
 
-        /* ── LOGIN ── */
-        #login-screen {
-            position:fixed; inset:0; background:var(--login-bg);
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            z-index:9999; padding:28px; animation:fadeIn .35s ease;
-        }
+        #app-shell { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+        #app-shell.hidden { display:none; }
         #login-screen.hidden { display:none; }
-        .login-logo { width:76px; height:76px; border-radius:20px; background:linear-gradient(135deg,var(--accent),#8b0000); display:flex; align-items:center; justify-content:center; font-family:'Barlow',sans-serif; font-size:26px; font-weight:800; color:#fff; margin-bottom:22px; box-shadow:0 8px 30px rgba(192,57,43,.35); }
-        .login-title { font-size:24px; font-weight:800; font-family:'Barlow',sans-serif; text-transform:uppercase; margin-bottom:4px; }
-        .login-subtitle { font-size:12px; color:var(--text-dim); margin-bottom:28px; text-align:center; line-height:1.5; }
-        .login-tabs { display:flex; gap:0; width:100%; max-width:320px; background:var(--input-bg); border-radius:10px; border:1px solid var(--input-border); margin-bottom:20px; overflow:hidden; }
-        .login-tab { flex:1; padding:10px; text-align:center; font-size:12px; font-weight:700; font-family:'Barlow',sans-serif; text-transform:uppercase; cursor:pointer; color:var(--text-dim); transition:.2s; }
+        .login-tab { flex:1; text-align:center; padding:9px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer; color:var(--text-dim); transition:.2s; }
         .login-tab.active { background:var(--accent); color:#fff; }
-        .login-field { width:100%; max-width:320px; margin-bottom:12px; }
+        .login-err { color:var(--premium); font-size:12px; margin-top:6px; min-height:18px; text-align:center; }
+        /* ====== LOGIN ====== */
+        #login-screen { position:fixed; inset:0; background:var(--login-bg); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; padding:24px 20px; animation:fadeIn .4s ease; overflow-y:auto; }
+        #login-screen.hidden { display:none; }
+        .login-card { width:100%; max-width:360px; display:flex; flex-direction:column; align-items:center; }
+        .login-logo { width:72px; height:72px; border-radius:18px; background:linear-gradient(135deg,var(--accent),#8b0000); display:flex; align-items:center; justify-content:center; font-family:'Barlow',sans-serif; font-size:26px; font-weight:800; color:#fff; margin-bottom:18px; box-shadow:0 8px 30px rgba(192,57,43,.35); flex-shrink:0; }
+        .login-title { font-size:24px; font-weight:800; font-family:'Barlow',sans-serif; text-transform:uppercase; margin-bottom:5px; text-align:center; }
+        .login-subtitle { font-size:12px; color:var(--text-dim); margin-bottom:24px; text-align:center; line-height:1.5; }
+        .login-tabs { display:flex; width:100%; margin-bottom:16px; background:var(--input-bg); border-radius:10px; padding:3px; gap:3px; }
+        .login-field { width:100%; margin-bottom:12px; }
         .login-label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
-        .login-input { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:13px 15px; border-radius:11px; font-size:14px; font-family:'DM Sans',sans-serif; transition:border-color .2s; }
+        .login-input { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:13px 15px; border-radius:11px; font-size:15px; font-family:'DM Sans',sans-serif; transition:border-color .2s; }
         .login-input:focus { outline:none; border-color:var(--accent); }
-        .login-btn { width:100%; max-width:320px; background:var(--accent); color:#fff; border:none; padding:14px; border-radius:11px; font-weight:800; font-size:15px; font-family:'Barlow',sans-serif; text-transform:uppercase; cursor:pointer; letter-spacing:1px; margin-top:6px; box-shadow:0 4px 16px rgba(192,57,43,.3); transition:opacity .2s; }
-        .login-btn:active { opacity:.8; }
-        .login-err { font-size:11px; color:var(--premium); margin-top:10px; text-align:center; min-height:16px; }
-        #login-register-fields { display:none; }
+        .login-btn { width:100%; background:var(--accent); color:#fff; border:none; padding:14px; border-radius:12px; font-weight:800; font-size:16px; font-family:'Barlow',sans-serif; text-transform:uppercase; cursor:pointer; letter-spacing:1px; margin-top:6px; transition:opacity .2s; box-shadow:0 4px 16px rgba(192,57,43,.3); }
+        .login-btn:active { opacity:.85; }
+        .login-hint { font-size:11px; color:var(--text-dim); margin-top:16px; text-align:center; }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
-        /* ── APP SHELL ── */
-        #app-shell { display:flex; flex-direction:column; flex:1; overflow:hidden; }
-        #app-shell.hidden { display:none; }
-
-        /* ── HEADER ── */
-        header { padding:11px 15px; background:var(--header-bg); border-bottom:1px solid var(--header-border); display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
-        .user-info { display:flex; align-items:center; gap:9px; cursor:pointer; }
-        .avatar { width:38px; height:38px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:13px; flex-shrink:0; }
+        /* ====== HEADER ====== */
+        header { padding:12px 16px; background:var(--header-bg); border-bottom:1px solid var(--header-border); display:flex; justify-content:space-between; align-items:center; flex-shrink:0; transition:background .3s,border-color .3s; }
+        .user-info { display:flex; align-items:center; gap:10px; cursor:pointer; }
+        .avatar { width:40px; height:40px; background:var(--accent); border-radius:11px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:13px; flex-shrink:0; }
+        .balance-display { text-align:right; }
+        .vil-val { color:var(--vil-color); font-size:1.05rem; font-weight:bold; font-family:'B612 Mono',monospace; }
+        .eur-val { color:var(--eur-color); font-size:.78rem; opacity:.85; }
         .header-right { display:flex; align-items:center; gap:6px; }
-        .theme-btn { background:var(--card); border:1px solid var(--input-border); color:var(--text); border-radius:9px; padding:7px 9px; font-size:15px; cursor:pointer; }
-        .notif-bell { position:relative; cursor:pointer; background:var(--card); border:1px solid var(--input-border); border-radius:9px; padding:7px 9px; font-size:15px; }
+        .theme-btn { background:var(--card); border:1px solid var(--input-border); color:var(--text); border-radius:9px; padding:7px 9px; font-size:16px; cursor:pointer; flex-shrink:0; }
+        .notif-bell { position:relative; cursor:pointer; background:var(--card); border:1px solid var(--input-border); border-radius:9px; padding:7px 9px; font-size:16px; }
         .notif-dot { position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--premium); border-radius:50%; display:none; }
         .notif-dot.active { display:block; }
-        .balance-display { text-align:right; }
-        .vil-val { color:var(--vil-color); font-size:1rem; font-weight:bold; font-family:'B612 Mono',monospace; }
-        .eur-val { color:var(--eur-color); font-size:.75rem; opacity:.85; }
 
-        /* ── TABS ── */
+        /* ====== TABS ====== */
         .tab-bar { display:flex; background:var(--tab-bg); padding:4px; gap:4px; flex-shrink:0; overflow-x:auto; }
         .tab-bar::-webkit-scrollbar { display:none; }
-        .tab { flex:1; min-width:50px; padding:9px 4px; text-align:center; font-size:.58rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; cursor:pointer; border-radius:7px; transition:.2s; white-space:nowrap; }
+        .tab { flex:1; min-width:52px; padding:9px 4px; text-align:center; font-size:0.6rem; font-weight:bold; color:var(--text-dim); text-transform:uppercase; cursor:pointer; border-radius:7px; transition:.2s; white-space:nowrap; }
         .tab.active { background:var(--tab-active-bg); color:var(--accent); box-shadow:0 1px 6px var(--shadow); }
 
-        /* ── MAIN ── */
-        main { flex:1; overflow-y:auto; padding:14px; padding-bottom:20px; }
+        /* ====== MAIN ====== */
+        main { flex:1; overflow-y:auto; padding:14px; padding-bottom:18px; }
         .view { display:none; }
-        .view.active { display:block; animation:slideUp .2s ease-out; }
-        @keyframes slideUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-        .section-title { font-size:10px; color:var(--section-title); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+        .view.active { display:block; animation:slideUp .22s ease-out; }
+        @keyframes slideUp { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
 
-        /* ── FIS ── */
+        /* ====== SECTION TITLE ====== */
+        .section-title { font-size:11px; color:var(--section-title); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+
+        /* ====== FIS ====== */
         .fis-station-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-        .fis-station-name { font-size:17px; font-weight:800; font-family:'Barlow',sans-serif; text-transform:uppercase; }
+        .fis-station-name { font-size:18px; font-weight:800; font-family:'Barlow',sans-serif; text-transform:uppercase; }
         .fis-change-btn { font-size:11px; color:var(--accent); cursor:pointer; background:rgba(192,57,43,.08); border:1px solid rgba(192,57,43,.2); padding:5px 10px; border-radius:20px; font-weight:bold; }
-        .fis-card { background:var(--card); border-radius:13px; overflow:hidden; margin-bottom:13px; box-shadow:0 2px 10px var(--shadow); }
-        .fis-row { display:grid; grid-template-columns:46px 1fr 90px; padding:13px; border-bottom:1px solid var(--fp-border); align-items:center; cursor:pointer; transition:background .15s; }
+        .fis-card { background:var(--card); border-radius:14px; overflow:hidden; margin-bottom:14px; box-shadow:0 2px 10px var(--shadow); }
+        .fis-row { display:grid; grid-template-columns:48px 1fr 90px; padding:13px; border-bottom:1px solid var(--fp-border); align-items:center; cursor:pointer; transition:background .15s; }
         .fis-row:last-child { border-bottom:none; }
         .fis-row:hover { background:var(--row-hover); }
-        .line-badge { width:34px; height:21px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:bold; }
+        .line-badge { width:36px; height:22px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; font-weight:bold; }
         .eta-col { text-align:right; }
         .eta { font-family:'B612 Mono',monospace; color:var(--success); font-weight:bold; font-size:14px; }
-        .eta-cd { font-family:'B612 Mono',monospace; font-size:10px; color:var(--text-dim); margin-top:1px; }
+        .eta-countdown { font-family:'B612 Mono',monospace; font-size:10px; color:var(--text-dim); margin-top:2px; }
         .delay-tag { background:rgba(231,76,60,.12); color:var(--premium); border:1px solid rgba(231,76,60,.25); font-size:9px; padding:2px 5px; border-radius:4px; margin-top:3px; display:inline-block; }
-        /* delay badge in FIS – live from Firebase */
-        .delay-live { background:rgba(231,76,60,.18); color:var(--premium); border:1px solid rgba(231,76,60,.35); font-size:9px; padding:2px 6px; border-radius:4px; display:inline-block; margin-top:3px; }
 
-        /* ── S11 line strip ── */
-        .s11-map { background:var(--card); border-radius:13px; padding:16px; margin-bottom:13px; border:1px solid var(--input-border); }
-        .s11-map h3 { font-size:10px; color:var(--accent); letter-spacing:1px; margin-bottom:13px; }
+        /* ====== S11 MAP ====== */
+        .s11-map { background:var(--card); border-radius:14px; padding:18px; margin-bottom:14px; border:1px solid var(--input-border); box-shadow:0 2px 10px var(--shadow); }
+        .s11-map h3 { font-size:11px; color:var(--accent); letter-spacing:1px; margin-bottom:14px; }
         .s11-route { display:flex; flex-direction:column; }
-        .s11-stop { display:flex; align-items:center; gap:11px; position:relative; }
-        .s11-stop:not(:last-child)::after { content:''; position:absolute; left:10px; top:21px; width:2px; height:24px; background:#c0392b; opacity:.4; }
-        .s11-dot { width:22px; height:22px; border-radius:50%; border:2.5px solid #c0392b; background:var(--card); display:flex; align-items:center; justify-content:center; flex-shrink:0; z-index:1; }
-        .s11-dot.terminal { background:#c0392b; }
-        .s11-dot.terminal::after { content:''; width:7px; height:7px; border-radius:50%; background:#fff; }
-        .s11-dot.mid::after { content:''; width:6px; height:6px; border-radius:50%; background:#c0392b; }
-        .s11-stop-info { padding:7px 0; }
-        .s11-stop-name { font-size:12px; font-weight:bold; }
+        .s11-stop { display:flex; align-items:center; gap:12px; position:relative; }
+        .s11-stop:not(:last-child)::after { content:''; position:absolute; left:11px; top:22px; width:2px; height:24px; background:var(--s11-color); opacity:.4; }
+        .s11-dot { width:24px; height:24px; border-radius:50%; border:2.5px solid var(--s11-color); background:var(--card); display:flex; align-items:center; justify-content:center; flex-shrink:0; z-index:1; }
+        .s11-dot.terminal { background:var(--s11-color); }
+        .s11-dot.terminal::after { content:''; width:8px; height:8px; border-radius:50%; background:#fff; }
+        .s11-dot.mid::after { content:''; width:6px; height:6px; border-radius:50%; background:var(--s11-color); }
+        .s11-stop-info { padding:8px 0; }
+        .s11-stop-name { font-size:13px; font-weight:bold; }
         .s11-stop-sub { font-size:10px; color:var(--text-dim); margin-top:1px; }
 
-        /* ── FAHRPLAN ── */
-        .fp-selector { display:flex; gap:7px; margin-bottom:13px; flex-wrap:wrap; }
-        .fp-btn { padding:7px 12px; border-radius:8px; border:1px solid var(--input-border); background:var(--card); color:var(--text-dim); font-size:11px; font-weight:bold; cursor:pointer; transition:.2s; }
+        /* ====== NETZPLAN ====== */
+        .netmap-wrap { background:var(--map-bg); border-radius:14px; overflow:hidden; margin-bottom:14px; }
+        .netmap-wrap svg { display:block; width:100%; }
+
+        /* ====== FAHRPLAN ====== */
+        .fp-selector { display:flex; gap:7px; margin-bottom:14px; flex-wrap:wrap; }
+        .fp-btn { padding:8px 13px; border-radius:8px; border:1px solid var(--input-border); background:var(--card); color:var(--text-dim); font-size:12px; font-weight:bold; cursor:pointer; transition:.2s; }
         .fp-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(192,57,43,.08); }
-        .fp-direction { display:flex; gap:6px; margin-bottom:10px; }
+        .fp-direction { display:flex; gap:6px; margin-bottom:11px; }
         .dir-btn { flex:1; padding:9px; border-radius:8px; border:1px solid var(--input-border); background:var(--card); color:var(--text-dim); font-size:11px; cursor:pointer; text-align:center; transition:.2s; }
         .dir-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(192,57,43,.06); }
-        .fp-search-wrap { position:relative; margin-bottom:10px; }
-        .fp-search { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:10px 13px 10px 34px; border-radius:10px; font-size:13px; font-family:'DM Sans',sans-serif; }
+        .fp-search-wrap { position:relative; margin-bottom:11px; }
+        .fp-search { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:10px 13px 10px 36px; border-radius:10px; font-size:13px; font-family:'DM Sans',sans-serif; }
         .fp-search:focus { outline:none; border-color:var(--accent); }
-        .fp-search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:13px; pointer-events:none; }
+        .fp-search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none; }
         .fp-table { background:var(--card); border-radius:12px; overflow:hidden; box-shadow:0 2px 8px var(--shadow); }
         .fp-header { display:grid; grid-template-columns:1fr 70px 70px; padding:10px 13px; background:var(--fp-header-bg); font-size:10px; color:var(--text-dim); font-weight:bold; text-transform:uppercase; }
         .fp-station-row { display:grid; grid-template-columns:1fr 70px 70px; padding:11px 13px; border-bottom:1px solid var(--fp-border); font-size:12px; align-items:center; cursor:pointer; transition:background .15s; }
         .fp-station-row:last-child { border-bottom:none; }
         .fp-station-row:hover { background:var(--row-hover); }
+        .fp-station-row.skipped { opacity:.38; font-style:italic; }
         .fp-station-row.highlight { background:rgba(192,57,43,.05); }
         .fp-station-row.hidden-filter { display:none; }
         .fp-time { font-family:'B612 Mono',monospace; font-size:11px; color:var(--text-dim); }
-        .fp-icon { font-size:12px; margin-right:5px; }
+        .fp-icon { font-size:13px; margin-right:5px; }
+        .skip-badge { background:rgba(230,126,34,.1); color:var(--warn); border:1px solid rgba(230,126,34,.25); font-size:9px; padding:2px 5px; border-radius:4px; margin-left:5px; }
 
-        /* ── AUTOCOMPLETE ── */
+        /* ====== ROUTENPLANER ====== */
+        .route-form { margin-bottom:18px; }
+        .route-input-wrap { position:relative; margin-bottom:10px; }
+        .route-label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
+        .route-input { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:12px 13px; border-radius:10px; font-size:14px; appearance:none; font-family:'DM Sans',sans-serif; transition:border-color .2s; }
+        .route-input:focus { outline:none; border-color:var(--accent); }
+        select.route-input option { background:var(--input-bg); color:var(--text); }
+        /* Autocomplete */
         .autocomplete-wrap { position:relative; }
         .autocomplete-input { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:12px 13px; border-radius:10px; font-size:14px; font-family:'DM Sans',sans-serif; transition:border-color .2s; }
         .autocomplete-input:focus { outline:none; border-color:var(--accent); }
-        .autocomplete-list { position:absolute; top:calc(100%+4px); left:0; right:0; background:var(--modal-bg); border:1px solid var(--input-border); border-radius:10px; z-index:200; max-height:180px; overflow-y:auto; box-shadow:0 4px 16px var(--shadow); display:none; }
+        .autocomplete-list { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--modal-bg); border:1px solid var(--input-border); border-radius:10px; z-index:200; max-height:180px; overflow-y:auto; box-shadow:0 4px 16px var(--shadow); display:none; }
         .autocomplete-list.open { display:block; }
         .ac-item { padding:10px 13px; font-size:13px; cursor:pointer; transition:background .1s; }
-        .ac-item:hover { background:var(--row-hover); color:var(--accent); }
+        .ac-item:hover,.ac-item.selected { background:var(--row-hover); color:var(--accent); }
         .ac-item mark { background:none; color:var(--accent); font-weight:bold; }
-
-        /* ── ROUTE ── */
-        .route-form { margin-bottom:18px; }
-        .route-input-wrap { margin-bottom:10px; }
-        .route-label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
-        .route-input { width:100%; background:var(--input-bg); border:1.5px solid var(--input-border); color:var(--text); padding:12px 13px; border-radius:10px; font-size:14px; font-family:'DM Sans',sans-serif; transition:border-color .2s; }
-        .route-input:focus { outline:none; border-color:var(--accent); }
-        .swap-btn { display:block; margin:0 auto 10px; background:var(--card); border:1px solid var(--input-border); color:var(--text-dim); padding:8px 18px; border-radius:8px; cursor:pointer; font-size:17px; }
-        .route-go-btn { width:100%; background:var(--accent); color:#fff; border:none; padding:13px; border-radius:10px; font-weight:800; font-size:14px; font-family:'Barlow',sans-serif; text-transform:uppercase; cursor:pointer; letter-spacing:1px; box-shadow:0 4px 14px rgba(192,57,43,.25); transition:opacity .2s; }
+        .swap-btn { display:block; margin:0 auto 10px; background:var(--card); border:1px solid var(--input-border); color:var(--text-dim); padding:8px 20px; border-radius:8px; cursor:pointer; font-size:18px; }
+        .route-go-btn { width:100%; background:var(--accent); color:#fff; border:none; padding:14px; border-radius:10px; font-weight:800; font-size:15px; font-family:'Barlow',sans-serif; text-transform:uppercase; cursor:pointer; letter-spacing:1px; transition:opacity .2s; box-shadow:0 4px 14px rgba(192,57,43,.25); }
         .route-go-btn:active { opacity:.8; }
-        .route-card { background:var(--card); border-radius:13px; padding:15px; border:1px solid var(--input-border); margin-bottom:10px; box-shadow:0 2px 8px var(--shadow); }
-        .route-card h3 { font-size:11px; margin-bottom:10px; color:var(--accent); }
+        .route-card { background:var(--card); border-radius:14px; padding:16px; border:1px solid var(--input-border); margin-bottom:10px; box-shadow:0 2px 8px var(--shadow); }
+        .route-card h3 { font-size:12px; margin-bottom:10px; color:var(--accent); }
         .route-leg { display:flex; align-items:flex-start; gap:10px; padding:8px 6px; border-bottom:1px solid var(--fp-border); font-size:13px; cursor:pointer; border-radius:8px; transition:background .15s; margin:0 -6px; }
         .route-leg:last-child { border-bottom:none; }
         .route-leg:hover { background:var(--row-hover); }
-        .route-leg-icon { width:27px; height:27px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; flex-shrink:0; margin-top:2px; }
+        .route-leg-icon { width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; flex-shrink:0; margin-top:1px; }
         .route-leg-times { font-family:'B612 Mono',monospace; font-size:11px; color:var(--text-dim); margin-top:2px; }
-        .trip-summary { display:flex; margin-bottom:16px; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--input-border); }
-        .ts-item { flex:1; text-align:center; padding:11px 5px; border-right:1px solid var(--input-border); }
+
+        /* ====== TRIP SUMMARY BAR ====== */
+        .trip-summary { display:flex; margin-bottom:18px; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--input-border); }
+        .ts-item { flex:1; text-align:center; padding:12px 6px; border-right:1px solid var(--input-border); }
         .ts-item:last-child { border-right:none; }
-        .ts-val { font-family:'B612 Mono',monospace; font-size:15px; font-weight:bold; color:var(--accent); }
+        .ts-val { font-family:'B612 Mono',monospace; font-size:16px; font-weight:bold; color:var(--accent); }
         .ts-lbl { font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-top:2px; }
 
-        /* ── SHOP ── */
-        .shop-section { margin-bottom:20px; }
-        .shop-section h2 { font-size:.75rem; color:var(--accent); margin-bottom:10px; letter-spacing:1px; }
-        .ticket-item { background:var(--card); border-radius:12px; padding:13px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--input-border); }
-        .ticket-info h3 { font-size:13px; margin-bottom:2px; }
+        /* ====== SHOP ====== */
+        .shop-section { margin-bottom:22px; }
+        .shop-section h2 { font-size:.78rem; color:var(--accent); margin-bottom:11px; letter-spacing:1px; }
+        .ticket-item { background:var(--card); border-radius:12px; padding:14px; margin-bottom:9px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--input-border); box-shadow:0 1px 5px var(--shadow); }
+        .ticket-info h3 { font-size:14px; margin-bottom:2px; }
         .ticket-info p { font-size:11px; color:var(--text-dim); line-height:1.3; }
-        .buy-box { text-align:right; min-width:82px; }
-        .btn-buy { background:var(--card); border:1.5px solid var(--accent); color:var(--accent); padding:7px 9px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:11px; width:100%; transition:.2s; }
+        .buy-box { text-align:right; min-width:85px; }
+        .btn-buy { background:var(--card); border:1.5px solid var(--accent); color:var(--accent); padding:8px 10px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px; width:100%; transition:.2s; }
         .btn-buy:active,.btn-buy.owned { background:var(--accent); color:#fff; cursor:default; }
         .eur-sub { font-size:9px; color:var(--eur-color); margin-top:4px; display:block; }
 
-        /* ── WALLET ── */
-        .ticket-active { background:var(--card); border:2px solid var(--accent); border-radius:18px; padding:22px; text-align:center; box-shadow:0 4px 20px rgba(192,57,43,.18); margin-bottom:13px; }
-        .qr-code { background:#fff; width:134px; height:134px; margin:13px auto; padding:7px; border-radius:9px; }
+        /* ====== WALLET ====== */
+        .ticket-active { background:var(--card); border:2px solid var(--accent); border-radius:20px; padding:24px; text-align:center; box-shadow:0 4px 20px rgba(192,57,43,.18); margin-bottom:14px; }
+        .qr-code { background:#fff; width:138px; height:138px; margin:14px auto; padding:7px; border-radius:10px; }
         .qr-code img { width:100%; height:100%; }
-        .wallet-tickets-section { background:var(--card); border-radius:13px; overflow:hidden; border:1px solid var(--input-border); }
-        .wallet-ticket-row { display:flex; align-items:center; gap:11px; padding:12px 13px; border-bottom:1px solid var(--fp-border); }
+        .wallet-tickets-section { background:var(--card); border-radius:14px; overflow:hidden; border:1px solid var(--input-border); }
+        .wallet-ticket-row { display:flex; align-items:center; gap:12px; padding:13px; border-bottom:1px solid var(--fp-border); }
         .wallet-ticket-row:last-child { border-bottom:none; }
-        .wt-icon { width:34px; height:34px; border-radius:8px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
-        .wt-name { font-weight:bold; font-size:12px; }
+        .wt-icon { width:36px; height:36px; border-radius:8px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+        .wt-name { font-weight:bold; font-size:13px; }
         .wt-exp { font-size:11px; color:var(--text-dim); margin-top:2px; }
-        .wt-badge { font-size:9px; font-weight:bold; padding:3px 7px; border-radius:20px; margin-left:auto; flex-shrink:0; background:rgba(39,174,96,.12); color:var(--success); border:1px solid rgba(39,174,96,.3); }
+        .wt-badge { font-size:9px; font-weight:bold; padding:3px 7px; border-radius:20px; margin-left:auto; flex-shrink:0; }
+        .wt-badge.active { background:rgba(39,174,96,.12); color:var(--success); border:1px solid rgba(39,174,96,.3); }
+        .wt-badge.expired { background:rgba(231,76,60,.1); color:var(--premium); border:1px solid rgba(231,76,60,.2); }
 
-        /* ── PROFIL ── */
-        .profile-header { text-align:center; padding:18px 0 13px; }
-        .profile-avatar-big { width:64px; height:64px; background:var(--accent); border-radius:17px; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; color:#fff; margin:0 auto 11px; box-shadow:0 4px 16px rgba(192,57,43,.3); }
-        .profile-name { font-size:19px; font-weight:bold; }
-        .profile-sub { font-size:11px; color:var(--text-dim); margin-top:3px; }
-        .profile-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:13px 0; }
-        .stat-box { background:var(--stat-box-bg); border-radius:11px; padding:12px 7px; text-align:center; box-shadow:0 1px 6px var(--shadow); }
-        .stat-val { font-family:'B612 Mono',monospace; font-size:16px; font-weight:bold; color:var(--accent); }
+        /* ====== PROFIL ====== */
+        .profile-header { text-align:center; padding:20px 0 14px; }
+        .profile-avatar-big { width:68px; height:68px; background:var(--accent); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:bold; color:#fff; margin:0 auto 12px; box-shadow:0 4px 16px rgba(192,57,43,.3); }
+        .profile-name { font-size:20px; font-weight:bold; }
+        .profile-sub { font-size:12px; color:var(--text-dim); margin-top:3px; }
+        .profile-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin:14px 0; }
+        .stat-box { background:var(--stat-box-bg); border-radius:12px; padding:13px 8px; text-align:center; box-shadow:0 1px 6px var(--shadow); }
+        .stat-val { font-family:'B612 Mono',monospace; font-size:17px; font-weight:bold; color:var(--accent); }
         .stat-lbl { font-size:10px; color:var(--text-dim); margin-top:3px; text-transform:uppercase; }
 
-        /* ── Fahrtenverlauf ── */
-        .journey-item { background:var(--card); border-radius:10px; padding:11px 12px; margin-bottom:7px; display:flex; gap:11px; align-items:center; border:1px solid var(--input-border); }
-        .ji-line { width:30px; height:19px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:bold; flex-shrink:0; }
+        /* ====== CO2 CHART ====== */
+        .co2-chart-wrap { background:var(--card); border-radius:14px; padding:16px; margin-bottom:14px; border:1px solid var(--input-border); }
+        .co2-chart-wrap h3 { font-size:11px; color:var(--accent); letter-spacing:1px; margin-bottom:14px; }
+        .bar-chart { display:flex; align-items:flex-end; gap:6px; height:80px; }
+        .bar-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+        .bar { width:100%; border-radius:4px 4px 0 0; background:var(--accent); opacity:.7; transition:opacity .2s; min-height:4px; }
+        .bar:hover { opacity:1; }
+        .bar-lbl { font-size:9px; color:var(--text-dim); font-family:'B612 Mono',monospace; }
+        .bar-val { font-size:9px; color:var(--accent); font-family:'B612 Mono',monospace; }
+
+        /* ====== FAHRTENVERLAUF ====== */
+        .journey-item { background:var(--card); border-radius:10px; padding:12px 13px; margin-bottom:7px; display:flex; gap:11px; align-items:center; border:1px solid var(--input-border); }
+        .ji-line { width:32px; height:20px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:bold; flex-shrink:0; }
         .ji-route { flex:1; }
         .ji-route-main { font-size:12px; font-weight:bold; }
         .ji-route-sub { font-size:11px; color:var(--text-dim); margin-top:2px; }
         .ji-time { font-size:10px; color:var(--text-dim); font-family:'B612 Mono',monospace; text-align:right; flex-shrink:0; }
 
-        /* ── SETTINGS ── */
-        .setting-group { margin-bottom:16px; }
-        .setting-group h2 { font-size:10px; color:var(--accent); margin-bottom:6px; letter-spacing:1px; }
-        .setting-row { background:var(--setting-row-bg); padding:12px; border-radius:10px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:background .15s; }
+        /* ====== SETTING ROWS ====== */
+        .setting-group { margin-bottom:18px; }
+        .setting-group h2 { font-size:10px; color:var(--accent); margin-bottom:7px; letter-spacing:1px; }
+        .setting-row { background:var(--setting-row-bg); padding:13px; border-radius:10px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:background .15s; }
         .setting-row:hover { background:var(--row-hover); }
         .setting-row p { font-size:11px; color:var(--text-dim); margin-top:2px; }
-        .setting-row .arrow { color:var(--text-dim); font-size:15px; }
-        .setting-row span.val { font-size:11px; color:var(--text-dim); }
-        .theme-picker { display:flex; gap:5px; }
-        .tp-btn { padding:5px 9px; border-radius:6px; border:1px solid var(--input-border); background:var(--card); color:var(--text-dim); font-size:11px; font-weight:bold; cursor:pointer; transition:.2s; }
+        .setting-row .arrow { color:var(--text-dim); font-size:16px; }
+        .setting-row span.val { font-size:12px; color:var(--text-dim); }
+        .theme-picker { display:flex; gap:6px; }
+        .tp-btn { padding:5px 10px; border-radius:6px; border:1px solid var(--input-border); background:var(--card); color:var(--text-dim); font-size:11px; font-weight:bold; cursor:pointer; transition:.2s; }
         .tp-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(192,57,43,.08); }
-        .subscribe-row { display:flex; justify-content:space-between; align-items:center; background:var(--card); border-radius:10px; padding:11px 12px; margin-bottom:7px; }
-        .subscribe-row p { font-size:11px; color:var(--text-dim); margin-top:2px; }
+        .subscribe-row { display:flex; justify-content:space-between; align-items:center; background:var(--card); border-radius:10px; padding:12px 13px; margin-bottom:7px; }
+        .subscribe-row p { font-size:12px; color:var(--text-dim); margin-top:2px; }
         .toggle { width:42px; height:24px; background:var(--toggle-off); border-radius:12px; position:relative; cursor:pointer; transition:background .2s; flex-shrink:0; }
         .toggle.on { background:var(--success); }
         .toggle::after { content:''; position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:3px; left:3px; transition:left .2s; }
         .toggle.on::after { left:21px; }
 
-        /* ── DELAY ADMIN (in profil for admins) ── */
-        .admin-panel { background:var(--card); border:1.5px solid rgba(231,76,60,.35); border-radius:13px; padding:15px; margin-bottom:14px; }
-        .admin-panel h3 { font-size:11px; color:var(--premium); letter-spacing:1px; margin-bottom:12px; }
-        .admin-row { display:grid; grid-template-columns:1fr 80px 60px; gap:7px; margin-bottom:7px; align-items:center; }
-        .admin-select { width:100%; background:var(--input-bg); border:1px solid var(--input-border); color:var(--text); padding:8px 10px; border-radius:8px; font-size:12px; font-family:'DM Sans',sans-serif; }
-        .admin-input { width:100%; background:var(--input-bg); border:1px solid var(--input-border); color:var(--text); padding:8px 10px; border-radius:8px; font-size:12px; font-family:'B612 Mono',monospace; text-align:center; }
-        .admin-btn { background:var(--premium); color:#fff; border:none; padding:8px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; width:100%; }
-        .admin-clear-btn { background:var(--success); color:#fff; border:none; padding:8px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer; width:100%; margin-top:4px; }
-        .admin-live-list { margin-top:10px; }
-        .admin-live-item { display:flex; justify-content:space-between; align-items:center; font-size:11px; padding:6px 0; border-bottom:1px solid var(--fp-border); }
-        .admin-live-item:last-child { border-bottom:none; }
-
-        /* ── NOTIF DRAWER ── */
-        .notif-item { background:var(--card); border-radius:12px; padding:12px; border-left:3px solid transparent; margin-bottom:8px; display:flex; gap:10px; align-items:flex-start; }
+        /* ====== NOTIF & DRAWERS ====== */
+        .notif-item { background:var(--card); border-radius:12px; padding:13px; border-left:3px solid transparent; margin-bottom:9px; display:flex; gap:11px; align-items:flex-start; }
         .notif-item.warn { border-left-color:var(--warn); }
-        .notif-item.ok   { border-left-color:var(--success); }
+        .notif-item.ok { border-left-color:var(--success); }
         .notif-item.info { border-left-color:var(--eur-color); }
         .notif-item.crit { border-left-color:var(--premium); }
-        .notif-icon { font-size:18px; flex-shrink:0; margin-top:2px; }
-        .notif-title { font-weight:bold; font-size:12px; margin-bottom:3px; }
-        .notif-desc { font-size:11px; color:var(--text-dim); line-height:1.4; }
+        .notif-icon { font-size:19px; flex-shrink:0; margin-top:2px; }
+        .notif-title { font-weight:bold; font-size:13px; margin-bottom:3px; }
+        .notif-desc { font-size:12px; color:var(--text-dim); line-height:1.4; }
         .notif-time { font-size:10px; color:var(--text-dim); margin-top:4px; font-family:'B612 Mono',monospace; opacity:.6; }
-        .notif-drawer { position:fixed; top:0; right:-100%; width:84%; max-width:340px; height:100vh; background:var(--notif-drawer-bg); border-left:1px solid var(--drawer-border); z-index:500; transition:right .3s ease; overflow-y:auto; padding:18px; }
+
+        .notif-drawer { position:fixed; top:0; right:-100%; width:84%; max-width:340px; height:100vh; background:var(--notif-drawer-bg); border-left:1px solid var(--drawer-border); z-index:500; transition:right .3s ease; overflow-y:auto; padding:20px; }
         .notif-drawer.open { right:0; }
         .notif-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:499; display:none; }
         .notif-backdrop.open { display:block; }
-        .drawer-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:13px; }
+        .drawer-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
         .drawer-close { background:none; border:none; color:var(--text-dim); font-size:22px; cursor:pointer; }
 
-        /* ── TRIP DRAWER ── */
+        /* ====== TRIP DRAWER ====== */
         .trip-drawer { position:fixed; bottom:-100%; left:0; width:100%; max-height:92vh; background:var(--modal-bg); border-radius:22px 22px 0 0; border-top:1px solid var(--input-border); z-index:600; transition:bottom .35s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; box-shadow:0 -8px 40px rgba(0,0,0,.35); }
         .trip-drawer.open { bottom:0; }
-        .trip-drawer-handle { width:36px; height:4px; background:var(--input-border); border-radius:2px; margin:11px auto 0; }
-        .trip-drawer-header { padding:13px 17px 9px; border-bottom:1px solid var(--input-border); display:flex; align-items:center; gap:11px; }
-        .trip-drawer-body { overflow-y:auto; padding:15px 17px 40px; flex:1; }
+        .trip-drawer-handle { width:38px; height:4px; background:var(--input-border); border-radius:2px; margin:12px auto 0; }
+        .trip-drawer-header { padding:14px 18px 10px; border-bottom:1px solid var(--input-border); display:flex; align-items:center; gap:12px; }
+        .trip-drawer-body { overflow-y:auto; padding:16px 18px 40px; flex:1; }
+
+        /* Timeline */
         .timeline { display:flex; flex-direction:column; }
-        .tl-stop { display:flex; gap:13px; position:relative; }
-        .tl-stop:not(:last-child) .tl-line-seg { position:absolute; left:14px; top:27px; width:2px; bottom:0; background:var(--tl-color,#555); opacity:.35; z-index:0; }
-        .tl-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:28px; position:relative; z-index:1; }
-        .tl-dot { width:19px; height:19px; border-radius:50%; border:2.5px solid var(--tl-color,#555); background:var(--modal-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:8px; }
+        .tl-stop { display:flex; gap:14px; position:relative; }
+        .tl-stop:not(:last-child) .tl-line-seg { position:absolute; left:15px; top:28px; width:2px; bottom:0; background:var(--tl-color,#555); opacity:.35; z-index:0; }
+        .tl-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:30px; position:relative; z-index:1; }
+        .tl-dot { width:20px; height:20px; border-radius:50%; border:2.5px solid var(--tl-color,#555); background:var(--modal-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:8px; }
         .tl-dot.terminal { background:var(--tl-color,#555); }
         .tl-dot.terminal::after { content:''; width:6px; height:6px; border-radius:50%; background:#fff; }
         .tl-dot.mid::after { content:''; width:5px; height:5px; border-radius:50%; background:var(--tl-color,#555); }
-        .tl-right { padding:5px 0 17px; flex:1; }
-        .tl-stop-name { font-size:13px; font-weight:bold; }
+        .tl-right { padding:6px 0 18px; flex:1; }
+        .tl-stop-name { font-size:14px; font-weight:bold; }
         .tl-stop-time { font-family:'B612 Mono',monospace; font-size:12px; color:var(--success); font-weight:bold; margin-top:2px; }
-        .tl-stop-sub { font-size:11px; color:var(--text-dim); margin-top:3px; }
+        .tl-stop-sub { font-size:11px; color:var(--text-dim); margin-top:3px; line-height:1.4; }
         .tl-delay { color:var(--premium); font-size:10px; font-family:'B612 Mono',monospace; }
         .tl-transfer-badge { display:inline-flex; align-items:center; gap:5px; background:rgba(230,126,34,.12); border:1px solid rgba(230,126,34,.3); color:var(--warn); font-size:10px; padding:3px 8px; border-radius:20px; margin-top:5px; font-weight:bold; }
 
-        /* ── MODAL ── */
+        /* ====== MODAL ====== */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--overlay-bg); display:none; align-items:center; justify-content:center; z-index:1000; }
-        .modal { background:var(--modal-bg); width:87%; border-radius:18px; padding:22px; border:1px solid var(--input-border); text-align:center; max-height:85vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.3); }
-        .confirm-btn { background:var(--accent); color:#fff; border:none; padding:13px; border-radius:10px; width:100%; font-weight:800; margin-top:16px; cursor:pointer; font-family:'Barlow',sans-serif; font-size:13px; text-transform:uppercase; }
-        .stn-modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--fp-border); font-size:12px; }
+        .modal { background:var(--modal-bg); width:87%; border-radius:20px; padding:24px; border:1px solid var(--input-border); text-align:center; max-height:85vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.3); }
+        .confirm-btn { background:var(--accent); color:#fff; border:none; padding:14px; border-radius:10px; width:100%; font-weight:800; margin-top:18px; cursor:pointer; font-family:'Barlow',sans-serif; font-size:14px; text-transform:uppercase; }
+        .stn-modal-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--fp-border); font-size:13px; }
         .stn-modal-row:last-child { border-bottom:none; }
         .stn-modal-row .key { color:var(--text-dim); }
 
-        /* ── HOME STATION MODAL ── */
-        .home-station-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:13px; }
-        .hs-btn { padding:11px 9px; border-radius:9px; border:1.5px solid var(--input-border); background:var(--card); color:var(--text); font-size:11px; font-weight:bold; cursor:pointer; text-align:left; transition:.2s; line-height:1.3; }
+        /* ====== HOME STATION MODAL ====== */
+        .home-station-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:14px; max-height:55vh; overflow-y:auto; padding-right:2px; }
+        .hs-btn { padding:12px 10px; border-radius:10px; border:1.5px solid var(--input-border); background:var(--card); color:var(--text); font-size:12px; font-weight:bold; cursor:pointer; text-align:left; transition:.2s; line-height:1.3; }
         .hs-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(192,57,43,.08); }
         .hs-btn .hs-sub { font-size:10px; color:var(--text-dim); font-weight:normal; display:block; margin-top:2px; }
 
-        /* ── TOAST ── */
-        #toast-container { position:fixed; top:13px; left:50%; transform:translateX(-50%); z-index:3000; display:flex; flex-direction:column; gap:6px; align-items:center; pointer-events:none; }
-        .toast-msg { background:var(--success); color:#fff; padding:10px 20px; border-radius:50px; font-weight:bold; font-size:12px; box-shadow:0 4px 16px rgba(39,174,96,.3); animation:toastIn .22s ease; white-space:nowrap; max-width:calc(100vw - 36px); }
-        .toast-msg.warn  { background:var(--warn); box-shadow:0 4px 16px rgba(230,126,34,.3); }
+        /* ====== TOAST QUEUE ====== */
+        #toast-container { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:3000; display:flex; flex-direction:column; gap:6px; align-items:center; pointer-events:none; }
+        .toast-msg { background:var(--success); color:#fff; padding:10px 22px; border-radius:50px; font-weight:bold; font-size:13px; box-shadow:0 4px 16px rgba(39,174,96,.3); animation:toastIn .25s ease; pointer-events:auto; white-space:nowrap; max-width:calc(100vw - 40px); }
+        .toast-msg.warn { background:var(--warn); box-shadow:0 4px 16px rgba(230,126,34,.3); }
         .toast-msg.error { background:var(--premium); box-shadow:0 4px 16px rgba(231,76,60,.3); }
-        .toast-msg.exit  { animation:toastOut .22s ease forwards; }
-        @keyframes toastIn  { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes toastOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-8px)} }
-
-        /* ── SPINNER ── */
-        .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--input-border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
-        @keyframes spin { to{transform:rotate(360deg)} }
-        .loading-row { display:flex; align-items:center; justify-content:center; gap:8px; padding:20px; font-size:12px; color:var(--text-dim); }
+        .toast-msg.exit { animation:toastOut .25s ease forwards; }
+        @keyframes toastIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes toastOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-10px)} }
+        /* ====== REISEBEGLEITER ====== */
+        .rb-stop-row { display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--fp-border);font-size:13px;transition:background .15s; }
+        .rb-stop-row:last-child { border-bottom:none; }
+        .rb-stop-row.done { opacity:.35; }
+        .rb-stop-row.current { background:rgba(192,57,43,.06); }
+        .rb-stop-dot { width:12px;height:12px;border-radius:50%;border:2px solid var(--text-dim);flex-shrink:0; }
+        .rb-stop-dot.done { background:var(--success);border-color:var(--success); }
+        .rb-stop-dot.current { background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,57,43,.2); }
+        @keyframes rb-pulse { 0%,100%{box-shadow:0 0 0 3px rgba(192,57,43,.2)} 50%{box-shadow:0 0 0 6px rgba(192,57,43,.08)} }
+        .rb-stop-dot.current { animation:rb-pulse 1.8s infinite; }
     </style>
 </head>
 <body>
 
-<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<!-- ═══════════════ LOGIN ═══════════════ -->
 <div id="login-screen">
-    <div class="login-logo">GÜN</div>
+<div class="login-card">
+    <div class="login-logo">GVB</div>
     <div class="login-title">Güntringen ÖPNV</div>
-    <div class="login-subtitle">Anmelden oder Konto erstellen.<br>Deine Fahrtdaten werden sicher gespeichert.</div>
+    <div class="login-subtitle">Anmelden oder Konto erstellen.<br>Fahrtdaten werden sicher in der Cloud gespeichert.</div>
 
     <div class="login-tabs">
-        <div class="login-tab active" id="tab-login" onclick="switchLoginTab('login')">Anmelden</div>
-        <div class="login-tab" id="tab-register" onclick="switchLoginTab('register')">Registrieren</div>
+        <div class="login-tab active" id="tab-login"    onclick="switchLoginTab('login')">Anmelden</div>
+        <div class="login-tab"        id="tab-register" onclick="switchLoginTab('register')">Registrieren</div>
     </div>
 
-    <div id="login-register-fields">
+    <div id="login-register-fields" style="display:none;width:100%;">
         <div class="login-field">
             <div class="login-label">Vorname</div>
             <input class="login-input" id="reg-firstname" type="text" placeholder="Jana" maxlength="30" autocomplete="given-name">
@@ -391,23 +420,28 @@
     </div>
 
     <button class="login-btn" id="auth-btn" onclick="doAuth()">Anmelden →</button>
-    <div class="login-err" id="auth-err"></div>
+    <div class="login-err" id="auth-err" style="color:var(--premium);font-size:12px;margin-top:8px;min-height:18px;text-align:center;"></div>
+</div>
 </div>
 
-<!-- ═══════════════════ APP SHELL ═══════════════════ -->
+<!-- ═══════════════ APP SHELL ═══════════════ -->
 <div id="app-shell" class="hidden">
 
+<!-- HEADER -->
 <header>
-    <div class="user-info" onclick="showView('profil',document.querySelector('[data-view=profil]'))">
-        <div class="avatar" id="header-avatar">–</div>
-        <div>
-            <h1 style="font-size:12px;" id="header-name">–</h1>
-            <p style="font-size:10px;color:var(--text-dim);" id="header-card">GÜN-Card</p>
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#8b0000);display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;font-size:11px;font-weight:800;color:#fff;letter-spacing:.5px;flex-shrink:0;box-shadow:0 2px 10px rgba(192,57,43,.35);">GVB</div>
+        <div class="user-info" onclick="showView('profil',document.querySelector('[data-view=profil]'))">
+            <div class="avatar" id="header-avatar">–</div>
+            <div>
+                <h1 style="font-size:13px;" id="header-name">–</h1>
+                <p style="font-size:10px;color:var(--text-dim);" id="header-card">GÜN-Card</p>
+            </div>
         </div>
     </div>
     <div class="header-right">
         <button class="theme-btn" onclick="cycleTheme()" id="theme-btn">🌙</button>
-        <div class="notif-bell" onclick="openNotifDrawer()">🔔<div class="notif-dot" id="notif-dot"></div></div>
+        <div class="notif-bell" onclick="openNotifDrawer()">🔔<div class="notif-dot active" id="notif-dot"></div></div>
         <div class="balance-display">
             <div class="vil-val" id="bal-vil">G$ –</div>
             <div class="eur-val" id="bal-eur">– €</div>
@@ -416,17 +450,19 @@
 </header>
 
 <div class="tab-bar">
-    <div class="tab active" data-view="fis"     onclick="showView('fis',this)">Abfahrten</div>
-    <div class="tab"        data-view="fahrplan" onclick="showView('fahrplan',this)">Fahrplan</div>
-    <div class="tab"        data-view="route"    onclick="showView('route',this)">Route</div>
-    <div class="tab"        data-view="shop"     onclick="showView('shop',this)">Tickets</div>
-    <div class="tab"        data-view="wallet"   onclick="showView('wallet',this)">Wallet</div>
-    <div class="tab"        data-view="profil"   onclick="showView('profil',this)">Profil</div>
+    <div class="tab active" data-view="fis" onclick="showView('fis',this)">Abfahrten</div>
+    <div class="tab" data-view="fahrplan" onclick="showView('fahrplan',this)">Fahrplan</div>
+    <div class="tab" data-view="route" onclick="showView('route',this)">Route</div>
+    <div class="tab" data-view="begleiter" onclick="showView('begleiter',this)">Reise</div>
+    <div class="tab" data-view="netzplan" onclick="showView('netzplan',this)">Netzplan</div>
+    <div class="tab" data-view="shop" onclick="showView('shop',this)">Tickets</div>
+    <div class="tab" data-view="wallet" onclick="showView('wallet',this)">Wallet</div>
+    <div class="tab" data-view="profil" onclick="showView('profil',this)">Profil</div>
 </div>
 
 <main>
 
-<!-- ══ ABFAHRTEN ══ -->
+<!-- ===== ABFAHRTEN ===== -->
 <section id="view-fis" class="view active">
     <div class="fis-station-header">
         <div>
@@ -440,22 +476,23 @@
         <div class="s11-route">
             <div class="s11-stop"><div class="s11-dot terminal"></div><div class="s11-stop-info"><div class="s11-stop-name">Lixen</div><div class="s11-stop-sub">Endstation · Bstg. 1</div></div></div>
             <div class="s11-stop"><div class="s11-dot mid"></div><div class="s11-stop-info"><div class="s11-stop-name">Güntratal Süd</div><div class="s11-stop-sub">Umstieg L14/L15</div></div></div>
-            <div class="s11-stop"><div class="s11-dot mid" style="background:#c0392b;border-color:#c0392b"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:#c0392b">Altgün Dreieck ★</div><div class="s11-stop-sub">Knotenpunkt · L14, L15, L16</div></div></div>
-            <div class="s11-stop"><div class="s11-dot mid" style="background:#c0392b;border-color:#c0392b"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:#c0392b">Güntringen Hbf ★</div><div class="s11-stop-sub">Hauptbahnhof · Fernverkehr</div></div></div>
+            <div class="s11-stop"><div class="s11-dot mid" style="background:var(--accent);border-color:var(--accent)"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:var(--accent)">Altgün Dreieck ★</div><div class="s11-stop-sub">Knotenpunkt · L14, L15, L16</div></div></div>
+            <div class="s11-stop"><div class="s11-dot mid" style="background:var(--accent);border-color:var(--accent)"></div><div class="s11-stop-info"><div class="s11-stop-name" style="color:var(--accent)">Güntringen Hbf ★</div><div class="s11-stop-sub">Hauptbahnhof · Fernverkehr</div></div></div>
             <div class="s11-stop"><div class="s11-dot mid"></div><div class="s11-stop-info"><div class="s11-stop-name">Villotal Süd</div><div class="s11-stop-sub">Umstieg Regionalbus</div></div></div>
             <div class="s11-stop"><div class="s11-dot terminal"></div><div class="s11-stop-info"><div class="s11-stop-name">Villotal Hbf</div><div class="s11-stop-sub">Endstation · Fernverkehr + U-Bahn</div></div></div>
         </div>
     </div>
-    <div class="fis-card" id="fis-list"><div class="loading-row"><div class="spinner"></div>Verspätungen werden geladen…</div></div>
+    <div class="fis-card" id="fis-list"></div>
 </section>
 
-<!-- ══ FAHRPLAN ══ -->
+<!-- ===== FAHRPLAN ===== -->
 <section id="view-fahrplan" class="view">
     <p class="section-title">Linie wählen</p>
     <div class="fp-selector">
         <div class="fp-btn" onclick="selectLine(14,this)">Linie 14</div>
         <div class="fp-btn" onclick="selectLine(15,this)">Linie 15</div>
         <div class="fp-btn" onclick="selectLine(16,this)">Linie 16</div>
+        <div class="fp-btn" onclick="selectLine(17,this)">Linie 17</div>
         <div class="fp-btn active" onclick="selectLine('S11',this)">S11</div>
     </div>
     <div class="fp-direction" id="fp-directions"></div>
@@ -466,15 +503,14 @@
     <div id="fp-table"></div>
 </section>
 
-<!-- ══ ROUTE ══ -->
+<!-- ===== ROUTENPLANER ===== -->
 <section id="view-route" class="view">
     <p class="section-title">Verbindung suchen</p>
     <div class="route-form">
         <div class="route-input-wrap">
             <div class="route-label">Von</div>
             <div class="autocomplete-wrap">
-                <input class="autocomplete-input" id="route-from-input" type="text" placeholder="Station wählen…" autocomplete="off"
-                    oninput="acSearch('from',this.value)" onfocus="acSearch('from',this.value)">
+                <input class="autocomplete-input" id="route-from-input" type="text" placeholder="Station wählen…" autocomplete="off" oninput="acSearch('from',this.value)" onfocus="acSearch('from',this.value)">
                 <div class="autocomplete-list" id="ac-from"></div>
             </div>
         </div>
@@ -482,8 +518,7 @@
         <div class="route-input-wrap">
             <div class="route-label">Nach</div>
             <div class="autocomplete-wrap">
-                <input class="autocomplete-input" id="route-to-input" type="text" placeholder="Station wählen…" autocomplete="off"
-                    oninput="acSearch('to',this.value)" onfocus="acSearch('to',this.value)">
+                <input class="autocomplete-input" id="route-to-input" type="text" placeholder="Station wählen…" autocomplete="off" oninput="acSearch('to',this.value)" onfocus="acSearch('to',this.value)">
                 <div class="autocomplete-list" id="ac-to"></div>
             </div>
         </div>
@@ -491,33 +526,145 @@
             <div class="route-label">Abfahrt (optional)</div>
             <input type="time" class="route-input" id="route-time" style="margin-top:5px;">
         </div>
-        <button class="route-go-btn" style="margin-top:13px;" onclick="calcRoute()">Verbindung suchen</button>
+        <button class="route-go-btn" style="margin-top:14px;" onclick="calcRoute()">Verbindung suchen</button>
     </div>
     <div id="route-result"></div>
 </section>
 
-<!-- ══ SHOP ══ -->
-<section id="view-shop" class="view">
-    <div class="shop-section"><h2>Einzeltickets &amp; Tageskarten</h2><div id="shop-single"></div></div>
-    <div class="shop-section"><h2>Abo-Modelle</h2><div id="shop-abo"></div></div>
-    <div class="shop-section"><h2>Junior Specials</h2><div id="shop-junior"></div></div>
+<!-- ===== REISEBEGLEITER ===== -->
+<section id="view-begleiter" class="view">
+    <p class="section-title">Reisebegleiter</p>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">Live-Anweisungen für deine aktuelle Fahrt.</div>
+
+    <!-- Linie / Station auswählen -->
+    <div id="rb-setup" style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid var(--input-border);">
+        <div class="section-title" style="margin-bottom:10px;">Fahrt einrichten</div>
+        <div style="margin-bottom:10px;">
+            <div class="route-label">Ich sitze in</div>
+            <select class="route-input" id="rb-line" style="margin-top:5px;" onchange="rbUpdateStations()">
+                <option value="">Linie wählen…</option>
+                <option value="S11">S11</option>
+                <option value="14">Linie 14</option>
+                <option value="15">Linie 15</option>
+                <option value="16">Linie 16 (Premium)</option>
+                <option value="17">Linie 17</option>
+            </select>
+        </div>
+        <div style="margin-bottom:10px;">
+            <div class="route-label">Aktuelle Haltestelle</div>
+            <select class="route-input" id="rb-current" style="margin-top:5px;"></select>
+        </div>
+        <div style="margin-bottom:14px;">
+            <div class="route-label">Ziel</div>
+            <select class="route-input" id="rb-dest" style="margin-top:5px;"></select>
+        </div>
+        <button class="route-go-btn" onclick="rbStart()">Reisebegleiter starten</button>
+    </div>
+
+    <!-- Aktive Anweisung -->
+    <div id="rb-guidance" style="display:none;">
+        <div id="rb-instruction-card" style="background:var(--card);border-radius:16px;padding:20px;border:2px solid var(--accent);margin-bottom:12px;text-align:center;box-shadow:0 4px 20px rgba(192,57,43,.18);">
+            <div id="rb-icon" style="font-size:40px;margin-bottom:10px;">🚇</div>
+            <div id="rb-main" style="font-family:'Barlow',sans-serif;font-size:18px;font-weight:800;text-transform:uppercase;line-height:1.3;"></div>
+            <div id="rb-sub" style="font-size:12px;color:var(--text-dim);margin-top:7px;line-height:1.5;"></div>
+        </div>
+        <!-- Progress stops -->
+        <div style="background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--input-border);">
+            <div style="padding:10px 14px;background:var(--fp-header-bg);font-size:10px;color:var(--text-dim);font-weight:bold;text-transform:uppercase;letter-spacing:.8px;">Streckenverlauf</div>
+            <div id="rb-stops-list"></div>
+        </div>
+        <button onclick="rbStop()" style="width:100%;margin-top:12px;padding:12px;border-radius:10px;border:1.5px solid var(--input-border);background:var(--card);color:var(--text-dim);font-weight:bold;cursor:pointer;font-size:13px;">Reise beenden</button>
+    </div>
 </section>
 
-<!-- ══ WALLET ══ -->
+<!-- ===== NETZPLAN ===== -->
+<section id="view-netzplan" class="view">
+    <p class="section-title">GÜN-Netzplan</p>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">Interaktiver Netzplan folgt in v7.</div>
+    <div class="netmap-wrap" style="position:relative;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;gap:14px;">
+        <div style="width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,var(--accent),#8b0000);display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;font-size:26px;font-weight:800;color:#fff;box-shadow:0 6px 24px rgba(192,57,43,.3);">GVB</div>
+        <div style="text-align:center;">
+            <div style="font-family:'Barlow',sans-serif;font-weight:800;font-size:15px;text-transform:uppercase;letter-spacing:1px;">Netzplan</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Güntringer Verkehrsbetriebe</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:300px;margin-top:8px;">
+            <div style="background:var(--card);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:6px;background:#c0392b;border-radius:3px;flex-shrink:0;"></div>
+                <div style="font-size:12px;font-weight:bold;">S11</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-left:auto;">Lixen ↔ Villotal Hbf</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:6px;background:#003f8a;border-radius:3px;flex-shrink:0;"></div>
+                <div style="font-size:12px;font-weight:bold;">L14</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-left:auto;">Falkenberg ↔ Sonnenstadt</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:6px;background:#8b2020;border-radius:3px;flex-shrink:0;"></div>
+                <div style="font-size:12px;font-weight:bold;">L15</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-left:auto;">Altgün Dreieck ↔ Westende</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:6px;background:#174f17;border-radius:3px;flex-shrink:0;"></div>
+                <div style="font-size:12px;font-weight:bold;">L16</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-left:auto;">Altgün Dreieck ↔ Hügelbezirk Süd</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:6px;background:#7b3fa0;border-radius:3px;flex-shrink:0;"></div>
+                <div style="font-size:12px;font-weight:bold;">L17</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-left:auto;">Güntringen Hbf ↔ Oktratal</div>
+            </div>
+        </div>
+        <div style="margin-top:6px;font-size:10px;color:var(--text-dim);text-align:center;opacity:.6;">PNG-Platzhalter · Vektorkarte in Entwicklung</div>
+    </div>
+</section>
+
+<!-- ===== SHOP ===== -->
+<section id="view-shop" class="view">
+    <div class="shop-section"><h2>🎟️ Einzeltickets &amp; Zeitkarten</h2><div id="shop-single"></div></div>
+    <div class="shop-section"><h2>👨‍👩‍👧‍👦 Familientickets</h2>
+        <div style="background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:11px;color:var(--text-dim);line-height:1.5;">
+            <strong style="color:var(--accent);">Bedingung:</strong> 24 Std. Gültigkeit · min. 3 Personen · max. 2 Erwachsene + Kinder. Jede weitere Person: Zuschlag laut Ticket.
+        </div>
+        <div id="shop-familie"></div>
+    </div>
+    <div class="shop-section"><h2>📅 Monatskarten</h2>
+        <div style="background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:11px;color:var(--text-dim);line-height:1.5;">
+            <strong style="color:var(--accent);">Voraussetzung:</strong> Mindestens 5 Nutzungen pro Monat.
+        </div>
+        <div id="shop-abo"></div>
+    </div>
+    <div class="shop-section"><h2>🎓 Junior Specials (GÜN-Card Junior)</h2>
+        <div style="background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:11px;color:var(--text-dim);line-height:1.5;">
+            <strong style="color:var(--accent);">Basis-Karte:</strong> 12 Monate Mindestlaufzeit (Aug–Juli) · min. 12 Nutzungen/Jahr.
+        </div>
+        <div id="shop-junior"></div>
+    </div>
+    <!-- Tarif-Logik Info -->
+    <div style="background:var(--card);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid var(--input-border);">
+        <div style="font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;font-weight:800;margin-bottom:10px;">💡 Tarif-Logik</div>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.6;">
+            <p style="margin-bottom:7px;"><strong style="color:var(--text);">Premium Linie 16:</strong> Einzeltarife der L16 sind bewusst höher, um das <strong style="color:var(--accent);">Kombi-Tagesticket (13 VIL)</strong> als Best-Preis-Option zu etablieren.</p>
+            <p style="margin-bottom:7px;"><strong style="color:var(--text);">Schüler-Steuerung:</strong> Die Basis-Karte schützt Kapazitäten am Wochenende; das 14-Tage-Upgrade macht Ferien-Mobilität flexibel.</p>
+            <p><strong style="color:var(--text);">Währung:</strong> Alle Preise in VIL. Kurs: <strong style="color:var(--eur-color);">1 VIL = 0,75 €</strong></p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== WALLET ===== -->
 <section id="view-wallet" class="view">
     <div class="ticket-active">
         <p style="font-size:10px;letter-spacing:2px;color:var(--text-dim);">AKTIVES TICKET</p>
-        <h2 id="wallet-ticket-name" style="margin-top:5px;">GÜN-Card Basis</h2>
+        <h2 id="wallet-ticket-name" style="margin-top:6px;">GÜN-Card Basis</h2>
         <div class="qr-code"><img src="" alt="QR" id="qr-img"></div>
-        <p style="font-size:11px;margin-top:12px;color:var(--text-dim);" id="wallet-valid-text">Gültig für: –<br>Zone: GÜN-Kernzone</p>
+        <p style="font-size:11px;margin-top:14px;color:var(--text-dim);" id="wallet-valid-text">Gültig für: –<br>Zone: GÜN-Kernzone</p>
     </div>
-    <p class="section-title" style="margin-top:13px;">Meine Tickets</p>
+    <p class="section-title" style="margin-top:14px;">Meine Tickets</p>
     <div class="wallet-tickets-section" id="wallet-tickets-list">
-        <div class="loading-row"><div class="spinner"></div>Wird geladen…</div>
+        <div style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">Noch keine Tickets gekauft.</div>
     </div>
 </section>
 
-<!-- ══ PROFIL ══ -->
+<!-- ===== PROFIL ===== -->
 <section id="view-profil" class="view">
     <div class="profile-header">
         <div class="profile-avatar-big" id="profil-avatar">–</div>
@@ -525,28 +672,35 @@
         <div class="profile-sub" id="profil-sub">GÜN-Card · Mitglied</div>
     </div>
     <div class="profile-stats">
-        <div class="stat-box"><div class="stat-val" id="stat-fahrten">–</div><div class="stat-lbl">Fahrten</div></div>
-        <div class="stat-box"><div class="stat-val" id="stat-km">–</div><div class="stat-lbl">km</div></div>
-        <div class="stat-box"><div class="stat-val" id="stat-co2">–</div><div class="stat-lbl">kg CO₂ ↓</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-fahrten">0</div><div class="stat-lbl">Fahrten</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-km">0</div><div class="stat-lbl">km</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-co2">0</div><div class="stat-lbl">kg CO₂ ↓</div></div>
+    </div>
+
+    <!-- CO2 Chart -->
+    <div class="co2-chart-wrap">
+        <h3>CO₂ Einsparung – letzte 6 Monate</h3>
+        <div class="bar-chart" id="co2-chart"></div>
     </div>
 
     <!-- Fahrtenverlauf -->
     <p class="section-title">Fahrtenverlauf</p>
-    <div id="journey-history"><div class="loading-row"><div class="spinner"></div></div></div>
+    <div id="journey-history"><div class="loading-row"><div class="spinner"></div>Wird geladen…</div></div>
 
     <!-- Admin: Verspätungen -->
     <div id="admin-panel-wrap" style="display:none;">
         <p class="section-title" style="margin-top:14px;">Admin – Verspätungen</p>
         <div class="admin-panel">
-            <h3>🔧 Live-Verspätung eintragen</h3>
+            <h3>🔧 LIVE-VERSPÄTUNG EINTRAGEN</h3>
             <div class="admin-row">
                 <select class="admin-select" id="admin-line">
                     <option value="S11">S11</option>
                     <option value="14">Linie 14</option>
                     <option value="15">Linie 15</option>
                     <option value="16">Linie 16</option>
+                    <option value="17">Linie 17</option>
                 </select>
-                <input class="admin-input" id="admin-delay" type="number" min="0" max="120" placeholder="+Min" title="Verspätung in Minuten">
+                <input class="admin-input" id="admin-delay" type="number" min="0" max="120" placeholder="+Min">
                 <button class="admin-btn" onclick="setDelay()">Setzen</button>
             </div>
             <button class="admin-clear-btn" onclick="clearDelay()">Alle Verspätungen löschen</button>
@@ -554,10 +708,10 @@
         </div>
     </div>
 
-    <div class="setting-group" style="margin-top:14px;">
+    <div class="setting-group" style="margin-top:16px;">
         <h2>Konto</h2>
         <div class="setting-row" onclick="openNameEdit()"><div><div style="font-weight:bold;">Name ändern</div><p>Anzeigenamen bearbeiten</p></div><span class="arrow">›</span></div>
-        <div class="setting-row" onclick="openRechargeModal()"><div><div style="font-weight:bold;">GÜN-Coins aufladen</div><p>Guthaben erhöhen</p></div><span class="arrow">›</span></div>
+        <div class="setting-row" onclick="openRechargeModal()"><div><div style="font-weight:bold;">VIL aufladen</div><p>Guthaben erhöhen</p></div><span class="arrow">›</span></div>
     </div>
     <div class="setting-group">
         <h2>App-Einstellungen</h2>
@@ -565,24 +719,25 @@
             <div><div style="font-weight:bold;">Erscheinungsbild</div><p>Hell / Dunkel / System</p></div>
             <div class="theme-picker">
                 <button class="tp-btn" id="tp-light" onclick="setTheme('light')">☀️</button>
-                <button class="tp-btn" id="tp-dark"  onclick="setTheme('dark')">🌙</button>
+                <button class="tp-btn" id="tp-dark" onclick="setTheme('dark')">🌙</button>
                 <button class="tp-btn" id="tp-system" onclick="setTheme('system')">⚙️</button>
             </div>
         </div>
         <div class="setting-row" onclick="openHomeStationModal()">
             <div><div style="font-weight:bold;">Heimatbahnhof</div><p>Standard für Abfahrten &amp; Route</p></div>
-            <span class="val" id="setting-home-station">–</span>
+            <span class="val" id="setting-home-station">Güntringen Hbf</span>
         </div>
     </div>
     <div class="setting-group">
         <h2>Benachrichtigungen</h2>
-        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:12px;">Verspätungen (S11)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
-        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:12px;">Verspätungen (L14)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
-        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:12px;">Angebote &amp; Aktionen</div><p>Junior-Specials und Rabatte</p></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Verspätungen (S11)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Verspätungen (L14)</div><p>Push wenn &gt; 3 Min.</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Angebote &amp; Aktionen</div><p>Junior-Specials und Rabatte</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="subscribe-row"><div><div style="font-weight:bold;font-size:13px;">Ticket läuft ab</div><p>3 Tage vor Ablauf erinnern</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
     </div>
     <div class="setting-group">
         <h2>App-Info</h2>
-        <div class="setting-row"><div><div style="font-weight:bold;">Version</div></div><span class="val">5.0.0 (GÜN)</span></div>
+        <div class="setting-row"><div><div style="font-weight:bold;">Version</div></div><span class="val">8.0.0 (Firebase)</span></div>
         <div class="setting-row" onclick="doLogout()" style="border-left:2px solid var(--premium);">
             <div><div style="font-weight:bold;color:var(--premium);">Abmelden</div><p>Session beenden</p></div>
             <span class="arrow" style="color:var(--premium);">›</span>
@@ -593,152 +748,184 @@
 </main>
 </div><!-- /app-shell -->
 
-<!-- ══ MODALS ══ -->
+<!-- BUY MODAL -->
 <div class="overlay" id="buy-modal">
     <div class="modal">
         <h2 id="m-title">Ticket kaufen</h2>
-        <p id="m-desc" style="font-size:12px;color:var(--text-dim);margin-top:9px;"></p>
-        <div style="margin:16px 0;border-top:1px solid var(--input-border);padding-top:13px;">
+        <p id="m-desc" style="font-size:12px;color:var(--text-dim);margin-top:10px;"></p>
+        <div style="margin:18px 0;border-top:1px solid var(--input-border);padding-top:14px;">
             <div class="vil-val" id="m-price-vil"></div>
             <div class="eur-val" id="m-price-eur"></div>
         </div>
         <button class="confirm-btn" id="confirm-buy">Zahlung bestätigen</button>
-        <p onclick="closeModal('buy-modal')" style="margin-top:13px;font-size:12px;cursor:pointer;color:var(--text-dim);">Abbrechen</p>
+        <p onclick="closeModal('buy-modal')" style="margin-top:14px;font-size:12px;cursor:pointer;color:var(--text-dim);">Abbrechen</p>
     </div>
 </div>
 
+<!-- RECHARGE MODAL -->
 <div class="overlay" id="recharge-modal">
     <div class="modal">
         <h2>GÜN-Coins aufladen</h2>
         <p style="font-size:12px;color:var(--text-dim);margin-top:8px;">Betrag wählen:</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px;">
-            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(10)">G$ 10,00<br><span style="font-size:10px;opacity:.7;">7,50 €</span></button>
-            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(25)">G$ 25,00<br><span style="font-size:10px;opacity:.7;">18,75 €</span></button>
-            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(50)">G$ 50,00<br><span style="font-size:10px;opacity:.7;">37,50 €</span></button>
-            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(100)">G$ 100,00<br><span style="font-size:10px;opacity:.7;">75,00 €</span></button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">
+            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(10)">10 VIL<br><span style="font-size:10px;opacity:.7;">7,50 €</span></button>
+            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(25)">25 VIL<br><span style="font-size:10px;opacity:.7;">18,75 €</span></button>
+            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(50)">50 VIL<br><span style="font-size:10px;opacity:.7;">37,50 €</span></button>
+            <button class="confirm-btn" style="margin-top:0;" onclick="recharge(100)">100 VIL<br><span style="font-size:10px;opacity:.7;">75,00 €</span></button>
         </div>
-        <p onclick="closeModal('recharge-modal')" style="margin-top:15px;font-size:12px;cursor:pointer;color:var(--text-dim);">Abbrechen</p>
+        <p onclick="closeModal('recharge-modal')" style="margin-top:16px;font-size:12px;cursor:pointer;color:var(--text-dim);">Abbrechen</p>
     </div>
 </div>
 
+<!-- STATION MODAL -->
 <div class="overlay" id="stn-modal">
     <div class="modal">
         <h2 id="stn-modal-name">Station</h2>
-        <div style="text-align:left;margin-top:13px;" id="stn-modal-body"></div>
+        <div style="text-align:left;margin-top:14px;" id="stn-modal-body"></div>
         <button class="confirm-btn" onclick="closeModal('stn-modal')" style="background:var(--card);color:var(--text);border:1px solid var(--input-border);">Schließen</button>
     </div>
 </div>
 
+<!-- NAME EDIT MODAL -->
 <div class="overlay" id="name-modal">
     <div class="modal">
         <h2>Name ändern</h2>
-        <div style="margin-top:13px;text-align:left;">
+        <div style="margin-top:14px;text-align:left;">
             <div class="route-label">Vorname</div>
             <input class="route-input" id="edit-firstname" type="text" maxlength="30" style="margin-top:5px;margin-bottom:10px;">
             <div class="route-label">Nachname</div>
             <input class="route-input" id="edit-lastname" type="text" maxlength="30" style="margin-top:5px;">
         </div>
         <button class="confirm-btn" onclick="saveName()">Speichern</button>
-        <p onclick="closeModal('name-modal')" style="margin-top:11px;font-size:12px;cursor:pointer;color:var(--text-dim);">Abbrechen</p>
+        <p onclick="closeModal('name-modal')" style="margin-top:12px;font-size:12px;cursor:pointer;color:var(--text-dim);">Abbrechen</p>
     </div>
 </div>
 
+<!-- HOME STATION MODAL -->
 <div class="overlay" id="home-station-modal">
     <div class="modal" style="text-align:left;max-width:380px;">
         <h2 style="text-align:center;">Heimatbahnhof</h2>
-        <p style="font-size:12px;color:var(--text-dim);text-align:center;margin-top:5px;">Steuert die Abfahrtstafel und den Routenplaner.</p>
+        <p style="font-size:12px;color:var(--text-dim);text-align:center;margin-top:6px;">Steuert die Abfahrtstafel und den Routenplaner.</p>
         <div class="home-station-grid" id="home-station-grid"></div>
-        <p onclick="closeModal('home-station-modal')" style="margin-top:15px;font-size:12px;cursor:pointer;color:var(--text-dim);text-align:center;">Abbrechen</p>
+        <p onclick="closeModal('home-station-modal')" style="margin-top:16px;font-size:12px;cursor:pointer;color:var(--text-dim);text-align:center;">Abbrechen</p>
     </div>
 </div>
 
-<!-- ══ TRIP DRAWER ══ -->
+<!-- TRIP DETAIL DRAWER -->
 <div class="notif-backdrop" id="trip-backdrop" onclick="closeTripDrawer()"></div>
 <div class="trip-drawer" id="trip-drawer">
     <div class="trip-drawer-handle"></div>
     <div class="trip-drawer-header">
         <div>
-            <div id="trip-drawer-title" style="font-size:15px;font-weight:800;font-family:'Barlow',sans-serif;text-transform:uppercase;"></div>
-            <div id="trip-drawer-sub" style="font-size:11px;color:var(--text-dim);margin-top:2px;"></div>
+            <div id="trip-drawer-title" style="font-size:16px;font-weight:800;font-family:'Barlow',sans-serif;text-transform:uppercase;"></div>
+            <div id="trip-drawer-sub" style="font-size:11px;color:var(--text-dim);margin-top:3px;"></div>
         </div>
         <button onclick="closeTripDrawer()" style="margin-left:auto;background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;">✕</button>
     </div>
     <div class="trip-drawer-body" id="trip-drawer-body"></div>
 </div>
 
-<!-- ══ NOTIF DRAWER ══ -->
+<!-- NOTIF BACKDROP + DRAWER -->
 <div class="notif-backdrop" id="notif-backdrop" onclick="closeNotifDrawer()"></div>
 <div class="notif-drawer" id="notif-drawer">
     <div class="drawer-header">
-        <h2 style="font-size:14px;">Benachrichtigungen</h2>
+        <h2 style="font-size:15px;">Benachrichtigungen</h2>
         <button class="drawer-close" onclick="closeNotifDrawer()">✕</button>
     </div>
     <div id="notif-list"></div>
 </div>
 
+<!-- TOAST QUEUE -->
 <div id="toast-container"></div>
 
 <script>
-// ════════════════════════════════════════════════
-//  CONSTANTS
-// ════════════════════════════════════════════════
+// ====== CONSTANTS ======
 const GUN_TO_EUR = 0.75;
-const ADMIN_EMAILS = []; // add admin e-mails here, e.g. 'admin@guen.de'
 
-// Line colours
-const LINE_COLORS = { 'S11':'#c0392b', '14':'#003f8a', '15':'#6b1e1e', '16':'#174f17' };
-
-// ════════════════════════════════════════════════
-//  FIREBASE HELPERS  (populated after module load)
-// ════════════════════════════════════════════════
-function fb() { return window._fb; }
+// ====== FIREBASE HELPERS ======
+function fb()  { return window._fb; }
 function uid() { return window._fbUser ? window._fbUser.uid : null; }
 
-// ════════════════════════════════════════════════
-//  DATA
-// ════════════════════════════════════════════════
+async function dbUpdate(path, val) {
+    const { db, ref, update } = fb();
+    await update(ref(db, path), val);
+}
+async function dbSet(path, val) {
+    const { db, ref, set } = fb();
+    await set(ref(db, path), val);
+}
+
+// ====== HOME STATION DATA ======
 const HOME_STATIONS = [
-    { id:'Güntringen Hbf', label:'Güntringen Hbf', sub:'S11 · Hauptbahnhof' },
-    { id:'Altgün Dreieck',  label:'Altgün Dreieck',  sub:'L14, L15, L16, S11' },
-    { id:'Güntratal Süd',   label:'Güntratal Süd',   sub:'S11, L14, L15' },
-    { id:'Lixen',           label:'Lixen',            sub:'S11 · Endstation' },
-    { id:'Villotal Hbf',    label:'Villotal Hbf',    sub:'S11 · Fernbahnhof' },
-    { id:'Villotal Süd',    label:'Villotal Süd',    sub:'S11' },
-    { id:'Falkenberg',      label:'Falkenberg',       sub:'L14, L15' },
-    { id:'Sonnenstadt',     label:'Sonnenstadt',      sub:'L14 · Endstation' },
+    // S11
+    { id:'Lixen',               label:'Lixen',               sub:'S11 · Endstation' },
+    { id:'Güntratal Süd',       label:'Güntratal Süd',       sub:'S11, L14, L15' },
+    { id:'Altgün Dreieck',      label:'Altgün Dreieck',      sub:'S11, L14, L15, L16' },
+    { id:'Güntringen Hbf',      label:'Güntringen Hbf',      sub:'S11, L17 · Hauptbahnhof' },
+    { id:'Villotal Süd',        label:'Villotal Süd',        sub:'S11' },
+    { id:'Villotal Hbf',        label:'Villotal Hbf',        sub:'S11 · Fernbahnhof' },
+    // L14
+    { id:'Falkenberg',          label:'Falkenberg',          sub:'L14, L15 · Endstation' },
+    { id:'Neuer Ring',          label:'Neuer Ring',          sub:'L14' },
+    { id:'Regierungsviertel',   label:'Regierungsviertel',   sub:'L14, L15' },
+    { id:'Altgüner Vorstadt',   label:'Altgüner Vorstadt',   sub:'L14, L15' },
+    { id:'Altgün Mitte',        label:'Altgün Mitte',        sub:'L14' },
+    { id:'Seenring',            label:'Seenring',            sub:'L14' },
+    { id:'Sonnenwald',          label:'Sonnenwald',          sub:'L14' },
+    { id:'Technopolis',         label:'Technopolis',         sub:'L14, L17' },
+    { id:'Sonnenstadt',         label:'Sonnenstadt',         sub:'L14 · Endstation' },
+    // L15
+    { id:'Altgün-Center',       label:'Altgün-Center',       sub:'L15' },
+    { id:'Altgün-Markt',        label:'Altgün-Markt',        sub:'L15' },
+    { id:'Vûlfja-Hüpel-Allee', label:'Vûlfja-Hüpel-Allee', sub:'L15' },
+    { id:'Sâscha-Okto-Ring',   label:'Sâscha-Okto-Ring',   sub:'L15' },
+    { id:'Falkenberger Allee',  label:'Falkenberger Allee',  sub:'L15' },
+    { id:'ZOB Flussbezirk',     label:'ZOB Flussbezirk',     sub:'L15' },
+    { id:'Westende',            label:'Westende',            sub:'L15 · Endstation' },
+    // L16
+    { id:'Krakingerallee',      label:'Krakingerallee',      sub:'L16' },
+    { id:'Burg',                label:'Burg',                sub:'L16' },
+    { id:'Vélicherring',        label:'Vélicherring',        sub:'L16' },
+    { id:'Osttal',              label:'Osttal',              sub:'L16' },
+    { id:'Villenviertel',       label:'Villenviertel',       sub:'L16' },
+    { id:'Hügelbezirk Süd',    label:'Hügelbezirk Süd',    sub:'L16 · Endstation' },
+    // L17
+    { id:'Südstern',            label:'Südstern',            sub:'L17' },
+    { id:'Südtor',              label:'Südtor',              sub:'L17' },
+    { id:'Oktratal',            label:'Oktratal',            sub:'L17 · Vorort-Endstation' },
 ];
 
-// FIS data per station (delays merged from Firebase)
 const STATION_FIS = {
-    'Güntringen Hbf':[
-        {id:'S11',dest:'Villotal Hbf',col:'#c0392b',m:[4,34],gleis:'11'},
-        {id:'S11',dest:'Lixen',       col:'#c0392b',m:[19,49],gleis:'12'},
+    'Güntringen Hbf': [
+        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[4,34], gleis:'11', delay:true, delayMin:6 },
+        { id:'S11', dest:'Lixen',        col:'#c0392b', m:[19,49], gleis:'12' },
+        { id:'17',  dest:'Oktratal',     col:'#7b3fa0', m:[3,18,33,48], gleis:'7' },
     ],
-    'Altgün Dreieck':[
-        {id:'S11',dest:'Villotal Hbf',   col:'#c0392b',m:[10,40],gleis:'11'},
-        {id:'S11',dest:'Lixen',          col:'#c0392b',m:[25,55],gleis:'12'},
-        {id:'14', dest:'Sonnenstadt',    col:'#003f8a',m:[0,10,20,30,40,50],gleis:'2'},
-        {id:'14', dest:'Falkenberg',     col:'#003f8a',m:[5,15,25,35,45,55],gleis:'3'},
-        {id:'15', dest:'Westende',       col:'#6b1e1e',m:[1,9,11,19,21,29,31,39,41,49,51,59],gleis:'4'},
-        {id:'16', dest:'Hügelbezirk Süd',col:'#174f17',m:[2,8,12,18,22,28,32,38,42,48,52,58],gleis:'5'},
+    'Altgün Dreieck': [
+        { id:'S11', dest:'Villotal Hbf',    col:'#c0392b', m:[10,40], gleis:'11', delay:true, delayMin:6 },
+        { id:'S11', dest:'Lixen',           col:'#c0392b', m:[25,55], gleis:'12' },
+        { id:'14',  dest:'Sonnenstadt',     col:'#003f8a', m:[0,10,20,30,40,50], gleis:'2' },
+        { id:'14',  dest:'Falkenberg',      col:'#003f8a', m:[5,15,25,35,45,55], gleis:'3' },
+        { id:'15',  dest:'Westende',        col:'#6b1e1e', m:[1,9,11,19,21,29,31,39,41,49,51,59], gleis:'4' },
+        { id:'16',  dest:'Hügelbezirk Süd', col:'#174f17', m:[2,8,12,18,22,28,32,38,42,48,52,58], gleis:'5' },
     ],
-    'Güntratal Süd':[
-        {id:'S11',dest:'Villotal Hbf',   col:'#c0392b',m:[18,48],gleis:'1'},
-        {id:'S11',dest:'Lixen',          col:'#c0392b',m:[11,41],gleis:'2'},
-        {id:'14', dest:'Sonnenstadt',    col:'#003f8a',m:[10,20,30,40,50,0],gleis:'3'},
-        {id:'15', dest:'Altgün Dreieck', col:'#6b1e1e',m:[9,19,29,39,49,59],gleis:'4'},
+    'Güntratal Süd': [
+        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[18,48], gleis:'1', delay:true, delayMin:6 },
+        { id:'S11', dest:'Lixen',        col:'#c0392b', m:[11,41], gleis:'2' },
+        { id:'14',  dest:'Sonnenstadt',  col:'#003f8a', m:[10,20,30,40,50,0], gleis:'3' },
+        { id:'15',  dest:'Altgün Dreieck', col:'#6b1e1e', m:[9,19,29,39,49,59], gleis:'4' },
     ],
-    'Lixen':       [{id:'S11',dest:'Villotal Hbf',col:'#c0392b',m:[4,34],gleis:'1'}],
-    'Villotal Hbf':[{id:'S11',dest:'Lixen',       col:'#c0392b',m:[19,49],gleis:'1'}],
+    'Lixen':       [{ id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[4,34], gleis:'1' }],
+    'Villotal Hbf':[{ id:'S11', dest:'Lixen', col:'#c0392b', m:[19,49], gleis:'1' }],
     'Villotal Süd':[
-        {id:'S11',dest:'Villotal Hbf',col:'#c0392b',m:[13,43],gleis:'1'},
-        {id:'S11',dest:'Lixen',       col:'#c0392b',m:[28,58],gleis:'2'},
+        { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[13,43], gleis:'1' },
+        { id:'S11', dest:'Lixen',        col:'#c0392b', m:[28,58], gleis:'2' },
     ],
-    'Falkenberg':[
-        {id:'14',dest:'Sonnenstadt',    col:'#003f8a',m:[0,10,20,30,40,50],gleis:'1'},
-        {id:'15',dest:'Altgün Dreieck', col:'#6b1e1e',m:[1,11,21,31,41,51],gleis:'2'},
+    'Falkenberg':  [
+        { id:'14', dest:'Sonnenstadt', col:'#003f8a', m:[0,10,20,30,40,50], gleis:'1' },
+        { id:'15', dest:'Altgün Dreieck', col:'#6b1e1e', m:[1,11,21,31,41,51], gleis:'2' },
     ],
-    'Sonnenstadt':[{id:'14',dest:'Falkenberg',col:'#003f8a',m:[0,10,20,30,40,50],gleis:'1'}],
+    'Sonnenstadt': [{ id:'14', dest:'Falkenberg', col:'#003f8a', m:[0,10,20,30,40,50], gleis:'1' }],
 };
 
 const ALL_STATIONS = [
@@ -748,144 +935,207 @@ const ALL_STATIONS = [
     'Vûlfja-Hüpel-Allee','Altgün-Markt','Altgün-Center',
     'Krakingerallee','Burg','Vélicherring','Osttal',
     'Villenviertel','Hügelbezirk Süd',
-    'Lixen','Güntratal Süd','Güntringen Hbf','Villotal Süd','Villotal Hbf'
+    'Lixen','Güntratal Süd','Güntringen Hbf','Villotal Süd','Villotal Hbf',
+    'Südstern','Südtor','Oktratal'
 ];
 
 const STATION_INFO = {
-    'Altgün Dreieck':  {typ:'Knotenpunkt',linien:'14,15,16,S11',aufzug:'Ja',fahrrad:'Ja',park:'Nein',info:'Zentraler Umsteigeknoten im GÜN-Netz.'},
-    'Güntringen Hbf':  {typ:'Hauptbahnhof',linien:'S11',aufzug:'Ja',fahrrad:'Ja',park:'Ja',info:'Fernverkehrsanbindung. Direkte S11 nach Villotal Hbf und Lixen.'},
-    'Lixen':           {typ:'Endstation',linien:'S11',aufzug:'Nein',fahrrad:'Ja',park:'Ja',info:'P+R-Parkplatz mit 120 Stellplätzen.'},
-    'Güntratal Süd':   {typ:'Haltestelle',linien:'S11,L14,L15',aufzug:'Nein',fahrrad:'Ja',park:'Nein',info:'Umstieg auf Linien 14 und 15 möglich.'},
-    'Villotal Süd':    {typ:'Haltestelle',linien:'S11',aufzug:'Ja',fahrrad:'Nein',park:'Nein',info:'Anschluss an Regionalbusse Richtung Villotal-West.'},
-    'Villotal Hbf':    {typ:'Fernbahnhof',linien:'S11',aufzug:'Ja',fahrrad:'Ja',park:'Ja',info:'Anbindung an Fernverkehr + Villotal-U-Bahn.'},
-    'Sonnenstadt':     {typ:'Endstation',linien:'14',aufzug:'Ja',fahrrad:'Ja',park:'Ja',info:'Stadteingang Sonnenstadt, Bushaltestellen 3–8.'},
-    'Falkenberg':      {typ:'Endstation',linien:'14,15',aufzug:'Nein',fahrrad:'Ja',park:'Ja',info:'P+R-Parkplatz mit 80 Stellplätzen.'},
-    'Westende':        {typ:'Endstation',linien:'15',aufzug:'Nein',fahrrad:'Nein',park:'Nein',info:'Nahe Hafenpromenade.'},
-    'Hügelbezirk Süd': {typ:'Endstation',linien:'16',aufzug:'Ja',fahrrad:'Ja',park:'Nein',info:'Nächste Haltestelle: Villenviertel 5 Min. zu Fuß.'},
+    'Altgün Dreieck': { typ:'Knotenpunkt', linien:'14, 15, 16, S11', aufzug:'Ja', fahrrad:'Ja', park:'Nein', info:'Zentraler Umsteigeknoten im GÜN-Netz.' },
+    'Güntringen Hbf': { typ:'Hauptbahnhof', linien:'S11, L17', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Fernverkehrsanbindung. S11 nach Villotal Hbf und Lixen. L17 Gleis 7 nach Oktratal.' },
+    'Technopolis': { typ:'Haltestelle', linien:'L14, L17', aufzug:'Ja', fahrrad:'Ja', park:'Nein', info:'Umstieg L14 ↔ L17 möglich.' },
+    'Südstern': { typ:'Haltestelle', linien:'L17', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Haltestelle Linie 17 · Stadtrand.' },
+    'Südtor': { typ:'Haltestelle', linien:'L17', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Haltestelle Linie 17.' },
+    'Oktratal': { typ:'Endstation', linien:'L17', aufzug:'Nein', fahrrad:'Ja', park:'Ja', info:'Vorort-Endstation der Linie 17. P+R mit 60 Stellplätzen.' },
+    'Lixen': { typ:'Endstation', linien:'S11', aufzug:'Nein', fahrrad:'Ja', park:'Ja', info:'P+R-Parkplatz mit 120 Stellplätzen.' },
+    'Güntratal Süd': { typ:'Haltestelle', linien:'S11, L14, L15', aufzug:'Nein', fahrrad:'Ja', park:'Nein', info:'Umstieg auf Linien 14 und 15 möglich.' },
+    'Villotal Süd': { typ:'Haltestelle', linien:'S11', aufzug:'Ja', fahrrad:'Nein', park:'Nein', info:'Anschluss an Regionalbusse Richtung Villotal-West.' },
+    'Villotal Hbf': { typ:'Fernbahnhof', linien:'S11', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Anbindung an Fernverkehr + Villotal-U-Bahn.' },
+    'Sonnenstadt': { typ:'Endstation', linien:'14', aufzug:'Ja', fahrrad:'Ja', park:'Ja', info:'Stadteingang Sonnenstadt, Bushaltestellen 3–8.' },
+    'Falkenberg': { typ:'Endstation', linien:'14, 15', aufzug:'Nein', fahrrad:'Ja', park:'Ja', info:'P+R-Parkplatz mit 80 Stellplätzen.' },
+    'Westende': { typ:'Endstation', linien:'15', aufzug:'Nein', fahrrad:'Nein', park:'Nein', info:'Nahe Hafenpromenade.' },
+    'Hügelbezirk Süd': { typ:'Endstation', linien:'16', aufzug:'Ja', fahrrad:'Ja', park:'Nein', info:'Nächste Haltestelle: Villenviertel 5 Min. zu Fuß.' },
 };
 
 const LINE_FULL_STOPS = {
-    'S11_Villotal':[
+    'S11_Villotal': [
         {name:'Lixen',gleis:'1',transfer:null},{name:'Güntratal Süd',gleis:'2',transfer:'L14/L15 Umstieg'},
-        {name:'Altgün Dreieck',gleis:'11',transfer:'L14,L15,L16'},{name:'Güntringen Hbf',gleis:'11',transfer:null},
+        {name:'Altgün Dreieck',gleis:'11',transfer:'L14,L15,L16 Umstieg'},{name:'Güntringen Hbf',gleis:'11',transfer:null},
         {name:'Villotal Süd',gleis:'1',transfer:'Regionalbus'},{name:'Villotal Hbf',gleis:'3',transfer:'Fernverkehr, U-Bahn'},
     ],
-    'S11_Lixen':[
+    'S11_Lixen': [
         {name:'Villotal Hbf',gleis:'4',transfer:'Fernverkehr, U-Bahn'},{name:'Villotal Süd',gleis:'1',transfer:null},
-        {name:'Güntringen Hbf',gleis:'12',transfer:null},{name:'Altgün Dreieck',gleis:'12',transfer:'L14,L15,L16'},
-        {name:'Güntratal Süd',gleis:'2',transfer:'L14/L15'},{name:'Lixen',gleis:'1',transfer:null},
+        {name:'Güntringen Hbf',gleis:'12',transfer:null},{name:'Altgün Dreieck',gleis:'12',transfer:'L14,L15,L16 Umstieg'},
+        {name:'Güntratal Süd',gleis:'2',transfer:'L14/L15 Umstieg'},{name:'Lixen',gleis:'1',transfer:null},
     ],
-    '14_Sonnenstadt':[
+    '14_Sonnenstadt': [
         {name:'Falkenberg',gleis:'1',transfer:null},{name:'Neuer Ring',gleis:'1',transfer:null},
-        {name:'Regierungsviertel',gleis:'2',transfer:'L15'},{name:'Altgüner Vorstadt',gleis:'2',transfer:null},
-        {name:'Altgün Mitte',gleis:'2',transfer:null},{name:'Altgün Dreieck',gleis:'2',transfer:'S11,L15,L16'},
+        {name:'Regierungsviertel',gleis:'2',transfer:'L15 Umstieg'},{name:'Altgüner Vorstadt',gleis:'2',transfer:null},
+        {name:'Altgün Mitte',gleis:'2',transfer:null},{name:'Altgün Dreieck',gleis:'2',transfer:'S11,L15,L16 Umstieg'},
         {name:'Seenring',gleis:'1',transfer:null},{name:'Sonnenwald',gleis:'1',transfer:null},
         {name:'Technopolis',gleis:'1',transfer:null},{name:'Sonnenstadt',gleis:'2',transfer:'Bushalt 3–8'},
     ],
-    '14_Falkenberg':[
+    '14_Falkenberg': [
         {name:'Sonnenstadt',gleis:'1',transfer:null},{name:'Technopolis',gleis:'1',transfer:null},
         {name:'Sonnenwald',gleis:'1',transfer:null},{name:'Seenring',gleis:'1',transfer:null},
-        {name:'Altgün Dreieck',gleis:'3',transfer:'S11,L15,L16'},{name:'Altgün Mitte',gleis:'2',transfer:null},
-        {name:'Altgüner Vorstadt',gleis:'2',transfer:'L15'},{name:'Regierungsviertel',gleis:'2',transfer:'L15'},
+        {name:'Altgün Dreieck',gleis:'3',transfer:'S11,L15,L16 Umstieg'},{name:'Altgün Mitte',gleis:'2',transfer:null},
+        {name:'Altgüner Vorstadt',gleis:'2',transfer:'L15 Umstieg'},{name:'Regierungsviertel',gleis:'2',transfer:'L15 Umstieg'},
         {name:'Neuer Ring',gleis:'1',transfer:null},{name:'Falkenberg',gleis:'1',transfer:null},
     ],
-    '15_Westende':[
-        {name:'Altgün Dreieck',gleis:'4',transfer:'S11,L14,L16'},{name:'Altgün-Center',gleis:'1',transfer:null},
+    '15_Westende': [
+        {name:'Altgün Dreieck',gleis:'4',transfer:'S11,L14,L16 Umstieg'},{name:'Altgün-Center',gleis:'1',transfer:null},
         {name:'Altgün-Markt',gleis:'1',transfer:null},{name:'Vûlfja-Hüpel-Allee',gleis:'1',transfer:null},
-        {name:'Sâscha-Okto-Ring',gleis:'1',transfer:null},{name:'Altgüner Vorstadt',gleis:'1',transfer:'L14'},
-        {name:'Regierungsviertel',gleis:'1',transfer:'L14'},{name:'Falkenberger Allee',gleis:'1',transfer:null},
+        {name:'Sâscha-Okto-Ring',gleis:'1',transfer:null},{name:'Altgüner Vorstadt',gleis:'1',transfer:'L14 Umstieg'},
+        {name:'Regierungsviertel',gleis:'1',transfer:'L14 Umstieg'},{name:'Falkenberger Allee',gleis:'1',transfer:null},
         {name:'ZOB Flussbezirk',gleis:'1',transfer:null},{name:'Westende',gleis:'2',transfer:'Hafenpromenade'},
     ],
-    '16_Hügelbezirk':[
-        {name:'Altgün Dreieck',gleis:'5',transfer:'S11,L14,L15'},{name:'Krakingerallee',gleis:'1',transfer:null},
+    '16_Hügelbezirk': [
+        {name:'Altgün Dreieck',gleis:'5',transfer:'S11,L14,L15 Umstieg'},{name:'Krakingerallee',gleis:'1',transfer:null},
         {name:'Burg',gleis:'1',transfer:null},{name:'Vélicherring',gleis:'1',transfer:null},
         {name:'Osttal',gleis:'1',transfer:null},{name:'Villenviertel',gleis:'1',transfer:null},
         {name:'Hügelbezirk Süd',gleis:'1',transfer:'Fußweg Villenviertel 5 Min.'},
     ],
+    '17_Oktratal': [
+        {name:'Güntringen Hbf',gleis:'7',transfer:'S11 Umstieg'},{name:'Südstern',gleis:'1',transfer:null},
+        {name:'Südtor',gleis:'1',transfer:null},{name:'Technopolis',gleis:'2',transfer:'L14 Umstieg'},
+        {name:'Oktratal',gleis:'1',transfer:'Vorort-Endstation'},
+    ],
+    '17_Hbf': [
+        {name:'Oktratal',gleis:'1',transfer:null},{name:'Technopolis',gleis:'2',transfer:'L14 Umstieg'},
+        {name:'Südtor',gleis:'1',transfer:null},{name:'Südstern',gleis:'1',transfer:null},
+        {name:'Güntringen Hbf',gleis:'7',transfer:'S11 Umstieg'},
+    ],
 };
 
 const SCHEDULES = {
-    14:{name:'Linie 14',color:'#003f8a',
+    14: {
+        name:'Linie 14', color:'#003f8a',
         directions:[
-            {label:'Richtung Sonnenstadt',stopKey:'14_Sonnenstadt',stations:[
+            { label:'Richtung Sonnenstadt', stopKey:'14_Sonnenstadt', stations:[
                 {name:'Falkenberg',skip:false,offset:0},{name:'Neuer Ring',skip:false,offset:2},
                 {name:'Regierungsviertel',skip:false,offset:4},{name:'Altgüner Vorstadt',skip:false,offset:6},
                 {name:'Altgün Mitte',skip:false,offset:8},{name:'Altgün Dreieck',skip:false,offset:10},
                 {name:'Seenring',skip:false,offset:12},{name:'Sonnenwald',skip:false,offset:14},
                 {name:'Technopolis',skip:false,offset:16},{name:'Sonnenstadt',skip:false,offset:18},
             ]},
-            {label:'Richtung Falkenberg',stopKey:'14_Falkenberg',stations:[
+            { label:'Richtung Falkenberg', stopKey:'14_Falkenberg', stations:[
                 {name:'Sonnenstadt',skip:false,offset:0},{name:'Technopolis',skip:false,offset:2},
                 {name:'Sonnenwald',skip:false,offset:4},{name:'Seenring',skip:false,offset:6},
                 {name:'Altgün Dreieck',skip:false,offset:8},{name:'Altgün Mitte',skip:false,offset:10},
                 {name:'Altgüner Vorstadt',skip:false,offset:12},{name:'Regierungsviertel',skip:false,offset:14},
                 {name:'Neuer Ring',skip:false,offset:16},{name:'Falkenberg',skip:false,offset:18},
-            ]},
+            ]}
         ],
-        departures:[0,10,20,30,40,50]},
-    15:{name:'Linie 15',color:'#6b1e1e',
+        departures:[0,10,20,30,40,50]
+    },
+    15: {
+        name:'Linie 15', color:'#6b1e1e',
         directions:[
-            {label:'Richtung Westende',stopKey:'15_Westende',stations:[
+            { label:'Richtung Westende', stopKey:'15_Westende', stations:[
                 {name:'Altgün Dreieck',skip:false,offset:0},{name:'Altgün-Center',skip:false,offset:2},
                 {name:'Altgün-Markt',skip:false,offset:4},{name:'Vûlfja-Hüpel-Allee',skip:false,offset:6},
                 {name:'Sâscha-Okto-Ring',skip:false,offset:8},{name:'Altgüner Vorstadt',skip:false,offset:10},
                 {name:'Regierungsviertel',skip:false,offset:12},{name:'Falkenberger Allee',skip:false,offset:14},
                 {name:'ZOB Flussbezirk',skip:false,offset:16},{name:'Westende',skip:false,offset:18},
             ]},
-            {label:'Richtung Altgün Dreieck',stopKey:'15_Westende',stations:[
+            { label:'Richtung Altgün Dreieck', stopKey:'15_Westende', stations:[
                 {name:'Westende',skip:false,offset:0},{name:'ZOB Flussbezirk',skip:false,offset:2},
                 {name:'Falkenberger Allee',skip:false,offset:4},{name:'Regierungsviertel',skip:false,offset:6},
                 {name:'Altgüner Vorstadt',skip:false,offset:8},{name:'Sâscha-Okto-Ring',skip:false,offset:10},
                 {name:'Vûlfja-Hüpel-Allee',skip:false,offset:12},{name:'Altgün-Markt',skip:false,offset:14},
                 {name:'Altgün-Center',skip:false,offset:16},{name:'Altgün Dreieck',skip:false,offset:18},
-            ]},
+            ]}
         ],
-        departures:[1,9,11,19,21,29,31,39,41,49,51,59]},
-    16:{name:'Linie 16',color:'#174f17',
+        departures:[1,9,11,19,21,29,31,39,41,49,51,59]
+    },
+    16: {
+        name:'Linie 16', color:'#174f17',
         directions:[
-            {label:'Richtung Hügelbezirk Süd',stopKey:'16_Hügelbezirk',stations:[
+            { label:'Richtung Hügelbezirk Süd', stopKey:'16_Hügelbezirk', stations:[
                 {name:'Altgün Dreieck',skip:false,offset:0},{name:'Krakingerallee',skip:false,offset:4},
                 {name:'Burg',skip:false,offset:6},{name:'Vélicherring',skip:false,offset:8},
                 {name:'Osttal',skip:false,offset:10},{name:'Villenviertel',skip:false,offset:12},
                 {name:'Hügelbezirk Süd',skip:false,offset:16},
             ]},
-            {label:'Richtung Altgün Dreieck',stopKey:'16_Hügelbezirk',stations:[
+            { label:'Richtung Altgün Dreieck', stopKey:'16_Hügelbezirk', stations:[
                 {name:'Hügelbezirk Süd',skip:false,offset:0},{name:'Villenviertel',skip:false,offset:4},
                 {name:'Osttal',skip:false,offset:6},{name:'Vélicherring',skip:false,offset:8},
                 {name:'Burg',skip:false,offset:10},{name:'Krakingerallee',skip:false,offset:12},
                 {name:'Altgün Dreieck',skip:false,offset:16},
-            ]},
+            ]}
         ],
-        departures:[2,8,12,18,22,28,32,38,42,48,52,58]},
-    'S11':{name:'S11',color:'#c0392b',
+        departures:[2,8,12,18,22,28,32,38,42,48,52,58]
+    },
+    'S11': {
+        name:'S11', color:'#c0392b',
         directions:[
-            {label:'Richtung Villotal Hbf',stopKey:'S11_Villotal',stations:[
+            { label:'Richtung Villotal Hbf', stopKey:'S11_Villotal', stations:[
                 {name:'Lixen',skip:false,offset:0},{name:'Güntratal Süd',skip:false,offset:8},
                 {name:'Altgün Dreieck',skip:false,offset:18},{name:'Güntringen Hbf',skip:false,offset:24},
                 {name:'Villotal Süd',skip:false,offset:35},{name:'Villotal Hbf',skip:false,offset:44},
             ]},
-            {label:'Richtung Lixen',stopKey:'S11_Lixen',stations:[
+            { label:'Richtung Lixen', stopKey:'S11_Lixen', stations:[
                 {name:'Villotal Hbf',skip:false,offset:0},{name:'Villotal Süd',skip:false,offset:9},
                 {name:'Güntringen Hbf',skip:false,offset:20},{name:'Altgün Dreieck',skip:false,offset:26},
                 {name:'Güntratal Süd',skip:false,offset:36},{name:'Lixen',skip:false,offset:44},
-            ]},
+            ]}
         ],
-        departures:[4,34]},
+        departures:[4,34]
+    },
+    17: {
+        name:'Linie 17', color:'#7b3fa0',
+        directions:[
+            { label:'Richtung Oktratal', stopKey:'17_Oktratal', stations:[
+                {name:'Güntringen Hbf',skip:false,offset:0},{name:'Südstern',skip:false,offset:4},
+                {name:'Südtor',skip:false,offset:7},{name:'Technopolis',skip:false,offset:12},
+                {name:'Oktratal',skip:false,offset:18},
+            ]},
+            { label:'Richtung Güntringen Hbf', stopKey:'17_Hbf', stations:[
+                {name:'Oktratal',skip:false,offset:0},{name:'Technopolis',skip:false,offset:6},
+                {name:'Südtor',skip:false,offset:11},{name:'Südstern',skip:false,offset:14},
+                {name:'Güntringen Hbf',skip:false,offset:18},
+            ]}
+        ],
+        departures:[3,18,33,48]
+    }
 };
+
+const NOTIFICATIONS = [
+    {type:'crit',icon:'🚨',title:'S11: Ausfall 14:34 Uhr',desc:'Fahrt 14:34 von Lixen Richtung Villotal Hbf fällt aus. Nächste Fahrt: 15:04.',time:'Heute, 13:58'},
+    {type:'warn',icon:'⚠️',title:'L16: Baustelle ab Mo.',desc:'Haltestelle Krakingerallee wird 2 Wochen einspurig bedient.',time:'Gestern, 19:30'},
+    {type:'ok',  icon:'✅',title:'Ticket aktiviert',desc:'Dein GÜN-Netz Upgrade ist gültig bis 30.06.2025.',time:'Gestern, 11:22'},
+    {type:'info',icon:'🎁',title:'Junior-Aktion: -20%',desc:'Diese Woche 20% auf alle Ferien-Upgrades. Gültig bis Sonntag.',time:'23.04., 08:00'},
+    {type:'warn',icon:'⏱️',title:'S11: +6 Min Verspätung',desc:'Signalstörung Güntringen Hbf.',time:'Heute, 14:05'},
+];
 
 const TARIFE = {
     single:[
-        {id:'k14', name:'Kurzzeit (L14/L15)', price:1.20, desc:'60 Min. Gültigkeit'},
-        {id:'ks11',name:'S11 Einzelfahrt',    price:3.50, desc:'Lixen ↔ Villotal Hbf, 1 Fahrt'},
-        {id:'tag', name:'Tagesticket Kombi',  price:13.00,desc:'24 Std. alle Linien inkl. S11'},
+        {id:'k14',   name:'Kurzzeit L14/L15',       price:1.20,  badge:'60 Min', desc:'Linie 14 & 15 · 60 Minuten Gültigkeit'},
+        {id:'k16',   name:'Kurzzeit L16 Premium',   price:2.00,  badge:'60 Min', desc:'Linie 16 Premium · 60 Minuten Gültigkeit'},
+        {id:'b14',   name:'Basis L14/L15',           price:2.30,  badge:'120 Min',desc:'Linie 14 & 15 · 120 Minuten'},
+        {id:'b16',   name:'Basis L16 Premium',       price:4.30,  badge:'120 Min',desc:'Linie 16 Premium · 120 Minuten'},
+        {id:'bk',    name:'Basis Kombi 14/15/16',    price:3.30,  badge:'120 Min',desc:'Alle Hochbahnlinien · 120 Minuten'},
+        {id:'l14',   name:'Langzeit L14/L15',        price:5.00,  badge:'300 Min',desc:'Linie 14 & 15 · 300 Minuten'},
+        {id:'l16',   name:'Langzeit L16 Premium',    price:9.00,  badge:'300 Min',desc:'Linie 16 Premium · 300 Minuten'},
+        {id:'lk',    name:'Langzeit Kombi 14/15/16', price:10.00, badge:'300 Min',desc:'Alle Hochbahnlinien · 300 Minuten'},
+        {id:'tag14', name:'Tagesticket L14/L15',     price:6.00,  badge:'24 Std', desc:'Linie 14 & 15 · 24 Stunden'},
+        {id:'tag16', name:'Tagesticket L16 Premium', price:16.00, badge:'24 Std', desc:'Linie 16 Premium · 24 Stunden'},
+        {id:'tagk',  name:'Tagesticket Kombi',       price:13.00, badge:'24 Std', desc:'Alle Hochbahnlinien · Best-Preis für Pendler ★'},
+        {id:'taggun',name:'GÜN-Gesamttarif Tag',     price:16.00, badge:'24 Std', desc:'Hochbahn + Bus + S11 · Ganzes Netz'},
+    ],
+    familie:[
+        {id:'f14',  name:'Familienticket L14/L15',    price:10.40, badge:'24 Std', desc:'Min. 3 Pers., max. 2 Erw. + Kinder · +4,50 VIL/Pers.'},
+        {id:'f16',  name:'Familienticket L16',         price:20.40, badge:'24 Std', desc:'Min. 3 Pers., max. 2 Erw. + Kinder · +9,50 VIL/Pers.'},
+        {id:'fk',   name:'Familienticket Kombi',       price:18.40, badge:'24 Std', desc:'Alle Linien · +8,50 VIL/Pers.'},
+        {id:'fgun', name:'GÜN-Familienticket Gesamt',  price:34.40, badge:'24 Std', desc:'Hochbahn + Bus + S11 · +12,50 VIL/Pers.'},
     ],
     abo:[
-        {id:'erw',name:'Monatskarte Erw.',   price:169.00,desc:'Gesamtes Netz GÜN + Villotal'},
-        {id:'jug',name:'Monatskarte Jugend', price:139.00,desc:'Gesamtes Netz (< 16 J.)'},
+        {id:'erw', name:'Monatskarte Erwachsene',  price:169.00, badge:'Monatlich', desc:'Gesamtes Netz GÜN + Villotal · ab 16 Jahren · min. 5 Fahrten/Monat'},
+        {id:'jug', name:'Monatskarte Jugendliche', price:139.00, badge:'Monatlich', desc:'Gesamtes Netz GÜN + Villotal · bis 15 Jahren · min. 5 Fahrten/Monat'},
     ],
     junior:[
-        {id:'upg',name:'Upgrade GÜN-Netz',  price:11.99,desc:'24/7 Netzweite Gültigkeit für Junior Card'},
-        {id:'fer',name:'Ferien-Upgrade',     price:6.99, desc:'14 Tage volle Flexibilität inkl. S11'},
+        {id:'jrb', name:'GÜN-Card Junior Basis',   price:19.95, badge:'pro Monat', desc:'Schultage Mo–Fr · nur Schulstrecke · keine Ferien · 12 Mon. Laufzeit'},
+        {id:'upg', name:'Upgrade GÜN-Netz',         price:11.99, badge:'pro Monat', desc:'Gesamtes Netz, 24/7 · inkl. Ferien & Wochenende · Zusatz zur Basis-Karte'},
+        {id:'fer', name:'Ferien-Upgrade (14 Tage)', price:6.99,  badge:'einmalig',  desc:'Gesamtes Netz für 14 flexible Tage · buchbar ohne Abo'},
     ]
 };
 
@@ -893,7 +1143,7 @@ const LINE_GRAPH = {
     'Lixen':             {'Güntratal Süd':{line:'S11',color:'#c0392b',mins:8}},
     'Güntratal Süd':     {'Lixen':{line:'S11',color:'#c0392b',mins:8},'Altgün Dreieck':{line:'S11',color:'#c0392b',mins:10}},
     'Altgün Dreieck':    {'Güntratal Süd':{line:'S11',color:'#c0392b',mins:10},'Güntringen Hbf':{line:'S11',color:'#c0392b',mins:6},'Altgün Mitte':{line:14,color:'#003f8a',mins:2},'Seenring':{line:14,color:'#003f8a',mins:2},'Altgün-Center':{line:15,color:'#6b1e1e',mins:2},'Krakingerallee':{line:16,color:'#174f17',mins:4}},
-    'Güntringen Hbf':    {'Altgün Dreieck':{line:'S11',color:'#c0392b',mins:6},'Villotal Süd':{line:'S11',color:'#c0392b',mins:11}},
+    'Güntringen Hbf':    {'Altgün Dreieck':{line:'S11',color:'#c0392b',mins:6},'Villotal Süd':{line:'S11',color:'#c0392b',mins:11},'Südstern':{line:17,color:'#7b3fa0',mins:4}},
     'Villotal Süd':      {'Güntringen Hbf':{line:'S11',color:'#c0392b',mins:11},'Villotal Hbf':{line:'S11',color:'#c0392b',mins:9}},
     'Villotal Hbf':      {'Villotal Süd':{line:'S11',color:'#c0392b',mins:9}},
     'Falkenberg':        {'Neuer Ring':{line:14,color:'#003f8a',mins:2}},
@@ -903,7 +1153,7 @@ const LINE_GRAPH = {
     'Altgün Mitte':      {'Altgüner Vorstadt':{line:14,color:'#003f8a',mins:2},'Altgün Dreieck':{line:14,color:'#003f8a',mins:2}},
     'Seenring':          {'Altgün Dreieck':{line:14,color:'#003f8a',mins:2},'Sonnenwald':{line:14,color:'#003f8a',mins:2}},
     'Sonnenwald':        {'Seenring':{line:14,color:'#003f8a',mins:2},'Technopolis':{line:14,color:'#003f8a',mins:2}},
-    'Technopolis':       {'Sonnenwald':{line:14,color:'#003f8a',mins:2},'Sonnenstadt':{line:14,color:'#003f8a',mins:2}},
+    'Technopolis':       {'Sonnenwald':{line:14,color:'#003f8a',mins:2},'Sonnenstadt':{line:14,color:'#003f8a',mins:2},'Südtor':{line:17,color:'#7b3fa0',mins:5},'Oktratal':{line:17,color:'#7b3fa0',mins:6}},
     'Sonnenstadt':       {'Technopolis':{line:14,color:'#003f8a',mins:2}},
     'Westende':          {'ZOB Flussbezirk':{line:15,color:'#6b1e1e',mins:2}},
     'ZOB Flussbezirk':   {'Westende':{line:15,color:'#6b1e1e',mins:2},'Falkenberger Allee':{line:15,color:'#6b1e1e',mins:2}},
@@ -918,22 +1168,13 @@ const LINE_GRAPH = {
     'Osttal':            {'Vélicherring':{line:16,color:'#174f17',mins:2},'Villenviertel':{line:16,color:'#174f17',mins:2}},
     'Villenviertel':     {'Osttal':{line:16,color:'#174f17',mins:2},'Hügelbezirk Süd':{line:16,color:'#174f17',mins:4}},
     'Hügelbezirk Süd':   {'Villenviertel':{line:16,color:'#174f17',mins:2}},
+    'Südstern':          {'Güntringen Hbf':{line:17,color:'#7b3fa0',mins:4},'Südtor':{line:17,color:'#7b3fa0',mins:3}},
+    'Südtor':            {'Südstern':{line:17,color:'#7b3fa0',mins:3},'Technopolis':{line:17,color:'#7b3fa0',mins:5}},
+    'Oktratal':          {'Technopolis':{line:17,color:'#7b3fa0',mins:6}},
 };
 
-// ════════════════════════════════════════════════
-//  LIVE STATE  (populated from Firebase)
-// ════════════════════════════════════════════════
-let liveDelays   = {};   // { 'S11': 6, '14': 0, … }
-let userData     = null; // from DB: { displayName, balance, homeStation, … }
-let unsubDelays  = null;
-let unsubUser    = null;
-let fisIntervalId = null;
-
-// ════════════════════════════════════════════════
-//  LOGIN / AUTH
-// ════════════════════════════════════════════════
+// ====== AUTH – LOGIN / REGISTER ======
 let loginMode = 'login';
-
 function switchLoginTab(mode) {
     loginMode = mode;
     document.getElementById('tab-login').classList.toggle('active', mode==='login');
@@ -948,193 +1189,139 @@ async function doAuth() {
     const pw    = document.getElementById('auth-pw').value;
     const errEl = document.getElementById('auth-err');
     errEl.textContent = '';
-    if (!email || !pw) { errEl.textContent = 'Bitte E-Mail und Passwort eingeben.'; return; }
-
+    if (!email||!pw) { errEl.textContent='Bitte E-Mail und Passwort eingeben.'; return; }
     const btn = document.getElementById('auth-btn');
-    btn.disabled = true;
-    btn.textContent = '…';
-
+    btn.disabled=true; btn.textContent='…';
     try {
         const { auth } = fb();
-        if (loginMode === 'register') {
+        if (loginMode==='register') {
             const first = document.getElementById('reg-firstname').value.trim();
             const last  = document.getElementById('reg-lastname').value.trim();
-            if (!first || !last) { errEl.textContent = 'Bitte Vor- und Nachname eingeben.'; btn.disabled=false; btn.textContent='Konto erstellen →'; return; }
+            if (!first||!last) { errEl.textContent='Bitte Vor- und Nachname eingeben.'; btn.disabled=false; btn.textContent='Konto erstellen →'; return; }
             const { createUserWithEmailAndPassword, updateProfile } = fb();
             const cred = await createUserWithEmailAndPassword(auth, email, pw);
-            await updateProfile(cred.user, { displayName: `${first} ${last}` });
-            // Create user record in DB
-            const { db, ref, set, serverTimestamp } = fb();
-            await set(ref(db, `users/${cred.user.uid}`), {
-                displayName: `${first} ${last}`,
-                email,
-                balance: 0,
-                homeStation: 'Güntringen Hbf',
-                since: new Date().getFullYear(),
-                journeys: 0,
-                km: 0,
+            await updateProfile(cred.user, { displayName:`${first} ${last}` });
+            const { db, ref, set } = fb();
+            await set(ref(db,`users/${cred.user.uid}`), {
+                displayName:`${first} ${last}`, email,
+                balance:0, homeStation:'Güntringen Hbf',
+                since:new Date().getFullYear(), journeys:0, km:0,
             });
         } else {
-            const { signInWithEmailAndPassword } = fb();
-            await signInWithEmailAndPassword(auth, email, pw);
+            await fb().signInWithEmailAndPassword(fb().auth, email, pw);
         }
     } catch(e) {
         const msgs = {
-            'auth/invalid-email':          'Ungültige E-Mail-Adresse.',
-            'auth/user-not-found':         'Kein Konto mit dieser E-Mail gefunden.',
-            'auth/wrong-password':         'Falsches Passwort.',
-            'auth/invalid-credential':     'E-Mail oder Passwort falsch.',
-            'auth/email-already-in-use':   'Diese E-Mail ist bereits registriert.',
-            'auth/weak-password':          'Passwort muss mindestens 6 Zeichen haben.',
-            'auth/too-many-requests':      'Zu viele Versuche – kurz warten.',
+            'auth/invalid-email':'Ungültige E-Mail-Adresse.',
+            'auth/user-not-found':'Kein Konto mit dieser E-Mail.',
+            'auth/wrong-password':'Falsches Passwort.',
+            'auth/invalid-credential':'E-Mail oder Passwort falsch.',
+            'auth/email-already-in-use':'Diese E-Mail ist bereits registriert.',
+            'auth/weak-password':'Passwort mind. 6 Zeichen.',
+            'auth/too-many-requests':'Zu viele Versuche – kurz warten.',
         };
-        errEl.textContent = msgs[e.code] || e.message;
-        btn.disabled = false;
+        errEl.textContent = msgs[e.code]||e.message;
+        btn.disabled=false;
         btn.textContent = loginMode==='register' ? 'Konto erstellen →' : 'Anmelden →';
     }
 }
-
-document.getElementById('auth-email').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('auth-pw').focus(); });
-document.getElementById('auth-pw').addEventListener('keydown',    e=>{ if(e.key==='Enter') doAuth(); });
+document.getElementById('auth-email').addEventListener('keydown', e=>{if(e.key==='Enter') document.getElementById('auth-pw').focus();});
+document.getElementById('auth-pw').addEventListener('keydown',   e=>{if(e.key==='Enter') doAuth();});
 
 async function doLogout() {
     if (!confirm('Wirklich abmelden?')) return;
-    if (unsubDelays) { unsubDelays(); unsubDelays=null; }
-    if (unsubUser)   { unsubUser();   unsubUser=null; }
+    if (unsubDelays)   { unsubDelays();  unsubDelays=null; }
+    if (unsubUser)     { unsubUser();    unsubUser=null; }
     if (fisIntervalId) { clearInterval(fisIntervalId); fisIntervalId=null; }
     await fb().signOut(fb().auth);
 }
 
-// ════════════════════════════════════════════════
-//  ON LOGIN – called from the module's onAuthStateChanged
-// ════════════════════════════════════════════════
+// ====== ON LOGIN – called by Firebase module ======
 window._onLogin = async function(user) {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('app-shell').classList.remove('hidden');
 
-    // Subscribe to user data in DB
     const { db, ref, onValue } = fb();
     if (unsubUser) unsubUser();
-    unsubUser = onValue(ref(db, `users/${user.uid}`), snap => {
+    unsubUser = onValue(ref(db,`users/${user.uid}`), snap => {
         userData = snap.val() || {};
-        // Fallback if record doesn't exist yet (e.g. Google sign-in)
-        if (!userData.displayName) userData.displayName = user.displayName || user.email;
-        if (!userData.balance)     userData.balance = 0;
-        if (!userData.homeStation) userData.homeStation = 'Güntringen Hbf';
+        if (!userData.displayName) userData.displayName = user.displayName||user.email;
+        if (userData.balance==null) userData.balance = 0;
+        if (!userData.homeStation)  userData.homeStation = 'Güntringen Hbf';
         renderUserUI(user, userData);
     });
 
-    // Subscribe to live delays
     if (unsubDelays) unsubDelays();
-    unsubDelays = onValue(ref(db, 'delays'), snap => {
-        liveDelays = snap.val() || {};
-        renderFIS();
+    unsubDelays = onValue(ref(db,'delays'), snap => {
+        liveDelays = snap.val()||{};
+        updateFIS(userData?.homeStation||'Güntringen Hbf');
         renderAdminDelayList();
         updateNotifDot();
     });
 
-    // FIS countdown every second
     if (fisIntervalId) clearInterval(fisIntervalId);
-    fisIntervalId = setInterval(renderFIS, 1000);
+    fisIntervalId = setInterval(()=>updateFIS(userData?.homeStation||'Güntringen Hbf'), 1000);
 
+    const now=new Date();
+    document.getElementById('route-time').value=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     renderFahrplan();
-    const now = new Date();
-    document.getElementById('route-time').value =
-        `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-    // Show admin panel for admin emails
-    const isAdmin = ADMIN_EMAILS.includes(user.email) || true; // set to true so anyone can manage delays in demo
-    document.getElementById('admin-panel-wrap').style.display = isAdmin ? 'block' : 'none';
+    renderNotifications();
+    const isAdmin = ADMIN_EMAILS.includes(user.email);
+    document.getElementById('admin-panel-wrap').style.display = isAdmin?'block':'none';
 };
 
-// ════════════════════════════════════════════════
-//  RENDER USER UI
-// ════════════════════════════════════════════════
+// ====== RENDER USER UI ======
 function renderUserUI(user, data) {
-    const name     = data.displayName || user.email;
+    const name     = data.displayName||user.email;
     const parts    = name.split(' ');
-    const initials = parts.length >= 2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : name[0].toUpperCase();
-    const since    = data.since || new Date().getFullYear();
+    const initials = parts.length>=2?(parts[0][0]+parts[parts.length-1][0]).toUpperCase():name[0].toUpperCase();
     const uid4     = user.uid.slice(-4).toUpperCase();
+    const bal      = data.balance||0;
 
-    document.getElementById('header-avatar').textContent    = initials;
-    document.getElementById('header-name').textContent      = name;
-    document.getElementById('header-card').textContent      = `GÜN-Card #${uid4}`;
-    document.getElementById('profil-avatar').textContent    = initials;
-    document.getElementById('profil-name').textContent      = name;
-    document.getElementById('profil-sub').textContent       = `GÜN-Card #${uid4} · Mitglied seit ${since}`;
-    document.getElementById('bal-vil').textContent          = `G$ ${(data.balance||0).toFixed(2)}`;
-    document.getElementById('bal-eur').textContent          = `${((data.balance||0)*GUN_TO_EUR).toFixed(2).replace('.',',')} €`;
-    document.getElementById('stat-fahrten').textContent     = data.journeys  || 0;
-    document.getElementById('stat-km').textContent          = (data.km||0).toLocaleString('de-DE');
-    document.getElementById('stat-co2').textContent         = Math.round((data.km||0)*0.095);
-    document.getElementById('setting-home-station').textContent = data.homeStation || 'Güntringen Hbf';
-    document.getElementById('fis-station-label').textContent    = data.homeStation || 'Güntringen Hbf';
-    document.getElementById('route-from-input').value           = data.homeStation || 'Güntringen Hbf';
-    routeFromVal = data.homeStation || 'Güntringen Hbf';
+    document.getElementById('header-avatar').textContent = initials;
+    document.getElementById('header-name').textContent   = name;
+    document.getElementById('header-card').textContent   = `GVB-Card #${uid4}`;
+    document.getElementById('profil-avatar').textContent = initials;
+    document.getElementById('profil-name').textContent   = name;
+    document.getElementById('profil-sub').textContent    = `GVB-Card #${uid4} · Mitglied seit ${data.since||new Date().getFullYear()}`;
+    document.getElementById('bal-vil').textContent       = `${bal.toFixed(2)} VIL`;
+    document.getElementById('bal-eur').textContent       = `${(bal*GUN_TO_EUR).toFixed(2).replace('.',',')} €`;
+    document.getElementById('stat-fahrten').textContent  = data.journeys||0;
+    document.getElementById('stat-km').textContent       = (data.km||0).toLocaleString('de-DE');
+    document.getElementById('stat-co2').textContent      = Math.round((data.km||0)*0.095);
+    document.getElementById('setting-home-station').textContent = data.homeStation||'Güntringen Hbf';
+    document.getElementById('fis-station-label').textContent    = data.homeStation||'Güntringen Hbf';
+    document.getElementById('route-from-input').value           = data.homeStation||'Güntringen Hbf';
+    routeFromVal = data.homeStation||'Güntringen Hbf';
 
-    const qrData = `VALID-GUN-${uid4}-${initials}`;
+    const qrData = `GVB-${uid4}-${initials}`;
     document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
     document.getElementById('wallet-valid-text').innerHTML = `Gültig für: ${name}<br>Zone: GÜN-Kernzone`;
 
     renderShop(data);
     renderWalletTickets(data);
-    renderJourneyHistory(data);
-    renderFIS();
+    renderJourneyHistory();
+    renderCO2Chart();
+    updateFIS(data.homeStation||'Güntringen Hbf');
 }
 
-// ════════════════════════════════════════════════
-//  FIREBASE – USER WRITES
-// ════════════════════════════════════════════════
-async function dbUpdate(path, val) {
-    const { db, ref, update } = fb();
-    await update(ref(db, path), val);
-}
-async function dbSet(path, val) {
-    const { db, ref, set } = fb();
-    await set(ref(db, path), val);
-}
+// ====== FIREBASE HELPERS ======
+function fb()  { return window._fb; }
+function uid() { return window._fbUser?window._fbUser.uid:null; }
+async function dbUpdate(path,val){ const {db,ref,update}=fb(); await update(ref(db,path),val); }
+async function dbSet(path,val)   { const {db,ref,set}=fb();    await set(ref(db,path),val); }
 
-// ════════════════════════════════════════════════
-//  BALANCE / RECHARGE
-// ════════════════════════════════════════════════
-function openRechargeModal() { document.getElementById('recharge-modal').style.display='flex'; }
-async function recharge(amount) {
-    const newBalance = (userData.balance||0) + amount;
-    await dbUpdate(`users/${uid()}`, { balance: newBalance });
-    closeModal('recharge-modal');
-    showToast(`✓ G$ ${amount.toFixed(2)} aufgeladen!`);
-}
+// ====== LIVE STATE ======
+let liveDelays  = {};
+let userData    = null;
+let unsubDelays = null;
+let unsubUser   = null;
+let fisIntervalId = null;
+const ADMIN_EMAILS = ['lukaskraker891@gmail.com'];
 
-// ════════════════════════════════════════════════
-//  BUY TICKET
-// ════════════════════════════════════════════════
-let activePending = null;
-function openBuyModal(id, name, price) {
-    activePending = {id, name, price};
-    document.getElementById('m-title').textContent    = name;
-    document.getElementById('m-desc').textContent     = 'Wird sofort in dein Wallet geladen.';
-    document.getElementById('m-price-vil').textContent= `G$ ${price.toFixed(2)}`;
-    document.getElementById('m-price-eur').textContent= `${(price*GUN_TO_EUR).toFixed(2).replace('.',',')} €`;
-    document.getElementById('buy-modal').style.display= 'flex';
-}
-document.getElementById('confirm-buy').onclick = async () => {
-    if (!activePending) return;
-    const bal = userData.balance || 0;
-    if (bal < activePending.price) { showToast('Nicht genügend GÜN-Coins!','error'); closeModal('buy-modal'); return; }
-    const newBal = bal - activePending.price;
-    const tickets = userData.tickets ? {...userData.tickets} : {};
-    tickets[activePending.id] = { name: activePending.name, date: new Date().toLocaleDateString('de-DE') };
-    await dbUpdate(`users/${uid()}`, { balance: newBal, tickets });
-    closeModal('buy-modal');
-    showToast('✓ Kauf erfolgreich!');
-};
-
-// ════════════════════════════════════════════════
-//  HOME STATION
-// ════════════════════════════════════════════════
+// ====== HOME STATION ======
 function openHomeStationModal() {
-    const current = userData?.homeStation || 'Güntringen Hbf';
+    const current = userData?.homeStation||'Güntringen Hbf';
     document.getElementById('home-station-grid').innerHTML = HOME_STATIONS.map(s=>`
         <button class="hs-btn ${s.id===current?'active':''}" onclick="selectHomeStation('${s.id}')">
             ${s.label}<span class="hs-sub">${s.sub}</span>
@@ -1142,211 +1329,204 @@ function openHomeStationModal() {
     document.getElementById('home-station-modal').style.display='flex';
 }
 async function selectHomeStation(id) {
-    await dbUpdate(`users/${uid()}`, { homeStation: id });
+    await dbUpdate(`users/${uid()}`,{homeStation:id});
     closeModal('home-station-modal');
     showToast(`📍 Heimatbahnhof: ${id}`);
 }
 
-// ════════════════════════════════════════════════
-//  NAME EDIT
-// ════════════════════════════════════════════════
+// ====== NAME EDIT ======
 function openNameEdit() {
-    const name  = userData?.displayName || '';
-    const parts = name.split(' ');
-    document.getElementById('edit-firstname').value = parts[0] || '';
-    document.getElementById('edit-lastname').value  = parts.slice(1).join(' ') || '';
+    const name=userData?.displayName||'';
+    const parts=name.split(' ');
+    document.getElementById('edit-firstname').value=parts[0]||'';
+    document.getElementById('edit-lastname').value=parts.slice(1).join(' ')||'';
     document.getElementById('name-modal').style.display='flex';
 }
 async function saveName() {
-    const first = document.getElementById('edit-firstname').value.trim();
-    const last  = document.getElementById('edit-lastname').value.trim();
-    if (!first||!last) { showToast('Bitte beide Felder ausfüllen','warn'); return; }
-    const fullName = `${first} ${last}`;
-    await fb().updateProfile(fb().auth.currentUser, { displayName: fullName });
-    await dbUpdate(`users/${uid()}`, { displayName: fullName });
+    const first=document.getElementById('edit-firstname').value.trim();
+    const last =document.getElementById('edit-lastname').value.trim();
+    if(!first||!last){ showToast('Bitte beide Felder ausfüllen','warn'); return; }
+    const fullName=`${first} ${last}`;
+    await fb().updateProfile(fb().auth.currentUser,{displayName:fullName});
+    await dbUpdate(`users/${uid()}`,{displayName:fullName});
     closeModal('name-modal');
     showToast('✓ Name gespeichert');
 }
 
-// ════════════════════════════════════════════════
-//  DELAY ADMIN
-// ════════════════════════════════════════════════
+// ====== RECHARGE ======
+function openRechargeModal() { document.getElementById('recharge-modal').style.display='flex'; }
+async function recharge(amount) {
+    const newBalance=(userData?.balance||0)+amount;
+    await dbUpdate(`users/${uid()}`,{balance:newBalance});
+    closeModal('recharge-modal');
+    showToast(`✓ ${amount.toFixed(2)} VIL aufgeladen!`);
+}
+
+// ====== DELAY ADMIN ======
 async function setDelay() {
-    const line  = document.getElementById('admin-line').value;
-    const delay = parseInt(document.getElementById('admin-delay').value);
-    if (isNaN(delay) || delay < 0) { showToast('Ungültige Verspätung','warn'); return; }
-    const { db, ref, update } = fb();
-    await update(ref(db,'delays'), { [line]: delay });
+    const line=document.getElementById('admin-line').value;
+    const delay=parseInt(document.getElementById('admin-delay').value);
+    if(isNaN(delay)||delay<0){ showToast('Ungültige Verspätung','warn'); return; }
+    const {db,ref,update}=fb();
+    await update(ref(db,'delays'),{[line]:delay});
     showToast(`✓ ${line}: +${delay} Min. gespeichert`);
-    document.getElementById('admin-delay').value = '';
+    document.getElementById('admin-delay').value='';
 }
 async function clearDelay() {
-    if (!confirm('Alle Verspätungen löschen?')) return;
-    await dbSet('delays', {});
+    if(!confirm('Alle Verspätungen löschen?')) return;
+    await dbSet('delays',{});
     showToast('✓ Alle Verspätungen gelöscht');
 }
-function renderAdminDelayList() {
-    const el = document.getElementById('admin-live-list');
-    if (!el) return;
-    const entries = Object.entries(liveDelays).filter(([,v])=>v>0);
-    el.innerHTML = entries.length
-        ? entries.map(([line,mins])=>`
-            <div class="admin-live-item">
-                <span><strong>${line}</strong></span>
-                <span style="color:var(--premium);font-family:'B612 Mono',monospace;">+${mins} Min.</span>
-                <button onclick="clearOneLine('${line}')" style="font-size:10px;background:none;border:none;color:var(--text-dim);cursor:pointer;">✕</button>
-            </div>`).join('')
-        : '<div style="font-size:11px;color:var(--text-dim);padding:6px 0;">Keine aktiven Verspätungen.</div>';
-}
 async function clearOneLine(line) {
-    const { db, ref, update } = fb();
-    await update(ref(db,'delays'), { [line]: 0 });
+    const {db,ref,update}=fb();
+    await update(ref(db,'delays'),{[line]:0});
+}
+function renderAdminDelayList() {
+    const el=document.getElementById('admin-live-list'); if(!el) return;
+    const entries=Object.entries(liveDelays).filter(([,v])=>v>0);
+    el.innerHTML=entries.length
+        ?entries.map(([line,mins])=>`<div class="admin-live-item"><span><strong>${line}</strong></span><span style="color:var(--premium);font-family:'B612 Mono',monospace;">+${mins} Min.</span><button onclick="clearOneLine('${line}')" style="font-size:10px;background:none;border:none;color:var(--text-dim);cursor:pointer;">✕</button></div>`).join('')
+        :'<div style="font-size:11px;color:var(--text-dim);padding:6px 0;">Keine aktiven Verspätungen.</div>';
 }
 
-// ════════════════════════════════════════════════
-//  NOTIFICATIONS DOT
-// ════════════════════════════════════════════════
+// ====== NOTIF DOT ======
 function updateNotifDot() {
-    const hasDelay = Object.values(liveDelays).some(v=>v>0);
-    document.getElementById('notif-dot').classList.toggle('active', hasDelay);
-}
-function renderNotifDrawer() {
-    const delayEntries = Object.entries(liveDelays).filter(([,v])=>v>0);
-    let html = '';
-    delayEntries.forEach(([line,mins])=>{
-        html += `<div class="notif-item warn">
-            <div class="notif-icon">⏱️</div>
-            <div><div class="notif-title">Linie ${line}: +${mins} Min. Verspätung</div>
-            <div class="notif-desc">Aktuelle Verspätung auf Linie ${line}.</div>
-            <div class="notif-time">Jetzt aktuell</div></div>
-        </div>`;
-    });
-    if (!html) html = '<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Keine aktuellen Meldungen.</div>';
-    document.getElementById('notif-list').innerHTML = html;
-}
-function openNotifDrawer() {
-    renderNotifDrawer();
-    document.getElementById('notif-drawer').classList.add('open');
-    document.getElementById('notif-backdrop').classList.add('open');
-    document.getElementById('notif-dot').classList.remove('active');
-}
-function closeNotifDrawer() {
-    document.getElementById('notif-drawer').classList.remove('open');
-    document.getElementById('notif-backdrop').classList.remove('open');
+    const has=Object.values(liveDelays).some(v=>v>0);
+    document.getElementById('notif-dot').classList.toggle('active',has);
 }
 
-// ════════════════════════════════════════════════
-//  FIS  (merges liveDelays from Firebase)
-// ════════════════════════════════════════════════
-function renderFIS() {
-    const sid = userData?.homeStation || 'Güntringen Hbf';
+// ====== THEME ======
+let currentTheme = localStorage.getItem('guen_theme') || 'system';
+const THEME_ICONS = {dark:'🌙',light:'☀️',system:'⚙️'};
+function applyTheme(theme) {
+    let resolved = theme==='system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light') : theme;
+    document.documentElement.setAttribute('data-theme', resolved);
+    document.getElementById('theme-btn').textContent = THEME_ICONS[theme];
+    document.querySelectorAll('.tp-btn').forEach(b=>b.classList.remove('active'));
+    const el = document.getElementById(`tp-${theme}`); if(el) el.classList.add('active');
+}
+function setTheme(t) { currentTheme=t; localStorage.setItem('guen_theme',t); applyTheme(t); }
+function cycleTheme() { const o=['dark','light','system']; setTheme(o[(o.indexOf(currentTheme)+1)%o.length]); }
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if(currentTheme==='system') applyTheme('system'); });
+applyTheme(currentTheme);
+
+// ====== FIS with live countdown + Firebase delays ======
+function updateFIS(stationId) {
+    const sid = stationId || userData?.homeStation || 'Güntringen Hbf';
     const fisData = STATION_FIS[sid] || STATION_FIS['Güntringen Hbf'];
     const now = new Date();
-    const nowM = now.getMinutes(), nowH = now.getHours(), nowS = now.getSeconds();
+    const nowM = now.getMinutes(), nowH = now.getHours(), nowSec = now.getSeconds();
     let html = '';
     fisData.forEach(l => {
-        const delayMin = liveDelays[l.id] || 0;
-        let next = l.m.find(m=>m>nowM) ?? l.m[0];
+        const delayMins = liveDelays[l.id] || 0;
+        let next = l.m.find(min=>min>nowM) ?? l.m[0];
         let diff = next - nowM; if(diff<0) diff+=60;
-        const nextAbs = nowH*60+nowM+diff;
-        const nextHH=Math.floor(nextAbs/60)%24, nextMM=nextAbs%60;
+        const nextAbsMin = nowH*60+nowM+diff;
+        const nextHH=Math.floor(nextAbsMin/60)%24, nextMM=nextAbsMin%60;
         const nextTime=`${String(nextHH).padStart(2,'0')}:${String(nextMM).padStart(2,'0')}`;
         const m2idx=(l.m.indexOf(next)+1)%l.m.length;
         const next2=l.m[m2idx];
         let diff2=next2-nowM; if(diff2<=diff) diff2+=60;
         const n2Abs=nowH*60+nowM+diff2;
         const n2Time=`${String(Math.floor(n2Abs/60)%24).padStart(2,'0')}:${String(n2Abs%60).padStart(2,'0')}`;
-        const totalSec = diff*60 - nowS;
+        const totalSec = diff*60 - nowSec;
         const cdMin=Math.floor(totalSec/60), cdSec=Math.max(0,totalSec%60);
-        const cdStr = diff===0 ? '🚉 Jetzt' : `${cdMin}:${String(cdSec).padStart(2,'0')} min`;
-        const isS11 = l.id==='S11';
-        const stopKey = isS11 ? (l.dest.includes('Villotal')?'S11_Villotal':'S11_Lixen')
-                      : l.id==='14'?(l.dest==='Sonnenstadt'?'14_Sonnenstadt':'14_Falkenberg')
-                      : l.id==='15'?'15_Westende':'16_Hügelbezirk';
+        const cdStr = diff===0?'🚉 Jetzt':`${cdMin}:${String(cdSec).padStart(2,'0')} min`;
+        const isS11=l.id==='S11';
+        const stopKey=isS11?(l.dest.includes('Villotal')?'S11_Villotal':'S11_Lixen')
+                     :l.id==='14'?(l.dest==='Sonnenstadt'?'14_Sonnenstadt':'14_Falkenberg')
+                     :l.id==='15'?'15_Westende'
+                     :l.id==='17'?(l.dest==='Oktratal'?'17_Oktratal':'17_Hbf')
+                     :'16_Hügelbezirk';
         html+=`
-        <div class="fis-row" onclick="openTripDrawer('${l.id}','${l.dest}','${l.col}','${stopKey}',${delayMin},${nextHH},${nextMM})">
-            <div class="line-badge" style="background:${l.col}">${l.id}</div>
-            <div>
-                <div style="font-weight:bold;font-size:13px;">Richtung ${l.dest}</div>
-                <div style="font-size:10px;color:var(--text-dim);">Gleis ${l.gleis} · ${nextTime} / ${n2Time}</div>
-                ${delayMin>0 ? `<span class="delay-live">+${delayMin} Min. · Live</span>` : ''}
-            </div>
-            <div class="eta-col">
-                <div class="eta" style="${delayMin>0?'color:var(--premium)':''}">${diff===0?'jetzt':diff+' min'}</div>
-                <div class="eta-cd">${cdStr}</div>
-            </div>
-        </div>`;
+            <div class="fis-row" onclick="openTripDrawer('${l.id}','${l.dest}','${l.col}','${stopKey}',${delayMins},${nextHH},${nextMM})">
+                <div class="line-badge" style="background:${l.col}">${l.id}</div>
+                <div>
+                    <div style="font-weight:bold;font-size:13px;">Richtung ${l.dest}</div>
+                    <div style="font-size:10px;color:var(--text-dim);">Gleis ${l.gleis} · ${nextTime} / ${n2Time}</div>
+                    ${delayMins>0?`<span class="delay-tag">+${delayMins} Min. Verspätung · nächster Zug</span>`:''}
+                </div>
+                <div class="eta-col">
+                    <div class="eta" style="${delayMins>0?'color:var(--premium)':''}">${diff===0?'jetzt':diff+' min'}</div>
+                    <div class="eta-countdown">${cdStr}</div>
+                </div>
+            </div>`;
     });
-    document.getElementById('fis-list').innerHTML = html ||
-        '<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:12px;">Keine Abfahrten für diese Station.</div>';
+    document.getElementById('fis-list').innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">Keine Abfahrten für diese Station.</div>';
 }
 
-// ════════════════════════════════════════════════
-//  STATION INFO
-// ════════════════════════════════════════════════
+// ====== STATION INFO ======
 function showStationInfo(name, lineId) {
-    const i = STATION_INFO[name]||{typ:'Haltestelle',linien:lineId,aufzug:'k.A.',fahrrad:'k.A.',park:'k.A.',info:''};
+    const info = STATION_INFO[name]||{typ:'Haltestelle',linien:lineId,aufzug:'k.A.',fahrrad:'k.A.',park:'k.A.',info:''};
     document.getElementById('stn-modal-name').textContent = name;
-    document.getElementById('stn-modal-body').innerHTML=`
-        <div class="stn-modal-row"><span class="key">Typ</span><span>${i.typ}</span></div>
-        <div class="stn-modal-row"><span class="key">Linien</span><span>${i.linien}</span></div>
-        <div class="stn-modal-row"><span class="key">Aufzug</span><span>${i.aufzug}</span></div>
-        <div class="stn-modal-row"><span class="key">Fahrrad</span><span>${i.fahrrad}</span></div>
-        <div class="stn-modal-row"><span class="key">P+R</span><span>${i.park}</span></div>
-        ${i.info?`<div style="margin-top:9px;font-size:11px;color:var(--text-dim);line-height:1.5;">${i.info}</div>`:''}
+    document.getElementById('stn-modal-body').innerHTML = `
+        <div class="stn-modal-row"><span class="key">Typ</span><span>${info.typ}</span></div>
+        <div class="stn-modal-row"><span class="key">Linien</span><span>${info.linien}</span></div>
+        <div class="stn-modal-row"><span class="key">Aufzug</span><span>${info.aufzug}</span></div>
+        <div class="stn-modal-row"><span class="key">Fahrrad</span><span>${info.fahrrad}</span></div>
+        <div class="stn-modal-row"><span class="key">P+R</span><span>${info.park}</span></div>
+        ${info.info?`<div style="margin-top:10px;font-size:12px;color:var(--text-dim);line-height:1.5;">${info.info}</div>`:''}
     `;
     document.getElementById('stn-modal').style.display='flex';
 }
 
-// ════════════════════════════════════════════════
-//  TRIP DRAWER
-// ════════════════════════════════════════════════
+// ====== TRIP DETAIL DRAWER ======
 function openTripDrawer(lineId,dest,color,stopKey,delayMin,depH,depM) {
-    const stops   = LINE_FULL_STOPS[stopKey]||[];
-    const sched   = SCHEDULES[lineId];
-    const dir     = sched ? sched.directions.find(d=>d.stopKey===stopKey) : null;
-    const timeMap = {};
-    if (dir) dir.stations.forEach(s=>{timeMap[s.name]=s.offset;});
-    const totalMins = stops.length>1 ? (timeMap[stops[stops.length-1].name]||44) : 44;
-    const arrMins   = (depH*60+depM+totalMins+delayMin)%(24*60);
-    const depTime   = `${String(depH).padStart(2,'0')}:${String(depM).padStart(2,'0')}`;
-    const arrTime   = `${String(Math.floor(arrMins/60)).padStart(2,'0')}:${String(arrMins%60).padStart(2,'0')}`;
-    document.getElementById('trip-drawer-title').textContent = `${lineId} · Richtung ${dest}`;
-    document.getElementById('trip-drawer-sub').textContent   = `Abfahrt ${depTime} · Ankunft ${arrTime}${delayMin?` · +${delayMin} Min.`:''}`;
-    let tl='<div class="timeline">';
+    const stops=LINE_FULL_STOPS[stopKey]||[];
+    const sched=SCHEDULES[lineId];
+    const dir=sched?sched.directions.find(d=>d.stopKey===stopKey):null;
+    const offsets=dir?dir.stations:[];
+    const timeMap={}; offsets.forEach(s=>{timeMap[s.name]=s.offset;});
+    const totalMins=stops.length>1?(timeMap[stops[stops.length-1].name]||44):44;
+    const arrMins=(depH*60+depM+totalMins+delayMin)%(24*60);
+    const arrTime=`${String(Math.floor(arrMins/60)).padStart(2,'0')}:${String(arrMins%60).padStart(2,'0')}`;
+    const depTime=`${String(depH).padStart(2,'0')}:${String(depM).padStart(2,'0')}`;
+    document.getElementById('trip-drawer-title').textContent=`${lineId} · Richtung ${dest}`;
+    document.getElementById('trip-drawer-sub').textContent=`Abfahrt ${depTime} · Ankunft ${arrTime}${delayMin?` · +${delayMin} Min. Verspätung`:''}`;
+    let tlHtml='<div class="timeline">';
     stops.forEach((s,idx)=>{
         const isFirst=idx===0, isLast=idx===stops.length-1;
-        const offset = timeMap[s.name]||0;
-        const absMin = (depH*60+depM+offset+delayMin)%(24*60);
-        const ts = `${String(Math.floor(absMin/60)%24).padStart(2,'0')}:${String(absMin%60).padStart(2,'0')}`;
-        const dc = (isFirst||isLast)?'terminal':'mid';
-        tl+=`<div class="tl-stop" style="--tl-color:${color}">
+        const offset=timeMap[s.name]||0;
+        const absMin=(depH*60+depM+offset+delayMin)%(24*60);
+        const hh=Math.floor(absMin/60)%24, mm=absMin%60;
+        const timeStr=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+        const dotClass=(isFirst||isLast)?'terminal':'mid';
+        tlHtml+=`<div class="tl-stop" style="--tl-color:${color}">
             <div class="tl-left">
-                <div class="tl-dot ${dc}" style="border-color:${color};${(isFirst||isLast)?'background:'+color:''}"></div>
+                <div class="tl-dot ${dotClass}" style="border-color:${color};${(isFirst||isLast)?'background:'+color:''}"></div>
                 <div class="tl-line-seg"></div>
             </div>
             <div class="tl-right">
                 <div class="tl-stop-name">${s.name}</div>
-                <div class="tl-stop-time">${ts}${delayMin&&(isFirst||isLast)?` <span class="tl-delay">+${delayMin}'</span>`:''}</div>
+                <div class="tl-stop-time">${timeStr}${delayMin&&(isFirst||isLast)?` <span class="tl-delay">+${delayMin}'</span>`:''}</div>
                 <div class="tl-stop-sub">Gleis ${s.gleis}${s.transfer?' · '+s.transfer:''}</div>
                 ${s.transfer&&!isFirst&&!isLast?'<div class="tl-transfer-badge">🔀 Umstieg möglich</div>':''}
             </div>
         </div>`;
     });
-    tl+='</div>';
-    const statusHtml = delayMin
-        ? `<div style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:10px;padding:11px;margin-bottom:13px;"><div style="font-weight:bold;color:var(--premium);font-size:12px;">⚠️ Verspätung: +${delayMin} Min.</div></div>`
-        : `<div style="background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:10px;padding:9px;margin-bottom:13px;"><div style="font-size:12px;color:var(--success);">✅ Pünktlich</div></div>`;
+    tlHtml+='</div>';
+    const statusHtml=delayMin?`<div style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:10px;padding:12px;margin-bottom:14px;"><div style="font-weight:bold;color:var(--premium);font-size:13px;">⚠️ Verspätung: +${delayMin} Minuten</div><div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Signalstörung Güntringen Hbf.</div></div>`
+        :`<div style="background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:10px;padding:10px;margin-bottom:14px;"><div style="font-size:12px;color:var(--success);">✅ Pünktlich · Keine Störungen</div></div>`;
     document.getElementById('trip-drawer-body').innerHTML=`
         <div class="trip-summary">
             <div class="ts-item"><div class="ts-val">${depTime}</div><div class="ts-lbl">Abfahrt</div></div>
-            <div class="ts-item"><div class="ts-val">${totalMins}m</div><div class="ts-lbl">Dauer</div></div>
+            <div class="ts-item"><div class="ts-val">${totalMins}m</div><div class="ts-lbl">Fahrtzeit</div></div>
             <div class="ts-item"><div class="ts-val">${arrTime}</div><div class="ts-lbl">Ankunft</div></div>
             <div class="ts-item"><div class="ts-val">${stops.length}</div><div class="ts-lbl">Halte</div></div>
         </div>
         ${statusHtml}
-        <div class="section-title" style="margin-bottom:9px;">Streckenverlauf</div>
-        ${tl}`;
+        <div class="section-title" style="margin-bottom:10px;">Streckenverlauf</div>
+        ${tlHtml}
+        <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--fp-border);">
+            <div class="section-title" style="margin-bottom:8px;">Fahrzeuginfo</div>
+            <div style="background:var(--card);border-radius:10px;padding:12px;border:1px solid var(--input-border);">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
+                    <div><span style="color:var(--text-dim);">Typ</span><br><strong>${lineId==='S11'?'Triebzug 422':'Niederflurbus NF12'}</strong></div>
+                    <div><span style="color:var(--text-dim);">Klima</span><br><strong>✓ Ja</strong></div>
+                    ${lineId==='S11'?'<div><span style="color:var(--text-dim);">WLAN</span><br><strong>✓ An Bord</strong></div><div><span style="color:var(--text-dim);">Fahrrad</span><br><strong>✓ Erlaubt</strong></div>':''}
+                </div>
+            </div>
+        </div>`;
     document.getElementById('trip-backdrop').classList.add('open');
     document.getElementById('trip-drawer').classList.add('open');
 }
@@ -1355,9 +1535,7 @@ function closeTripDrawer() {
     document.getElementById('trip-backdrop').classList.remove('open');
 }
 
-// ════════════════════════════════════════════════
-//  FAHRPLAN
-// ════════════════════════════════════════════════
+// ====== FAHRPLAN ======
 let activeLine='S11', activeDir=0;
 function selectLine(id,el) {
     activeLine=id; activeDir=0;
@@ -1369,76 +1547,87 @@ function selectLine(id,el) {
 function renderFahrplan() {
     const sched=SCHEDULES[activeLine];
     const dirs=sched.directions;
-    document.getElementById('fp-directions').innerHTML=dirs.map((d,i)=>
-        `<div class="dir-btn ${i===activeDir?'active':''}" onclick="setDir(${i})">${d.label}</div>`
-    ).join('');
+    document.getElementById('fp-directions').innerHTML=dirs.map((d,i)=>`<div class="dir-btn ${i===activeDir?'active':''}" onclick="setDir(${i})">${d.label}</div>`).join('');
     const dir=dirs[activeDir];
+    const departures=sched.departures;
     const now=new Date();
     const nowM=now.getHours()*60+now.getMinutes();
     const nextDeps=[];
     for(let h=now.getHours();h<now.getHours()+4;h++){
-        sched.departures.forEach(m=>{ const a=h*60+m; if(a>=nowM) nextDeps.push({h:h%24,m}); });
+        departures.forEach(m=>{ const abs=h*60+m; if(abs>=nowM) nextDeps.push({h:h%24,m}); });
     }
     const shown=nextDeps.slice(0,3);
-    let html=`<div class="fp-table"><div class="fp-header"><span>Station</span><span style="text-align:center;">Nächste</span><span style="text-align:center;">Dann</span></div>`;
+    let tableHtml=`<div class="fp-table"><div class="fp-header"><span>Station</span><span style="text-align:center;">Nächste</span><span style="text-align:center;">Dann</span></div>`;
     dir.stations.forEach(s=>{
         const times=shown.map(dep=>{
             const mins=(dep.h*60+dep.m+s.offset)%(24*60);
             return `${String(Math.floor(mins/60)%24).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
         });
-        const isO=s.offset===0, isE=s.offset===Math.max(...dir.stations.map(x=>x.offset));
-        html+=`<div class="fp-station-row ${isO||isE?'highlight':''}" onclick="${`showStationInfo('${s.name}','${activeLine}')`}" data-name="${s.name.toLowerCase()}">
-            <div><span class="fp-icon">${isO?'🟢':isE?'🔴':'⚪'}</span>${s.name}</div>
-            <div class="fp-time" style="text-align:center;">${times[0]||'–'}</div>
-            <div class="fp-time" style="text-align:center;">${times[1]||'–'}</div>
+        const isOrigin=s.offset===0, isEnd=s.offset===Math.max(...dir.stations.map(x=>x.offset));
+        tableHtml+=`<div class="fp-station-row ${s.skip?'skipped':''} ${isOrigin||isEnd?'highlight':''}" onclick="${s.skip?'':` showStationInfo('${s.name}','${activeLine}')`}" data-name="${s.name.toLowerCase()}">
+            <div><span class="fp-icon">${isOrigin?'🟢':isEnd?'🔴':s.skip?'⬜':'⚪'}</span>${s.name}${s.skip?'<span class="skip-badge">Übersprungen</span>':''}</div>
+            <div class="fp-time" style="text-align:center;">${s.skip?'–':(times[0]||'–')}</div>
+            <div class="fp-time" style="text-align:center;">${s.skip?'–':(times[1]||'–')}</div>
         </div>`;
     });
-    html+='</div>';
-    document.getElementById('fp-table').innerHTML=html;
+    tableHtml+='</div>';
+    document.getElementById('fp-table').innerHTML=tableHtml;
 }
 function setDir(i) { activeDir=i; renderFahrplan(); }
 function filterFahrplan(q) {
-    document.querySelectorAll('.fp-station-row').forEach(r=>
-        r.classList.toggle('hidden-filter', q.length>0 && !r.dataset.name.includes(q.toLowerCase()))
-    );
+    const rows=document.querySelectorAll('.fp-station-row');
+    rows.forEach(r=>r.classList.toggle('hidden-filter', q.length>0 && !r.dataset.name.includes(q.toLowerCase())));
 }
 
-// ════════════════════════════════════════════════
-//  AUTOCOMPLETE + ROUTE
-// ════════════════════════════════════════════════
+// ====== AUTOCOMPLETE ROUTENPLANER ======
 let routeFromVal='Güntringen Hbf', routeToVal='Villotal Hbf';
-function acSearch(field,q) {
-    const list=document.getElementById(field==='from'?'ac-from':'ac-to');
-    if (!q) { list.classList.remove('open'); return; }
-    const m=ALL_STATIONS.filter(s=>s.toLowerCase().includes(q.toLowerCase())).slice(0,8);
-    if (!m.length) { list.classList.remove('open'); return; }
-    list.innerHTML=m.map(s=>{
-        const hl=s.replace(new RegExp(q,'gi'),x=>`<mark>${x}</mark>`);
+function acSearch(field, q) {
+    const listId=field==='from'?'ac-from':'ac-to';
+    const list=document.getElementById(listId);
+    if(!q||q.length<1) { list.classList.remove('open'); return; }
+    const matches=ALL_STATIONS.filter(s=>s.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+    if(!matches.length) { list.classList.remove('open'); return; }
+    list.innerHTML=matches.map(s=>{
+        const hl=s.replace(new RegExp(q,'gi'),m=>`<mark>${m}</mark>`);
         return `<div class="ac-item" onclick="acSelect('${field}','${s}')">${hl}</div>`;
     }).join('');
     list.classList.add('open');
 }
-function acSelect(field,val) {
-    if(field==='from') { routeFromVal=val; document.getElementById('route-from-input').value=val; document.getElementById('ac-from').classList.remove('open'); }
-    else               { routeToVal=val;   document.getElementById('route-to-input').value=val;   document.getElementById('ac-to').classList.remove('open'); }
+function acSelect(field, value) {
+    if(field==='from') {
+        routeFromVal=value;
+        document.getElementById('route-from-input').value=value;
+        document.getElementById('ac-from').classList.remove('open');
+    } else {
+        routeToVal=value;
+        document.getElementById('route-to-input').value=value;
+        document.getElementById('ac-to').classList.remove('open');
+    }
 }
-document.addEventListener('click',e=>{ if(!e.target.closest('.autocomplete-wrap')) document.querySelectorAll('.autocomplete-list').forEach(l=>l.classList.remove('open')); });
+document.addEventListener('click', e=>{
+    if(!e.target.closest('.autocomplete-wrap')) {
+        document.querySelectorAll('.autocomplete-list').forEach(l=>l.classList.remove('open'));
+    }
+});
 function swapRoute() {
     [routeFromVal,routeToVal]=[routeToVal,routeFromVal];
     document.getElementById('route-from-input').value=routeFromVal;
     document.getElementById('route-to-input').value=routeToVal;
 }
 
+// ====== DIJKSTRA ======
 function dijkstra(from,to) {
-    const dist={},prev={},vis=new Set();
+    const dist={},prev={},visited=new Set();
     Object.keys(LINE_GRAPH).forEach(n=>dist[n]=Infinity);
-    dist[from]=0; const q=[from];
-    while(q.length){
-        q.sort((a,b)=>dist[a]-dist[b]);
-        const u=q.shift(); if(vis.has(u)) continue; vis.add(u); if(u===to) break;
-        for(const[v,e] of Object.entries(LINE_GRAPH[u]||{})){
-            const alt=dist[u]+e.mins;
-            if(alt<dist[v]){ dist[v]=alt; prev[v]={from:u,...e}; if(!vis.has(v)) q.push(v); }
+    dist[from]=0; const queue=[from];
+    while(queue.length){
+        queue.sort((a,b)=>dist[a]-dist[b]);
+        const u=queue.shift();
+        if(visited.has(u)) continue; visited.add(u);
+        if(u===to) break;
+        for(const [v,edge] of Object.entries(LINE_GRAPH[u]||{})){
+            const alt=dist[u]+edge.mins;
+            if(alt<dist[v]){ dist[v]=alt; prev[v]={from:u,...edge}; if(!visited.has(v)) queue.push(v); }
         }
     }
     if(dist[to]===Infinity) return null;
@@ -1448,117 +1637,185 @@ function dijkstra(from,to) {
     return {path,totalMins:dist[to]};
 }
 
-async function calcRoute() {
+function calcRoute() {
     const from=routeFromVal||document.getElementById('route-from-input').value;
     const to=routeToVal||document.getElementById('route-to-input').value;
-    const tv=document.getElementById('route-time').value;
+    const timeVal=document.getElementById('route-time').value;
     if(!from||!to) { showToast('Bitte Start und Ziel wählen','warn'); return; }
-    if(from===to)  { showToast('Start = Ziel!','warn'); return; }
-    const res=dijkstra(from,to);
+    if(from===to) { showToast('Start = Ziel!','warn'); return; }
+    const result=dijkstra(from,to);
     const container=document.getElementById('route-result');
-    if(!res){ container.innerHTML=`<div class="route-card"><h3>Keine Verbindung</h3><p style="font-size:12px;color:var(--text-dim);">Diese Strecke ist nicht verbunden.</p></div>`; return; }
-    let[depH,depM]=tv?tv.split(':').map(Number):[new Date().getHours(),new Date().getMinutes()];
-    let cum=depH*60+depM;
-    const legs=[]; let i=1;
-    while(i<res.path.length){
-        const seg=res.path[i]; const startStn=res.path[i-1].station;
-        let endStn=seg.station,lm=seg.mins,j=i+1;
-        while(j<res.path.length&&res.path[j].line===seg.line){lm+=res.path[j].mins;endStn=res.path[j].station;j++;}
-        legs.push({from:startStn,to:endStn,line:seg.line,color:seg.color,mins:lm}); i=j;
+    if(!result) {
+        container.innerHTML=`<div class="route-card"><h3>Keine Verbindung</h3><p style="font-size:12px;color:var(--text-dim);">Diese Strecke ist nicht verbunden.</p></div>`;
+        return;
     }
-    let lHtml=''; const tt=legs.length-1;
+    let [depH,depM]=timeVal?timeVal.split(':').map(Number):[new Date().getHours(),new Date().getMinutes()];
+    let cumMins=depH*60+depM;
+    const legs=[]; let i=1;
+    while(i<result.path.length){
+        const seg=result.path[i]; const startStn=result.path[i-1].station;
+        let endStn=seg.station, lineMins=seg.mins, j=i+1;
+        while(j<result.path.length&&result.path[j].line===seg.line){ lineMins+=result.path[j].mins; endStn=result.path[j].station; j++; }
+        legs.push({from:startStn,to:endStn,line:seg.line,color:seg.color,mins:lineMins}); i=j;
+    }
+    let legsHtml=''; const totalTransfers=legs.length-1;
     legs.forEach((leg,li)=>{
-        const dt=`${String(Math.floor(cum/60)%24).padStart(2,'0')}:${String(cum%60).padStart(2,'0')}`;
-        const ldH=Math.floor(cum/60)%24,ldM=cum%60;
-        cum+=leg.mins+2;
-        const at=`${String(Math.floor(cum/60)%24).padStart(2,'0')}:${String(cum%60).padStart(2,'0')}`;
+        const depTime=`${String(Math.floor(cumMins/60)%24).padStart(2,'0')}:${String(cumMins%60).padStart(2,'0')}`;
+        const legDepH=Math.floor(cumMins/60)%24, legDepM=cumMins%60;
+        cumMins+=leg.mins+2;
+        const arrTime=`${String(Math.floor(cumMins/60)%24).padStart(2,'0')}:${String(cumMins%60).padStart(2,'0')}`;
         const sk=leg.line==='S11'?(leg.to.includes('Villotal')||leg.to==='Güntringen Hbf'||leg.to==='Villotal Süd'?'S11_Villotal':'S11_Lixen')
                 :leg.line===14?(leg.to==='Sonnenstadt'||leg.to==='Seenring'||leg.to==='Technopolis'||leg.to==='Sonnenwald'?'14_Sonnenstadt':'14_Falkenberg')
                 :leg.line===15?'15_Westende':'16_Hügelbezirk';
-        lHtml+=`<div class="route-leg" onclick="openTripDrawer('${leg.line}','${leg.to}','${leg.color}','${sk}',0,${ldH},${ldM})">
+        legsHtml+=`<div class="route-leg" onclick="openTripDrawer('${leg.line}','${leg.to}','${leg.color}','${sk}',0,${legDepH},${legDepM})">
             <div class="route-leg-icon" style="background:${leg.color}">${leg.line}</div>
-            <div style="flex:1;"><div style="font-weight:bold;">${leg.from} → ${leg.to}</div><div class="route-leg-times">${dt} → ${at} · ${leg.mins} Min.</div></div>
+            <div style="flex:1;"><div style="font-weight:bold;">${leg.from} → ${leg.to}</div><div class="route-leg-times">${depTime} → ${arrTime} · ${leg.mins} Min.</div></div>
             <div style="font-size:11px;color:var(--accent);flex-shrink:0;">Details ›</div>
-        </div>${li<legs.length-1?`<div style="display:flex;align-items:center;gap:8px;padding:7px 6px;font-size:11px;color:var(--warn);">🔀 <span>Umstieg in <strong>${leg.to}</strong></span></div>`:''}`;
-        // record journey in Firebase
-        recordJourney(String(leg.line),leg.from,leg.to,leg.mins);
-    });
-    const tot=res.totalMins+tt*2;
-    const fa=`${String(Math.floor((depH*60+depM+tot)/60)%24).padStart(2,'0')}:${String((depH*60+depM+tot)%60).padStart(2,'0')}`;
-    container.innerHTML=`<div class="route-card"><h3>Verbindung gefunden</h3>
-        <div class="trip-summary" style="margin-bottom:13px;">
-            <div class="ts-item"><div class="ts-val">${String(depH).padStart(2,'0')}:${String(depM).padStart(2,'0')}</div><div class="ts-lbl">Abfahrt</div></div>
-            <div class="ts-item"><div class="ts-val">${tot}m</div><div class="ts-lbl">Gesamt</div></div>
-            <div class="ts-item"><div class="ts-val">${fa}</div><div class="ts-lbl">Ankunft</div></div>
-            <div class="ts-item"><div class="ts-val">${tt}</div><div class="ts-lbl">Umstieg</div></div>
         </div>
-        ${lHtml}
-        <p style="font-size:10px;color:var(--text-dim);margin-top:9px;">↑ Antippen für Reisedetails</p>
+        ${li<legs.length-1?`<div style="display:flex;align-items:center;gap:8px;padding:8px 6px;font-size:11px;color:var(--warn);">🔀 <span>Umstieg in <strong>${leg.to}</strong> · ca. 2 Min.</span></div>`:''}`;
+        // Log journey
+        recordJourney(leg.line, leg.from, leg.to);
+    });
+    const totalMins=result.totalMins+totalTransfers*2;
+    const finalArr=`${String(Math.floor((depH*60+depM+totalMins)/60)%24).padStart(2,'0')}:${String((depH*60+depM+totalMins)%60).padStart(2,'0')}`;
+    container.innerHTML=`<div class="route-card">
+        <h3>Verbindung gefunden</h3>
+        <div class="trip-summary" style="margin-bottom:14px;">
+            <div class="ts-item"><div class="ts-val">${String(depH).padStart(2,'0')}:${String(depM).padStart(2,'0')}</div><div class="ts-lbl">Abfahrt</div></div>
+            <div class="ts-item"><div class="ts-val">${totalMins}m</div><div class="ts-lbl">Gesamt</div></div>
+            <div class="ts-item"><div class="ts-val">${finalArr}</div><div class="ts-lbl">Ankunft</div></div>
+            <div class="ts-item"><div class="ts-val">${totalTransfers}</div><div class="ts-lbl">Umstieg</div></div>
+        </div>
+        ${legsHtml}
+        <p style="font-size:10px;color:var(--text-dim);margin-top:10px;">↑ Segment antippen für Reisedetails</p>
     </div>`;
 }
 
-// ════════════════════════════════════════════════
-//  JOURNEY HISTORY  (stored in Firebase)
-// ════════════════════════════════════════════════
-async function recordJourney(line, from, to, mins) {
+// ====== FAHRTENVERLAUF ======
+async function recordJourney(line, from, to) {
     if (!uid()) return;
-    const { db, ref, push, serverTimestamp } = fb();
-    await push(ref(db,`users/${uid()}/journeyLog`), {
-        line, from, to, mins,
-        ts: serverTimestamp(),
-        dateStr: new Date().toLocaleDateString('de-DE'),
-        timeStr: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),
-    });
-    // increment counters
-    const jc = (userData.journeys||0)+1;
-    const km = (userData.km||0)+Math.round(mins*0.8);
+    const now=new Date();
+    const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    const dateStr=now.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+    const {db,ref,push,serverTimestamp}=fb();
+    await push(ref(db,`users/${uid()}/journeyLog`),{line,from,to,dateStr,timeStr,ts:serverTimestamp()});
+    const jc=(userData.journeys||0)+1;
+    const km=(userData.km||0)+Math.round(8);
     await dbUpdate(`users/${uid()}`,{journeys:jc,km});
 }
-
-function renderJourneyHistory(data) {
+function addDemoJourney() {
+    const pairs=[
+        {line:'S11',from:'Güntringen Hbf',to:'Villotal Hbf',col:'#c0392b'},
+        {line:'14',from:'Falkenberg',to:'Sonnenstadt',col:'#003f8a'},
+        {line:'15',from:'Altgün Dreieck',to:'Westende',col:'#6b1e1e'},
+        {line:'S11',from:'Lixen',to:'Altgün Dreieck',col:'#c0392b'},
+        {line:'16',from:'Altgün Dreieck',to:'Hügelbezirk Süd',col:'#174f17'},
+    ];
+    const p=pairs[Math.floor(Math.random()*pairs.length)];
+    recordJourney(p.line,p.from,p.to);
+    showToast(`🚃 Fahrt ${p.line}: ${p.from} → ${p.to} gespeichert`);
+}
+function renderJourneyHistory() {
     const el=document.getElementById('journey-history'); if(!el) return;
-    // Attach a live listener to journeyLog
-    const { db, ref, onValue } = fb();
+    if (!uid()) { el.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Noch keine Fahrten aufgezeichnet.</div>'; return; }
+    const {db,ref,onValue}=fb();
     onValue(ref(db,`users/${uid()}/journeyLog`), snap=>{
         const raw=snap.val();
-        if (!raw) { el.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:6px 0;">Noch keine Fahrten aufgezeichnet.</div>'; return; }
+        if(!raw){ el.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Noch keine Fahrten aufgezeichnet.</div>'; return; }
         const entries=Object.values(raw).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,10);
+        const lineColors={'S11':'#c0392b','14':'#003f8a','15':'#6b1e1e','16':'#174f17'};
         el.innerHTML=entries.map(j=>`
             <div class="journey-item">
-                <div class="ji-line" style="background:${LINE_COLORS[j.line]||'#555'}">${j.line}</div>
+                <div class="ji-line" style="background:${lineColors[String(j.line)]||'#555'}">${j.line}</div>
                 <div class="ji-route">
                     <div class="ji-route-main">${j.from} → ${j.to}</div>
-                    <div class="ji-route-sub">${j.dateStr||''} · ${j.timeStr||''}</div>
+                    <div class="ji-route-sub">${j.dateStr||''} · ${j.timeStr||''} Uhr</div>
                 </div>
             </div>`).join('');
-    }, {onlyOnce:false});
+    },{onlyOnce:false});
 }
 
-// ════════════════════════════════════════════════
-//  SHOP
-// ════════════════════════════════════════════════
+// ====== STATS ======
+function updateStats() {
+    if (!userData) return;
+    document.getElementById('stat-fahrten').textContent = userData.journeys||0;
+    document.getElementById('stat-km').textContent      = (userData.km||0).toLocaleString('de-DE');
+    document.getElementById('stat-co2').textContent     = Math.round((userData.km||0)*0.095);
+}
+function renderCO2Chart() {
+    const el=document.getElementById('co2-chart'); if(!el) return;
+    const months=['Nov','Dez','Jan','Feb','Mär','Apr'];
+    const base=[12,18,14,22,19,Math.round(10+(userData?.journeys||0)*0.9)];
+    const maxVal=Math.max(...base);
+    el.innerHTML=months.map((m,i)=>{
+        const h=Math.round((base[i]/maxVal)*68);
+        return `<div class="bar-item">
+            <div class="bar-val">${base[i]}</div>
+            <div class="bar" style="height:${h}px;opacity:${i===5?1:.65}"></div>
+            <div class="bar-lbl">${m}</div>
+        </div>`;
+    }).join('');
+}
+
+// ====== NOTIFICATIONS ======
+function renderNotifications() {
+    document.getElementById('notif-list').innerHTML=NOTIFICATIONS.map(n=>`
+        <div class="notif-item ${n.type}">
+            <div class="notif-icon">${n.icon}</div>
+            <div><div class="notif-title">${n.title}</div><div class="notif-desc">${n.desc}</div><div class="notif-time">${n.time}</div></div>
+        </div>`).join('');
+}
+function openNotifDrawer() { document.getElementById('notif-drawer').classList.add('open'); document.getElementById('notif-backdrop').classList.add('open'); document.getElementById('notif-dot').classList.remove('active'); }
+function closeNotifDrawer() { document.getElementById('notif-drawer').classList.remove('open'); document.getElementById('notif-backdrop').classList.remove('open'); }
+
+// ====== SHOP ======
 function renderShop(data) {
     const ownedIds = data?.tickets ? Object.keys(data.tickets) : [];
     const mapItems=(items,targetId)=>{
-        document.getElementById(targetId).innerHTML=items.map(item=>{
-            const owned=ownedIds.includes(item.id);
+        const el=document.getElementById(targetId); if(!el) return;
+        el.innerHTML=items.map(item=>{
+            const isOwned=ownedIds.includes(item.id);
             return `<div class="ticket-item">
-                <div class="ticket-info"><h3>${item.name}</h3><p>${item.desc}</p></div>
+                <div class="ticket-info">
+                    <h3>${item.name}${item.badge?` <span style="background:rgba(192,57,43,.1);color:var(--accent);border:1px solid rgba(192,57,43,.25);font-size:9px;padding:2px 6px;border-radius:10px;font-weight:bold;vertical-align:middle;margin-left:4px;">${item.badge}</span>`:''}</h3>
+                    <p>${item.desc}</p>
+                </div>
                 <div class="buy-box">
-                    <button class="btn-buy ${owned?'owned':''}" onclick="${owned?'':` openBuyModal('${item.id}','${item.name}',${item.price})`}">${owned?'✓ Aktiv':'G$ '+item.price.toFixed(2)}</button>
-                    ${!owned?`<span class="eur-sub">${(item.price*GUN_TO_EUR).toFixed(2)} €</span>`:''}
+                    <button class="btn-buy ${isOwned?'owned':''}" onclick="${isOwned?'':` openBuyModal('${item.id}','${item.name}',${item.price})`}">${isOwned?'✓ Aktiv':'VIL '+item.price.toFixed(2)}</button>
+                    ${!isOwned?`<span class="eur-sub">${(item.price*GUN_TO_EUR).toFixed(2)} €</span>`:''}
                 </div>
             </div>`;
         }).join('');
     };
     mapItems(TARIFE.single,'shop-single');
-    mapItems(TARIFE.abo,   'shop-abo');
+    mapItems(TARIFE.familie,'shop-familie');
+    mapItems(TARIFE.abo,'shop-abo');
     mapItems(TARIFE.junior,'shop-junior');
 }
 
-// ════════════════════════════════════════════════
-//  WALLET TICKETS
-// ════════════════════════════════════════════════
+// ====== BUY TICKET ======
+let activePending=null;
+function openBuyModal(id,name,price) {
+    activePending={id,name,price};
+    document.getElementById('m-title').textContent     = name;
+    document.getElementById('m-desc').textContent      = 'Wird sofort in dein Wallet geladen.';
+    document.getElementById('m-price-vil').textContent = `${price.toFixed(2)} VIL`;
+    document.getElementById('m-price-eur').textContent = `${(price*GUN_TO_EUR).toFixed(2).replace('.',',')} €`;
+    document.getElementById('buy-modal').style.display = 'flex';
+}
+document.getElementById('confirm-buy').onclick = async () => {
+    if (!activePending) return;
+    const bal = userData?.balance||0;
+    if (bal < activePending.price) { showToast('Nicht genügend VIL!','error'); closeModal('buy-modal'); return; }
+    const newBal = bal - activePending.price;
+    const tickets = userData.tickets ? {...userData.tickets} : {};
+    tickets[activePending.id] = { name:activePending.name, date:new Date().toLocaleDateString('de-DE') };
+    await dbUpdate(`users/${uid()}`,{balance:newBal, tickets});
+    closeModal('buy-modal');
+    showToast('✓ Kauf erfolgreich!');
+};
+
+// ====== WALLET TICKETS ======
 function renderWalletTickets(data) {
     const el=document.getElementById('wallet-tickets-list');
     const tickets=data?.tickets;
@@ -1570,31 +1827,25 @@ function renderWalletTickets(data) {
         <div class="wallet-ticket-row">
             <div class="wt-icon">🎫</div>
             <div><div class="wt-name">${t.name}</div><div class="wt-exp">Gekauft am ${t.date}</div></div>
-            <div class="wt-badge">Aktiv</div>
+            <div class="wt-badge active">Aktiv</div>
         </div>`).join('');
 }
-
-// ════════════════════════════════════════════════
-//  THEME
-// ════════════════════════════════════════════════
-let currentTheme = localStorage.getItem('guen_theme')||'system';
-const THEME_ICONS = {dark:'🌙',light:'☀️',system:'⚙️'};
-function applyTheme(t) {
-    const r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;
-    document.documentElement.setAttribute('data-theme',r);
-    document.getElementById('theme-btn').textContent=THEME_ICONS[t];
-    document.querySelectorAll('.tp-btn').forEach(b=>b.classList.remove('active'));
-    const el=document.getElementById(`tp-${t}`); if(el) el.classList.add('active');
-}
-function setTheme(t) { currentTheme=t; localStorage.setItem('guen_theme',t); applyTheme(t); }
-function cycleTheme() { const o=['dark','light','system']; setTheme(o[(o.indexOf(currentTheme)+1)%o.length]); }
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if(currentTheme==='system') applyTheme('system'); });
-applyTheme(currentTheme);
-
-// ════════════════════════════════════════════════
-//  MODAL / VIEW UTILS
-// ════════════════════════════════════════════════
 function closeModal(id) { document.getElementById(id).style.display='none'; }
+
+// ====== TOAST QUEUE ======
+function showToast(msg, type='') {
+    const container=document.getElementById('toast-container');
+    const toast=document.createElement('div');
+    toast.className='toast-msg'+(type?' '+type:'');
+    toast.textContent=msg;
+    container.appendChild(toast);
+    setTimeout(()=>{
+        toast.classList.add('exit');
+        setTimeout(()=>toast.remove(), 280);
+    }, 2400);
+}
+
+// ====== VIEW ======
 function showView(id,el) {
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -1602,29 +1853,129 @@ function showView(id,el) {
     if(el) el.classList.add('active');
 }
 
-// ════════════════════════════════════════════════
-//  TOAST QUEUE
-// ════════════════════════════════════════════════
-function showToast(msg,type='') {
-    const c=document.getElementById('toast-container');
-    const t=document.createElement('div');
-    t.className='toast-msg'+(type?' '+type:'');
-    t.textContent=msg;
-    c.appendChild(t);
-    setTimeout(()=>{ t.classList.add('exit'); setTimeout(()=>t.remove(),240); },2500);
+
+// ====== REISEBEGLEITER ======
+const RB_LINE_STOPS = {
+    'S11':  ['Lixen','Güntratal Süd','Altgün Dreieck','Güntringen Hbf','Villotal Süd','Villotal Hbf'],
+    '14':   ['Falkenberg','Neuer Ring','Regierungsviertel','Altgüner Vorstadt','Altgün Mitte','Altgün Dreieck','Seenring','Sonnenwald','Technopolis','Sonnenstadt'],
+    '15':   ['Altgün Dreieck','Altgün-Center','Altgün-Markt','Vûlfja-Hüpel-Allee','Sâscha-Okto-Ring','Altgüner Vorstadt','Regierungsviertel','Falkenberger Allee','ZOB Flussbezirk','Westende'],
+    '16':   ['Altgün Dreieck','Krakingerallee','Burg','Vélicherring','Osttal','Villenviertel','Hügelbezirk Süd'],
+    '17':   ['Güntringen Hbf','Südstern','Südtor','Technopolis','Oktratal'],
+};
+const RB_TRANSFERS = {
+    'Altgün Dreieck': ['S11','14','15','16'],
+    'Güntratal Süd':  ['S11','14','15'],
+    'Güntringen Hbf': ['S11','17'],
+    'Altgüner Vorstadt': ['14','15'],
+    'Regierungsviertel': ['14','15'],
+    'Falkenberg': ['14','15'],
+    'Technopolis': ['14','17'],
+};
+let rbState = null;
+
+function rbUpdateStations() {
+    const line = document.getElementById('rb-line').value;
+    const stops = RB_LINE_STOPS[line] || [];
+    const makeOpts = (id, placeholder) => {
+        document.getElementById(id).innerHTML = `<option value="">– wählen –</option>` +
+            stops.map(s=>`<option value="${s}">${s}</option>`).join('');
+    };
+    makeOpts('rb-current');
+    makeOpts('rb-dest');
 }
 
-// ════════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════════
-// Route time default
-const _now=new Date();
-const rtEl=document.getElementById('route-time');
-if(rtEl) rtEl.value=`${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
+function rbStart() {
+    const line = document.getElementById('rb-line').value;
+    const current = document.getElementById('rb-current').value;
+    const dest = document.getElementById('rb-dest').value;
+    if(!line||!current||!dest) { showToast('Bitte alle Felder ausfüllen','warn'); return; }
+    if(current===dest) { showToast('Start = Ziel!','warn'); return; }
+    const stops = RB_LINE_STOPS[line];
+    const fromIdx = stops.indexOf(current);
+    const toIdx = stops.indexOf(dest);
+    if(fromIdx<0||toIdx<0) { showToast('Ungültige Strecke','warn'); return; }
+    const forward = toIdx > fromIdx;
+    const routeStops = forward ? stops.slice(fromIdx, toIdx+1) : stops.slice(toIdx, fromIdx+1).reverse();
+    rbState = { line, routeStops, currentIdx: 0 };
+    document.getElementById('rb-guidance').style.display='block';
+    document.getElementById('rb-setup').style.display='none';
+    rbRender();
+}
 
-// Route inputs default
+function rbRender() {
+    if(!rbState) return;
+    const { line, routeStops, currentIdx } = rbState;
+    const stops = routeStops;
+    const isLast = currentIdx >= stops.length - 1;
+    const currentStop = stops[currentIdx];
+    const nextStop = isLast ? null : stops[currentIdx + 1];
+    const remaining = stops.length - currentIdx - 1;
+    const lineColors = {'S11':'#c0392b','14':'#003f8a','15':'#8b2020','16':'#174f17','17':'#7b3fa0'};
+    const col = lineColors[line] || '#555';
+
+    // Transfer hints
+    const transfers = nextStop ? (RB_TRANSFERS[nextStop]||[]).filter(l=>l!==line) : [];
+    const transferHint = transfers.length ? `· Umstieg auf ${transfers.map(t=>`<strong style="color:var(--accent)">${t}</strong>`).join(', ')} möglich` : '';
+
+    let icon='🚇', main='', sub='';
+    if(isLast) {
+        icon='🏁'; main='Ziel erreicht!'; sub=`Du bist an ${currentStop} angekommen.`;
+    } else if(currentIdx===0) {
+        icon='▶️'; main=`Einsteigen · ${line}`; sub=`Fahre bis ${stops[stops.length-1]}. Nächster Halt: <strong>${nextStop}</strong> ${transferHint}`;
+    } else {
+        icon='📍'; main=`Jetzt: ${currentStop}`; sub=`Nächster Halt: <strong>${nextStop}</strong> ${transferHint}<br>${remaining} Halt${remaining!==1?'e':''} bis Ziel`;
+        // Ausstieg-Warnung
+        if(remaining===1) { icon='⚠️'; main=`Nächste Station aussteigen!`; sub=`Dein Ziel <strong>${nextStop}</strong> ist der nächste Halt.`; }
+        // Transfer instructions
+        if(transfers.length && remaining > 1) { icon='🔀'; main=`An ${nextStop} umsteigen`; sub=`Wechsle dort auf Linie ${transfers[0]}. Noch ${remaining} Halt${remaining!==1?'e':''} bis Umstieg.`; }
+    }
+
+    document.getElementById('rb-icon').textContent=icon;
+    document.getElementById('rb-main').textContent=main;
+    document.getElementById('rb-sub').innerHTML=sub;
+
+    // Stops list
+    document.getElementById('rb-stops-list').innerHTML = stops.map((s,i)=>{
+        const cls = i<currentIdx?'done':i===currentIdx?'current':'';
+        const dotCls = i<currentIdx?'done':i===currentIdx?'current':'';
+        return `<div class="rb-stop-row ${cls}" onclick="rbAdvanceTo(${i})">
+            <div class="rb-stop-dot ${dotCls}"></div>
+            <div style="flex:1"><div style="font-weight:${i===currentIdx?'bold':'normal'};font-size:13px;">${s}</div>
+            ${i===currentIdx?'<div style="font-size:10px;color:var(--accent);">← Du bist hier</div>':''}</div>
+            ${i===stops.length-1?`<div style="font-size:9px;background:rgba(192,57,43,.1);color:var(--accent);border:1px solid rgba(192,57,43,.25);padding:2px 6px;border-radius:10px;">Ziel</div>`:''}
+        </div>`;
+    }).join('');
+}
+
+function rbAdvanceTo(idx) {
+    if(!rbState) return;
+    if(idx > rbState.currentIdx) {
+        rbState.currentIdx = idx;
+        rbRender();
+        const remaining = rbState.routeStops.length - idx - 1;
+        if(idx===rbState.routeStops.length-1) showToast('🏁 Ziel erreicht!');
+        else if(remaining===1) showToast('⚠️ Nächste Station aussteigen!','warn');
+        else showToast(`📍 ${rbState.routeStops[idx]}`);
+    }
+}
+
+function rbStop() {
+    rbState = null;
+    document.getElementById('rb-guidance').style.display='none';
+    document.getElementById('rb-setup').style.display='block';
+    showToast('Reise beendet');
+}
+
+// ====== INIT ======
+// Route defaults (set on DOM load, will be overridden after login)
 document.getElementById('route-from-input').value='Güntringen Hbf';
 document.getElementById('route-to-input').value='Villotal Hbf';
+const _now=new Date();
+document.getElementById('route-time').value=`${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
+
+// Render static parts immediately
+renderFahrplan();
+renderNotifications();
 </script>
 </body>
 </html>
