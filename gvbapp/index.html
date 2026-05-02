@@ -535,6 +535,7 @@
         <div class="fp-btn" onclick="selectLine('S11',this)">S11</div>
         <div class="fp-btn" onclick="selectLine('S12',this)">S12</div>
         <div class="fp-btn" onclick="selectLine('OS11',this)" style="border-color:#b8860b55;color:#b8860b;">OS11</div>
+        <div class="fp-btn" onclick="selectLine('OS13',this)" style="border-color:#b8860b55;color:#b8860b;">OS13</div>
     </div>
     <div class="fp-direction" id="fp-directions"></div>
     <div class="fp-search-wrap">
@@ -668,6 +669,11 @@
                 <div style="font-size:12px;font-weight:bold;color:#b8860b;">OS11</div>
                 <div style="font-size:10px;color:var(--text-dim);margin-left:auto;text-align:right;">Lixen ↔ Glücksburg Hbf<br><span style="color:#b8860b;font-style:italic;font-size:9px;">OctoSpeed App →</span></div>
             </div>
+            <div onclick="window.open('octospeed-app.html','_blank')" style="cursor:pointer;background:linear-gradient(135deg,#b8860b10,#b8860b05);border:1.5px dashed #b8860b66;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:5px;background:repeating-linear-gradient(90deg,#b8860b 0,#b8860b 6px,transparent 6px,transparent 12px);border-radius:2px;flex-shrink:0;"></div>
+                <div style="font-size:12px;font-weight:bold;color:#b8860b;">OS13</div>
+                <div style="font-size:10px;color:var(--text-dim);margin-left:auto;text-align:right;">Güntringen ↔ Krakenku Nord<br><span style="color:#b8860b;font-style:italic;font-size:9px;">OctoSpeed App →</span></div>
+            </div>
             <div style="background:var(--card);border:1px dashed #b8860b44;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;opacity:.75;">
                 <div style="width:28px;height:4px;background:repeating-linear-gradient(90deg,#b8860b 0,#b8860b 5px,transparent 5px,transparent 10px);border-radius:2px;flex-shrink:0;"></div>
                 <div style="font-size:12px;font-weight:bold;color:#b8860b;">OS11</div>
@@ -680,6 +686,15 @@
 
 <!-- ===== SHOP ===== -->
 <section id="view-shop" class="view">
+    <!-- OS-only banner: shown when no GVB ticket needed -->
+    <div id="shop-os-banner" style="display:none;margin-bottom:10px;">
+        <div onclick="window.open('octospeed-app.html','_blank')" style="cursor:pointer;background:linear-gradient(135deg,#b8860b18,#b8860b05);border:1.5px solid #b8860b55;border-radius:14px;padding:18px;text-align:center;">
+            <div style="font-family:'Barlow',sans-serif;font-weight:900;font-size:17px;color:#b8860b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">OctoSpeed App</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">OS11 &amp; OS13-Tickets sind ausschließlich<br>in der OctoSpeed App erhältlich.</div>
+            <div style="background:#b8860b;color:#fff;font-weight:800;font-size:13px;padding:12px 22px;border-radius:10px;display:inline-block;font-family:'Barlow',sans-serif;letter-spacing:.5px;">In der OctoSpeed App kaufen →</div>
+        </div>
+    </div>
+    <div id="shop-gvb-content">
     <!-- Sticky Tab Bar -->
     <div style="position:sticky;top:0;z-index:10;background:var(--bg);padding:12px 0 8px;margin-bottom:4px;">
         <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;">
@@ -743,6 +758,7 @@
 
     <!-- Währungshinweis -->
     <div style="text-align:center;font-size:10px;color:var(--text-dim);opacity:.6;margin-top:14px;padding-bottom:8px;">Alle Automaten zeigen VIL und € · Kurs: 1 VIL = 0,75 €</div>
+    </div><!-- /shop-gvb-content -->
 </section>
 
 
@@ -1063,7 +1079,9 @@ const STATION_FIS = {
         { id:'S12', dest:'Möhlen Nord',  col:'#1a6b9a', m:[7,37], gleis:'10' },
         { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[9,39], gleis:'9', note:'Ankunft' },
         { id:'17',  dest:'Oktratal',     col:'#7b3fa0', m:[3,18,33,48], gleis:'7' },
-        { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'3', preview:true },
+        { id:'OS11', dest:'Lixen',         col:'#b8860b', m:[5,35], gleis:'4', preview:true },
+        { id:'OS11', dest:'Glücksburg Hbf',col:'#b8860b', m:[2,32], gleis:'3', preview:true },
+        { id:'OS13', dest:'Krakenku Nord', col:'#b8860b', m:[12,42], gleis:'1', preview:true },
     ],
     'Altgün Dreieck': [
         { id:'S11', dest:'Villotal Hbf',    col:'#c0392b', m:[10,40], gleis:'4' },
@@ -1101,7 +1119,9 @@ const STATION_FIS = {
         { id:'S11', dest:'Lixen',        col:'#c0392b', m:[19,49], gleis:'1' },
         { id:'S12', dest:'Güntringen Hbf', col:'#1a6b9a', m:[3,33], gleis:'6' },
         { id:'S12', dest:'Möhlen Nord',  col:'#1a6b9a', m:[36,6],  gleis:'5' },
-        { id:'OS11', dest:'Glücksburg Hbf', col:'#b8860b', m:[], gleis:'4', preview:true },
+        { id:'OS11', dest:'Lixen',         col:'#b8860b', m:[5,35], gleis:'3', preview:true },
+        { id:'OS11', dest:'Glücksburg Hbf',col:'#b8860b', m:[2,32], gleis:'4', preview:true },
+        { id:'OS13', dest:'Krakenku Nord', col:'#b8860b', m:[12,42], gleis:'5', preview:true },
     ],
     'Villotal Süd':[
         { id:'S11', dest:'Villotal Hbf', col:'#c0392b', m:[13,43], gleis:'1' },
@@ -1908,16 +1928,16 @@ function renderFahrplan() {
     }
     const shown=nextDeps.slice(0,3);
 
-    // OS11 OctoSpeed app-link banner (shown above table)
+    // OS OctoSpeed app-link banner (shown above table for any osLink line)
     const os11Banner = sched.osLink ? `
         <div onclick="window.open('octospeed-app.html','_blank')" style="cursor:pointer;background:linear-gradient(135deg,#b8860b18,#b8860b08);border:1.5px solid #b8860b55;border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
             <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#b8860b,#7a5200);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 10px #b8860b44;">
                 <span style="font-size:15px;font-weight:900;color:#fff;font-family:'Barlow',sans-serif;letter-spacing:-1px;">OS</span>
             </div>
             <div style="flex:1;">
-                <div style="font-weight:800;font-size:13px;font-family:'Barlow',sans-serif;text-transform:uppercase;letter-spacing:.5px;color:#b8860b;">OctoSpeed · OS11</div>
-                <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">Lixen · Güntringen · Villotal · Glücksburg</div>
-                <div style="font-size:10px;color:var(--text-dim);margin-top:1px;">Tickets & Abos nur in der OctoSpeed App erhältlich</div>
+                <div style="font-weight:800;font-size:13px;font-family:'Barlow',sans-serif;text-transform:uppercase;letter-spacing:.5px;color:#b8860b;">OctoSpeed · ${activeLine}</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${dir.stations[0]?.name} → ${dir.stations[dir.stations.length-1]?.name}</div>
+                <div style="font-size:10px;color:var(--text-dim);margin-top:1px;">Nur Fahrplanansicht · Tickets &amp; Buchung in der OctoSpeed App</div>
             </div>
             <div style="background:#b8860b;color:#fff;font-size:10px;font-weight:700;padding:5px 10px;border-radius:8px;font-family:'Barlow',sans-serif;white-space:nowrap;flex-shrink:0;">App öffnen →</div>
         </div>` : '';
@@ -2059,8 +2079,10 @@ function calcRoute() {
         '16_Dreieck':     LINE_FULL_STOPS['16_Dreieck'],
         '17_Oktratal':    LINE_FULL_STOPS['17_Oktratal'],
         '17_Hbf':         LINE_FULL_STOPS['17_Hbf'],
-        'OS11_Glücksburg':LINE_FULL_STOPS['OS11_Glücksburg'],
-        'OS11_Lixen':     LINE_FULL_STOPS['OS11_Lixen'],
+        'OS11_Glücksburg':        LINE_FULL_STOPS['OS11_Glücksburg'],
+        'OS11_Lixen':             LINE_FULL_STOPS['OS11_Lixen'],
+        'OS13_KrakenkunordRichtung': LINE_FULL_STOPS['OS13_KrakenkunordRichtung'],
+        'OS13_GüntringenRichtung':   LINE_FULL_STOPS['OS13_GüntringenRichtung'],
     };
 
     function getStopKey(lineId, fromStn, toStn) {
@@ -2076,6 +2098,7 @@ function calcRoute() {
         if (lid === '16')  return forward ? '16_Hügelbezirk' : '16_Dreieck';
         if (lid === '17')  return forward ? '17_Oktratal' : '17_Hbf';
         if (lid === 'OS11')return forward ? 'OS11_Glücksburg' : 'OS11_Lixen';
+        if (lid === 'OS13')return forward ? 'OS13_KrakenkunordRichtung' : 'OS13_GüntringenRichtung';
         return null;
     }
 
@@ -2405,6 +2428,14 @@ function showView(id,el) {
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     document.getElementById('view-'+id).classList.add('active');
     if(el) el.classList.add('active');
+    // Shop: OS-Linien zeigen nur OctoSpeed-Banner, kein GVB-Ticketverkauf
+    if (id === 'shop') {
+        const isOS = (typeof activeLine === 'string') && activeLine.startsWith('OS');
+        const banner = document.getElementById('shop-os-banner');
+        const gvb    = document.getElementById('shop-gvb-content');
+        if (banner) banner.style.display = isOS ? '' : 'none';
+        if (gvb)    gvb.style.display    = isOS ? 'none' : '';
+    }
 }
 
 
@@ -2416,20 +2447,30 @@ const RB_LINE_STOPS = {
     '15':   ['Altgün Dreieck','Altgün-Center','Altgün-Markt','Vûlfja-Hüpel-Allee','Sâscha-Okto-Ring','Altgüner Vorstadt','Regierungsviertel','Falkenberger Allee','ZOB Flussbezirk','Westende'],
     '16':   ['Altgün Dreieck','Altgün-Ost','Krakingerallee','Burg','Vélicherring','Osttal','Villenviertel','Ostrich','Hügelbezirk Süd'],
     '17':   ['Güntringen Hbf','Südstern','Südtor','Technopolis','Oktratal'],
-    'OS11': ['Lixen','Güntratal Süd','Altgün Dreieck','Güntringen Hbf','Villotal Hbf','Seehaven','Glücksburg Hbf'],
+    'OS11': ['Glücksburg Hbf','Wuffzelsburg Hbf','Lukostadt Hbf','Mitteling','Bad Kreken','Krakstadt','Krakenku Hbf','Krakenku-Süd','Muersen Hbf','Villotal Hbf','Güntringen Hbf','Altgün Dreieck','Bergen','Lixen'],
+    'OS13': ['Güntringen Hbf','Villotal Hbf','Krakenku Hbf','Krakenku Nord'],
 };
 const RB_TRANSFERS = {
     'Altgün Dreieck': ['S11','14','15','16','OS11'],
-    'Güntratal Süd':  ['S11','14','15','OS11'],
-    'Güntringen Hbf': ['S11','S12','17','OS11'],
+    'Güntringen Hbf': ['S11','S12','17','OS11','OS13'],
     'Villotal Süd':   ['S11','S12'],
-    'Villotal Hbf':   ['S11','S12','OS11'],
+    'Villotal Hbf':   ['S11','S12','OS11','OS13'],
     'Altgüner Vorstadt': ['14','15'],
     'Regierungsviertel': ['14','15'],
     'Falkenberg': ['14','15'],
     'Technopolis': ['14','17'],
-    'Seehaven': ['OS11'],
-    'Glücksburg Hbf': ['OS11'],
+    'Lixen':      ['S11','OS11'],
+    'Bergen':     ['OS11'],
+    'Muersen Hbf':['OS11'],
+    'Krakenku-Süd':['OS11'],
+    'Krakenku Hbf':['OS11','OS13'],
+    'Krakenku Nord':['OS13'],
+    'Krakstadt':  ['OS11'],
+    'Bad Kreken': ['OS11'],
+    'Mitteling':  ['OS11'],
+    'Lukostadt Hbf':['OS11'],
+    'Wuffzelsburg Hbf':['OS11'],
+    'Glücksburg Hbf':['OS11'],
 };
 
 // ====== LINE_GRAPH – automatisch bidirektional aus RB_LINE_STOPS ======
@@ -2440,7 +2481,8 @@ const LINE_META = {
     '15':  { color:'#6b1e1e', stopMins:{ 'Altgün Dreieck':0,'Altgün-Center':2,'Altgün-Markt':4,'Vûlfja-Hüpel-Allee':6,'Sâscha-Okto-Ring':8,'Altgüner Vorstadt':10,'Regierungsviertel':12,'Falkenberger Allee':14,'ZOB Flussbezirk':16,'Westende':18 } },
     '16':  { color:'#174f17', stopMins:{ 'Altgün Dreieck':0,'Altgün-Ost':2,'Krakingerallee':4,'Burg':6,'Vélicherring':8,'Osttal':10,'Villenviertel':12,'Ostrich':14,'Hügelbezirk Süd':16 } },
     '17':  { color:'#7b3fa0', stopMins:{ 'Güntringen Hbf':0,'Südstern':4,'Südtor':7,'Technopolis':12,'Oktratal':18 } },
-    'OS11':{ color:'#b8860b', stopMins:{ 'Lixen':0,'Güntratal Süd':12,'Altgün Dreieck':26,'Güntringen Hbf':34,'Villotal Hbf':48,'Seehaven':64,'Glücksburg Hbf':78 } },
+    'OS11':{ color:'#b8860b', stopMins:{ 'Glücksburg Hbf':0,'Wuffzelsburg Hbf':14,'Lukostadt Hbf':26,'Mitteling':35,'Bad Kreken':43,'Krakstadt':50,'Krakenku Hbf':58,'Krakenku-Süd':63,'Muersen Hbf':70,'Villotal Hbf':82,'Güntringen Hbf':94,'Altgün Dreieck':102,'Bergen':110,'Lixen':118 } },
+    'OS13':{ color:'#b8860b', stopMins:{ 'Güntringen Hbf':0,'Villotal Hbf':14,'Krakenku Hbf':38,'Krakenku Nord':45 } },
 };
 function buildGraph() {
     const G = {};
@@ -2451,6 +2493,7 @@ function buildGraph() {
         if (!G[b][a] || G[b][a].mins > mins) G[b][a] = {line, color, mins};
     }
     for (const [lineId, meta] of Object.entries(LINE_META)) {
+        if (lineId === 'OS11' || lineId === 'OS13') continue; // OS-Linien: kein GVB-Routing
         const stops = RB_LINE_STOPS[lineId];
         const offsets = meta.stopMins;
         for (let i = 0; i < stops.length - 1; i++) {
