@@ -401,6 +401,27 @@
         .gl-station-sub { font-size:10px; color:var(--text-dim); }
         .weitere-infos-btn { width:100%; background:var(--card); border:1px solid var(--input-border); border-radius:12px; padding:13px 16px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:background .15s; margin-bottom:6px; }
         .weitere-infos-btn:hover { background:var(--row-hover); }
+        /* ====== SHOP TABS ====== */
+        .shop-tab { flex-shrink:0; padding:7px 13px; border-radius:20px; border:1px solid var(--input-border); background:var(--card); color:var(--text-dim); font-size:12px; font-weight:600; cursor:pointer; transition:background .15s, color .15s; white-space:nowrap; }
+        .shop-tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .shop-info-banner { background:rgba(192,57,43,.06); border:1px solid rgba(192,57,43,.15); border-radius:10px; padding:9px 12px; margin-bottom:12px; font-size:11px; color:var(--text-dim); line-height:1.5; }
+        /* Shop comparison table */
+        .shop-table-wrap { border-radius:12px; overflow:hidden; border:1px solid var(--input-border); margin-bottom:12px; }
+        .shop-table-header { display:grid; grid-template-columns:1fr 80px 80px 80px; gap:0; background:var(--card); padding:8px 10px; border-bottom:1px solid var(--input-border); }
+        .sth-cat { font-size:10px; font-weight:800; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; align-self:center; }
+        .sth-col { font-size:10px; font-weight:800; text-align:center; text-transform:uppercase; letter-spacing:.5px; }
+        .shop-table-row { display:grid; grid-template-columns:1fr 80px 80px 80px; gap:0; padding:10px 10px; border-bottom:1px solid var(--input-border); align-items:center; background:var(--bg); transition:background .12s; cursor:pointer; }
+        .shop-table-row:last-child { border-bottom:none; }
+        .shop-table-row:hover { background:var(--row-hover); }
+        .str-cat { font-size:12px; font-weight:700; color:var(--text); }
+        .str-dur { font-size:10px; color:var(--text-dim); margin-top:1px; }
+        .str-price { text-align:center; }
+        .str-vil { font-size:12px; font-weight:bold; color:var(--text); display:block; }
+        .str-eur { font-size:10px; color:var(--text-dim); display:block; }
+        .str-none { text-align:center; font-size:16px; color:var(--input-border); }
+        .str-best { position:relative; }
+        .str-best .str-vil { color:var(--accent); }
+        .str-best-badge { position:absolute; top:-5px; right:4px; font-size:8px; background:var(--accent); color:#fff; padding:1px 5px; border-radius:6px; font-weight:bold; }
     </style>
 </head>
 <body>
@@ -513,6 +534,7 @@
         <div class="fp-btn" onclick="selectLine(17,this)">Linie 17</div>
         <div class="fp-btn" onclick="selectLine('S11',this)">S11</div>
         <div class="fp-btn" onclick="selectLine('S12',this)">S12</div>
+        <div class="fp-btn" onclick="selectLine('OS11',this)" style="border-color:#b8860b55;color:#b8860b;">OS11</div>
     </div>
     <div class="fp-direction" id="fp-directions"></div>
     <div class="fp-search-wrap">
@@ -641,6 +663,11 @@
                 <div style="font-size:12px;font-weight:bold;">L17</div>
                 <div style="font-size:11px;color:var(--text-dim);margin-left:auto;">Güntringen Hbf ↔ Oktratal</div>
             </div>
+            <div onclick="window.open('octospeed-app.html','_blank')" style="cursor:pointer;background:linear-gradient(135deg,#b8860b10,#b8860b05);border:1.5px dashed #b8860b66;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:5px;background:repeating-linear-gradient(90deg,#b8860b 0,#b8860b 6px,transparent 6px,transparent 12px);border-radius:2px;flex-shrink:0;"></div>
+                <div style="font-size:12px;font-weight:bold;color:#b8860b;">OS11</div>
+                <div style="font-size:10px;color:var(--text-dim);margin-left:auto;text-align:right;">Lixen ↔ Glücksburg Hbf<br><span style="color:#b8860b;font-style:italic;font-size:9px;">OctoSpeed App →</span></div>
+            </div>
             <div style="background:var(--card);border:1px dashed #b8860b44;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;opacity:.75;">
                 <div style="width:28px;height:4px;background:repeating-linear-gradient(90deg,#b8860b 0,#b8860b 5px,transparent 5px,transparent 10px);border-radius:2px;flex-shrink:0;"></div>
                 <div style="font-size:12px;font-weight:bold;color:#b8860b;">OS11</div>
@@ -653,35 +680,72 @@
 
 <!-- ===== SHOP ===== -->
 <section id="view-shop" class="view">
-    <div class="shop-section"><h2>🎟️ Einzeltickets &amp; Zeitkarten</h2><div id="shop-single"></div></div>
-    <div class="shop-section"><h2>👨‍👩‍👧‍👦 Familientickets</h2>
-        <div style="background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:11px;color:var(--text-dim);line-height:1.5;">
-            <strong style="color:var(--accent);">Bedingung:</strong> 24 Std. Gültigkeit · min. 3 Personen · max. 2 Erwachsene + Kinder. Jede weitere Person: Zuschlag laut Ticket.
+    <!-- Sticky Tab Bar -->
+    <div style="position:sticky;top:0;z-index:10;background:var(--bg);padding:12px 0 8px;margin-bottom:4px;">
+        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;">
+            <button class="shop-tab active" id="stab-einzel"  onclick="shopTab('einzel')" >🎟️ Einzel</button>
+            <button class="shop-tab"        id="stab-familie" onclick="shopTab('familie')">👨‍👩‍👧 Familie</button>
+            <button class="shop-tab"        id="stab-abo"     onclick="shopTab('abo')"    >📅 Abo</button>
+            <button class="shop-tab"        id="stab-junior"  onclick="shopTab('junior')" >🎓 Junior</button>
+            <button class="shop-tab"        id="stab-gesamt"  onclick="shopTab('gesamt')" >🏙️ GÜN-Netz</button>
         </div>
+    </div>
+
+    <!-- ── Tab: Einzeltickets ── -->
+    <div id="shopview-einzel">
+        <!-- Info banner -->
+        <div class="shop-info-banner">Preise in <strong>VIL</strong> · Kurs 1 VIL = 0,75 € · alle Automaten zeigen beide Währungen</div>
+
+        <!-- Tabelle: L14/15 | L16 | Kombi -->
+        <div class="shop-table-wrap">
+            <div class="shop-table-header">
+                <div class="sth-cat">Kategorie</div>
+                <div class="sth-col" style="color:#8b2020;">L14/15</div>
+                <div class="sth-col" style="color:#174f17;">L16 ★</div>
+                <div class="sth-col" style="color:var(--accent);">Kombi</div>
+            </div>
+            <!-- Rows rendered by renderShopTable() -->
+            <div id="shop-table-body"></div>
+        </div>
+
+        <div style="margin:10px 0 16px;font-size:11px;color:var(--text-dim);padding:0 2px;">
+            ★ <strong style="color:#174f17;">L16 Premium:</strong> Einzelpreise bewusst hoch gesetzt — das <strong style="color:var(--accent);">Kombi-Tagesticket (13,00 VIL)</strong> ist der Best-Preis für Pendler.
+        </div>
+    </div>
+
+    <!-- ── Tab: Familie ── -->
+    <div id="shopview-familie" style="display:none;">
+        <div class="shop-info-banner">24 Std. Gültigkeit · min. 3 Personen · max. 2 Erw. + Kinder</div>
         <div id="shop-familie"></div>
     </div>
-    <div class="shop-section"><h2>📅 Monatskarten</h2>
-        <div style="background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:11px;color:var(--text-dim);line-height:1.5;">
-            <strong style="color:var(--accent);">Voraussetzung:</strong> Mindestens 5 Nutzungen pro Monat.
-        </div>
+
+    <!-- ── Tab: Abo ── -->
+    <div id="shopview-abo" style="display:none;">
+        <div class="shop-info-banner">Voraussetzung: min. 5 Nutzungen pro Monat · Gilt für Netz GÜN + Villotal</div>
         <div id="shop-abo"></div>
     </div>
-    <div class="shop-section"><h2>🎓 Junior Specials (GÜN-Card Junior)</h2>
-        <div style="background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:11px;color:var(--text-dim);line-height:1.5;">
-            <strong style="color:var(--accent);">Basis-Karte:</strong> 12 Monate Mindestlaufzeit (Aug–Juli) · min. 12 Nutzungen/Jahr.
-        </div>
+
+    <!-- ── Tab: Junior ── -->
+    <div id="shopview-junior" style="display:none;">
+        <div class="shop-info-banner">12 Monate Mindestlaufzeit (Aug–Juli) · min. 12 Nutzungen/Jahr für Basis-Karte</div>
         <div id="shop-junior"></div>
-    </div>
-    <!-- Tarif-Logik Info -->
-    <div style="background:var(--card);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid var(--input-border);">
-        <div style="font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;font-weight:800;margin-bottom:10px;">💡 Tarif-Logik</div>
-        <div style="font-size:12px;color:var(--text-dim);line-height:1.6;">
-            <p style="margin-bottom:7px;"><strong style="color:var(--text);">Premium Linie 16:</strong> Einzeltarife der L16 sind bewusst höher, um das <strong style="color:var(--accent);">Kombi-Tagesticket (13 VIL)</strong> als Best-Preis-Option zu etablieren.</p>
-            <p style="margin-bottom:7px;"><strong style="color:var(--text);">Schüler-Steuerung:</strong> Die Basis-Karte schützt Kapazitäten am Wochenende; das 14-Tage-Upgrade macht Ferien-Mobilität flexibel.</p>
-            <p><strong style="color:var(--text);">Währung:</strong> Alle Preise in VIL. Kurs: <strong style="color:var(--eur-color);">1 VIL = 0,75 €</strong></p>
+        <!-- Schüler-Logik -->
+        <div style="background:rgba(23,79,23,.07);border:1px solid rgba(23,79,23,.22);border-radius:10px;padding:11px 14px;margin-top:4px;font-size:11px;color:var(--text-dim);line-height:1.6;">
+            <strong style="color:#174f17;">Schüler-Steuerung:</strong> Die Basis-Karte schützt Kapazitäten am Wochenende. Das 14-Tage-Upgrade macht Ferien-Mobilität flexibel und günstig — buchbar ohne Abo.
         </div>
     </div>
+
+    <!-- ── Tab: GÜN-Gesamttarif ── -->
+    <div id="shopview-gesamt" style="display:none;">
+        <div class="shop-info-banner">Hochbahn + Bus + S11 · gesamtes Netz Güntringen</div>
+        <div id="shop-gesamt"></div>
+    </div>
+
+    <!-- Währungshinweis -->
+    <div style="text-align:center;font-size:10px;color:var(--text-dim);opacity:.6;margin-top:14px;padding-bottom:8px;">Alle Automaten zeigen VIL und € · Kurs: 1 VIL = 0,75 €</div>
 </section>
+
+
 
 <!-- ===== WALLET ===== -->
 <section id="view-wallet" class="view">
@@ -772,6 +836,14 @@
     </div>
     <div class="setting-group">
         <h2>Weitere Infos</h2>
+        <div class="gl-station-btn" onclick="openGleisplan('Altgün Dreieck')">
+            <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#c0392b,#7b3fa0);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🚉</div>
+            <div style="flex:1;">
+                <div class="gl-station-name">Altgün Dreieck – Gleisplan</div>
+                <div class="gl-station-sub">S11 · L14 · L15 · L16 · 4 Ebenen</div>
+            </div>
+            <span style="color:var(--text-dim);font-size:16px;">›</span>
+        </div>
         <div class="gl-station-btn" onclick="openGleisplan('Güntringen Hbf')">
             <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#c0392b,#8b0000);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🚉</div>
             <div style="flex:1;">
@@ -1157,6 +1229,50 @@ const LINE_FULL_STOPS = {
         {name:'Südtor',gleis:'1',transfer:null},{name:'Südstern',gleis:'1',transfer:null},
         {name:'Güntringen Hbf',gleis:'8',transfer:'S11 Gl.11/12, S12 Gl.9/10'},
     ],
+    'OS11_Glücksburg': [
+        {name:'Glücksburg Hbf',  gleis:'21', transfer:'Fernverkehr'},
+        {name:'Wuffzelsburg Hbf',gleis:'14', transfer:null},
+        {name:'Lukostadt Hbf',   gleis:'4',  transfer:null},
+        {name:'Mitteling',       gleis:'2',  transfer:null},
+        {name:'Bad Kreken',      gleis:'3',  transfer:null},
+        {name:'Krakstadt',       gleis:'5',  transfer:null},
+        {name:'Krakenku Hbf',    gleis:'17', transfer:'OS13 Gl.15'},
+        {name:'Krakenku-Süd',    gleis:'7',  transfer:null},
+        {name:'Muersen Hbf',     gleis:'6',  transfer:null},
+        {name:'Villotal Hbf',    gleis:'4',  transfer:'S11 · S12'},
+        {name:'Güntringen Hbf',  gleis:'3',  transfer:'S11 · S12 · L17'},
+        {name:'Altgün Dreieck',  gleis:'4',  transfer:'L14 · L15 · L16'},
+        {name:'Bergen',          gleis:'1',  transfer:null},
+        {name:'Lixen',           gleis:'1',  transfer:'S11'},
+    ],
+    'OS11_Lixen': [
+        {name:'Lixen',           gleis:'2',  transfer:'S11'},
+        {name:'Bergen',          gleis:'2',  transfer:null},
+        {name:'Altgün Dreieck',  gleis:'5',  transfer:'L14 · L15 · L16'},
+        {name:'Güntringen Hbf',  gleis:'4',  transfer:'S11 · S12 · L17'},
+        {name:'Villotal Hbf',    gleis:'3',  transfer:'S11 · S12'},
+        {name:'Muersen Hbf',     gleis:'7',  transfer:null},
+        {name:'Krakenku-Süd',    gleis:'6',  transfer:null},
+        {name:'Krakenku Hbf',    gleis:'16', transfer:'OS13 Gl.16'},
+        {name:'Krakstadt',       gleis:'4',  transfer:null},
+        {name:'Bad Kreken',      gleis:'2',  transfer:null},
+        {name:'Mitteling',       gleis:'1',  transfer:null},
+        {name:'Lukostadt Hbf',   gleis:'3',  transfer:null},
+        {name:'Wuffzelsburg Hbf',gleis:'16', transfer:null},
+        {name:'Glücksburg Hbf',  gleis:'20', transfer:'Fernverkehr'},
+    ],
+    'OS13_KrakenkunordRichtung': [
+        {name:'Güntringen Hbf',  gleis:'1',  transfer:'S11 · S12 · L17 · OS11 Gl.3'},
+        {name:'Villotal Hbf',    gleis:'5',  transfer:'S11 · S12 · OS11 Gl.4'},
+        {name:'Krakenku Hbf',    gleis:'15', transfer:'OS11 Gl.17'},
+        {name:'Krakenku Nord',   gleis:'3',  transfer:null},
+    ],
+    'OS13_GüntringenRichtung': [
+        {name:'Krakenku Nord',   gleis:'4',  transfer:null},
+        {name:'Krakenku Hbf',    gleis:'16', transfer:'OS11 Gl.16'},
+        {name:'Villotal Hbf',    gleis:'4',  transfer:'S11 · S12 · OS11 Gl.3'},
+        {name:'Güntringen Hbf',  gleis:'2',  transfer:'S11 · S12 · L17 · OS11 Gl.4'},
+    ],
 };
 
 const SCHEDULES = {
@@ -1273,6 +1389,64 @@ const SCHEDULES = {
             ]}
         ],
         departures:[3,18,33,48]
+    },
+    'OS11': {
+        name:'OS11 OctoSpeed', color:'#b8860b',
+        osLink: true, osOnly: true,
+        directions:[
+            { label:'Richtung Glücksburg Hbf', stopKey:'OS11_Glücksburg', stations:[
+                {name:'Glücksburg Hbf', skip:false,offset:0},
+                {name:'Wuffzelsburg Hbf',skip:false,offset:14},
+                {name:'Lukostadt Hbf',  skip:false,offset:26},
+                {name:'Mitteling',      skip:false,offset:35},
+                {name:'Bad Kreken',     skip:false,offset:43},
+                {name:'Krakstadt',      skip:false,offset:50},
+                {name:'Krakenku Hbf',   skip:false,offset:58},
+                {name:'Krakenku-Süd',   skip:false,offset:63},
+                {name:'Muersen Hbf',    skip:false,offset:70},
+                {name:'Villotal Hbf',   skip:false,offset:82},
+                {name:'Güntringen Hbf', skip:false,offset:94},
+                {name:'Altgün Dreieck', skip:false,offset:102},
+                {name:'Bergen',         skip:false,offset:110},
+                {name:'Lixen',          skip:false,offset:118},
+            ], departures:[2,32]},
+            { label:'Richtung Lixen', stopKey:'OS11_Lixen', stations:[
+                {name:'Lixen',          skip:false,offset:0},
+                {name:'Bergen',         skip:false,offset:8},
+                {name:'Altgün Dreieck', skip:false,offset:16},
+                {name:'Güntringen Hbf', skip:false,offset:24},
+                {name:'Villotal Hbf',   skip:false,offset:36},
+                {name:'Muersen Hbf',    skip:false,offset:48},
+                {name:'Krakenku-Süd',   skip:false,offset:55},
+                {name:'Krakenku Hbf',   skip:false,offset:60},
+                {name:'Krakstadt',      skip:false,offset:68},
+                {name:'Bad Kreken',     skip:false,offset:75},
+                {name:'Mitteling',      skip:false,offset:83},
+                {name:'Lukostadt Hbf',  skip:false,offset:92},
+                {name:'Wuffzelsburg Hbf',skip:false,offset:104},
+                {name:'Glücksburg Hbf', skip:false,offset:118},
+            ], departures:[5,35]},
+        ],
+        departures:[2,32]
+    },
+    'OS13': {
+        name:'OS13 OctoSpeed', color:'#b8860b',
+        osLink: true, osOnly: true,
+        directions:[
+            { label:'Richtung Krakenku Nord', stopKey:'OS13_KrakenkunordRichtung', stations:[
+                {name:'Güntringen Hbf', skip:false,offset:0},
+                {name:'Villotal Hbf',   skip:false,offset:14},
+                {name:'Krakenku Hbf',   skip:false,offset:38},
+                {name:'Krakenku Nord',  skip:false,offset:45},
+            ], departures:[12,42]},
+            { label:'Richtung Güntringen Hbf', stopKey:'OS13_GüntringenRichtung', stations:[
+                {name:'Krakenku Nord',  skip:false,offset:0},
+                {name:'Krakenku Hbf',   skip:false,offset:7},
+                {name:'Villotal Hbf',   skip:false,offset:31},
+                {name:'Güntringen Hbf', skip:false,offset:45},
+            ], departures:[15,45]},
+        ],
+        departures:[12,42]
     }
 };
 
@@ -1577,14 +1751,18 @@ function updateFIS(stationId) {
         // Preview lines (e.g. OS11) – show as teaser, not interactive
         if (l.preview) {
             html+=`
-            <div class="fis-row" style="opacity:.55;cursor:default;border:1px dashed ${l.col}33;background:${l.col}08;">
-                <div class="line-badge" style="background:${l.col};font-size:9px;letter-spacing:.5px;">${l.id}</div>
-                <div>
-                    <div style="font-weight:bold;font-size:13px;">Richtung ${l.dest}</div>
-                    <div style="font-size:10px;color:var(--text-dim);">Gleis ${l.gleis} · OctoSpeed Fernverkehr</div>
-                    <span style="font-size:9px;color:${l.col};font-weight:bold;letter-spacing:.5px;">DEMNÄCHST · Noch nicht in Betrieb</span>
+            <div class="fis-row" style="cursor:pointer;border:1.5px solid #b8860b44;background:linear-gradient(135deg,#b8860b0a,#b8860b18);padding:14px;" onclick="window.open('octospeed-app.html','_blank')">
+                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#b8860b,#8b6509);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span style="font-size:13px;font-weight:900;color:#fff;font-family:'Barlow',sans-serif;">OS</span>
                 </div>
-                <div class="eta-col"><div class="eta" style="color:${l.col};font-size:10px;">bald</div></div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:bold;font-size:13px;color:var(--text);">OS11 · Richtung ${l.dest}</div>
+                    <div style="font-size:10px;color:var(--text-dim);">Gleis ${l.gleis} · OctoSpeed Fernverkehr</div>
+                    <div style="margin-top:5px;display:inline-flex;align-items:center;gap:5px;background:#b8860b;color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:8px;font-family:'Barlow',sans-serif;letter-spacing:.3px;">
+                        In der OctoSpeed App kaufen →
+                    </div>
+                </div>
+                <div class="eta-col"><div style="font-size:10px;color:#b8860b;font-weight:bold;text-align:center;">:05<br>:35</div></div>
             </div>`;
             return;
         }
@@ -1729,6 +1907,21 @@ function renderFahrplan() {
         departures.forEach(m=>{ const abs=h*60+m; if(abs>=nowM) nextDeps.push({h:h%24,m}); });
     }
     const shown=nextDeps.slice(0,3);
+
+    // OS11 OctoSpeed app-link banner (shown above table)
+    const os11Banner = sched.osLink ? `
+        <div onclick="window.open('octospeed-app.html','_blank')" style="cursor:pointer;background:linear-gradient(135deg,#b8860b18,#b8860b08);border:1.5px solid #b8860b55;border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#b8860b,#7a5200);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 10px #b8860b44;">
+                <span style="font-size:15px;font-weight:900;color:#fff;font-family:'Barlow',sans-serif;letter-spacing:-1px;">OS</span>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:800;font-size:13px;font-family:'Barlow',sans-serif;text-transform:uppercase;letter-spacing:.5px;color:#b8860b;">OctoSpeed · OS11</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">Lixen · Güntringen · Villotal · Glücksburg</div>
+                <div style="font-size:10px;color:var(--text-dim);margin-top:1px;">Tickets & Abos nur in der OctoSpeed App erhältlich</div>
+            </div>
+            <div style="background:#b8860b;color:#fff;font-size:10px;font-weight:700;padding:5px 10px;border-radius:8px;font-family:'Barlow',sans-serif;white-space:nowrap;flex-shrink:0;">App öffnen →</div>
+        </div>` : '';
+
     let tableHtml=`<div class="fp-table"><div class="fp-header"><span>Station</span><span style="text-align:center;">Nächste</span><span style="text-align:center;">Dann</span></div>`;
     dir.stations.forEach(s=>{
         const times=shown.map(dep=>{
@@ -1743,7 +1936,7 @@ function renderFahrplan() {
         </div>`;
     });
     tableHtml+='</div>';
-    document.getElementById('fp-table').innerHTML=tableHtml;
+    document.getElementById('fp-table').innerHTML = os11Banner + tableHtml;
 }
 function setDir(i) { activeDir=i; renderFahrplan(); }
 function filterFahrplan(q) {
@@ -1866,6 +2059,8 @@ function calcRoute() {
         '16_Dreieck':     LINE_FULL_STOPS['16_Dreieck'],
         '17_Oktratal':    LINE_FULL_STOPS['17_Oktratal'],
         '17_Hbf':         LINE_FULL_STOPS['17_Hbf'],
+        'OS11_Glücksburg':LINE_FULL_STOPS['OS11_Glücksburg'],
+        'OS11_Lixen':     LINE_FULL_STOPS['OS11_Lixen'],
     };
 
     function getStopKey(lineId, fromStn, toStn) {
@@ -1880,6 +2075,7 @@ function calcRoute() {
         if (lid === '15')  return forward ? '15_Westende' : '15_Dreieck';
         if (lid === '16')  return forward ? '16_Hügelbezirk' : '16_Dreieck';
         if (lid === '17')  return forward ? '17_Oktratal' : '17_Hbf';
+        if (lid === 'OS11')return forward ? 'OS11_Glücksburg' : 'OS11_Lixen';
         return null;
     }
 
@@ -2070,29 +2266,79 @@ function openNotifDrawer() { document.getElementById('notif-drawer').classList.a
 function closeNotifDrawer() { document.getElementById('notif-drawer').classList.remove('open'); document.getElementById('notif-backdrop').classList.remove('open'); }
 
 // ====== SHOP ======
+// ====== SHOP TAB SWITCHER ======
+const SHOP_TABS = ['einzel','familie','abo','junior','gesamt'];
+function shopTab(name) {
+    SHOP_TABS.forEach(t => {
+        document.getElementById('stab-'+t)?.classList.toggle('active', t===name);
+        const v = document.getElementById('shopview-'+t);
+        if (v) v.style.display = t===name ? '' : 'none';
+    });
+}
+
+// Einzelticket table data matching the spec exactly
+const EINZEL_TABLE_ROWS = [
+    { cat:'Kurzzeit', dur:'60 Min.', l14: {vil:1.20,  eur:0.90},  l16:{vil:2.00,  eur:1.50},  kombi:null,               bestKombi:false, ids:{l14:'k14',l16:'k16',kombi:null} },
+    { cat:'Basis',    dur:'120 Min.',l14: {vil:2.30,  eur:1.73},  l16:{vil:4.30,  eur:3.23},  kombi:{vil:3.30, eur:2.48},bestKombi:false, ids:{l14:'b14',l16:'b16',kombi:'bk'} },
+    { cat:'Langzeit', dur:'300 Min.',l14: {vil:5.00,  eur:3.75},  l16:{vil:9.00,  eur:6.75},  kombi:{vil:10.00,eur:7.50},bestKombi:false, ids:{l14:'l14',l16:'l16',kombi:'lk'} },
+    { cat:'Tagesticket',dur:'24 Std.',l14:{vil:6.00,  eur:4.50},  l16:{vil:16.00, eur:12.00}, kombi:{vil:13.00,eur:9.75},bestKombi:true,  ids:{l14:'tag14',l16:'tag16',kombi:'tagk'} },
+];
+
+function renderShopTable(ownedIds) {
+    const el = document.getElementById('shop-table-body');
+    if (!el) return;
+    el.innerHTML = EINZEL_TABLE_ROWS.map(row => {
+        const mkPrice = (cell, id, isBest) => {
+            if (!cell) return `<div class="str-price str-none">—</div>`;
+            const owned = ownedIds.includes(id);
+            return `<div class="str-price ${isBest?'str-best':''}" onclick="${owned?'':` openBuyModal('${id}','${row.cat} ${isBest?'Kombi':''} (${row.dur})',${cell.vil})`}" style="cursor:${owned?'default':'pointer'}">
+                ${isBest?`<span class="str-best-badge">★ BEST</span>`:''}
+                <span class="str-vil" style="${owned?'color:var(--success)':''}">${owned?'✓':cell.vil.toFixed(2)+' VIL'}</span>
+                ${owned?'':`<span class="str-eur">${cell.eur.toFixed(2)} €</span>`}
+            </div>`;
+        };
+        return `<div class="shop-table-row">
+            <div>
+                <div class="str-cat">${row.cat}</div>
+                <div class="str-dur">${row.dur}</div>
+            </div>
+            ${mkPrice(row.l14,  row.ids.l14,  false)}
+            ${mkPrice(row.l16,  row.ids.l16,  false)}
+            ${mkPrice(row.kombi,row.ids.kombi, row.bestKombi)}
+        </div>`;
+    }).join('');
+}
+
 function renderShop(data) {
     const ownedIds = data?.tickets ? Object.keys(data.tickets) : [];
-    const mapItems=(items,targetId)=>{
-        const el=document.getElementById(targetId); if(!el) return;
-        el.innerHTML=items.map(item=>{
-            const isOwned=ownedIds.includes(item.id);
-            return `<div class="ticket-item">
-                <div class="ticket-info">
-                    <h3>${item.name}${item.badge?` <span style="background:rgba(192,57,43,.1);color:var(--accent);border:1px solid rgba(192,57,43,.25);font-size:9px;padding:2px 6px;border-radius:10px;font-weight:bold;vertical-align:middle;margin-left:4px;">${item.badge}</span>`:''}</h3>
-                    <p>${item.desc}</p>
-                </div>
-                <div class="buy-box">
-                    <button class="btn-buy ${isOwned?'owned':''}" onclick="${isOwned?'':` openBuyModal('${item.id}','${item.name}',${item.price})`}">${isOwned?'✓ Aktiv':'VIL '+item.price.toFixed(2)}</button>
-                    ${!isOwned?`<span class="eur-sub">${(item.price*GUN_TO_EUR).toFixed(2)} €</span>`:''}
-                </div>
-            </div>`;
-        }).join('');
+    renderShopTable(ownedIds);
+
+    const mkCard = (item) => {
+        const isOwned = ownedIds.includes(item.id);
+        return `<div class="ticket-item">
+            <div class="ticket-info">
+                <h3>${item.name}${item.badge?` <span style="background:rgba(192,57,43,.1);color:var(--accent);border:1px solid rgba(192,57,43,.25);font-size:9px;padding:2px 6px;border-radius:10px;font-weight:bold;vertical-align:middle;margin-left:4px;">${item.badge}</span>`:''}</h3>
+                <p>${item.desc}</p>
+            </div>
+            <div class="buy-box">
+                <button class="btn-buy ${isOwned?'owned':''}" onclick="${isOwned?'':` openBuyModal('${item.id}','${item.name}',${item.price})`}">${isOwned?'✓ Aktiv':'VIL '+item.price.toFixed(2)}</button>
+                ${!isOwned?`<span class="eur-sub">${(item.price*GUN_TO_EUR).toFixed(2)} €</span>`:''}
+            </div>
+        </div>`;
     };
-    mapItems(TARIFE.single,'shop-single');
-    mapItems(TARIFE.familie,'shop-familie');
-    mapItems(TARIFE.abo,'shop-abo');
-    mapItems(TARIFE.junior,'shop-junior');
+
+    document.getElementById('shop-familie').innerHTML = TARIFE.familie.map(mkCard).join('');
+    document.getElementById('shop-abo').innerHTML     = TARIFE.abo.map(mkCard).join('');
+    document.getElementById('shop-junior').innerHTML  = TARIFE.junior.map(mkCard).join('');
+
+    // GÜN-Gesamttarif
+    const gesamt = [
+        {id:'taggun', name:'GÜN-Gesamttarif Tagesticket', price:16.00, badge:'24 Std', desc:'Hochbahn + Bus + S11 · gesamtes Netz Güntringen'},
+        {id:'fgun',   name:'GÜN-Familienticket Gesamt',   price:34.40, badge:'24 Std', desc:'Hochbahn + Bus + S11 · min. 3 Pers. · +12,50 VIL/weitere Person'},
+    ];
+    document.getElementById('shop-gesamt').innerHTML = gesamt.map(mkCard).join('');
 }
+
 
 // ====== BUY TICKET ======
 let activePending=null;
@@ -2170,17 +2416,20 @@ const RB_LINE_STOPS = {
     '15':   ['Altgün Dreieck','Altgün-Center','Altgün-Markt','Vûlfja-Hüpel-Allee','Sâscha-Okto-Ring','Altgüner Vorstadt','Regierungsviertel','Falkenberger Allee','ZOB Flussbezirk','Westende'],
     '16':   ['Altgün Dreieck','Altgün-Ost','Krakingerallee','Burg','Vélicherring','Osttal','Villenviertel','Ostrich','Hügelbezirk Süd'],
     '17':   ['Güntringen Hbf','Südstern','Südtor','Technopolis','Oktratal'],
+    'OS11': ['Lixen','Güntratal Süd','Altgün Dreieck','Güntringen Hbf','Villotal Hbf','Seehaven','Glücksburg Hbf'],
 };
 const RB_TRANSFERS = {
-    'Altgün Dreieck': ['S11','14','15','16'],
-    'Güntratal Süd':  ['S11','14','15'],
-    'Güntringen Hbf': ['S11','S12','17'],
+    'Altgün Dreieck': ['S11','14','15','16','OS11'],
+    'Güntratal Süd':  ['S11','14','15','OS11'],
+    'Güntringen Hbf': ['S11','S12','17','OS11'],
     'Villotal Süd':   ['S11','S12'],
-    'Villotal Hbf':   ['S11','S12'],
+    'Villotal Hbf':   ['S11','S12','OS11'],
     'Altgüner Vorstadt': ['14','15'],
     'Regierungsviertel': ['14','15'],
     'Falkenberg': ['14','15'],
     'Technopolis': ['14','17'],
+    'Seehaven': ['OS11'],
+    'Glücksburg Hbf': ['OS11'],
 };
 
 // ====== LINE_GRAPH – automatisch bidirektional aus RB_LINE_STOPS ======
@@ -2191,6 +2440,7 @@ const LINE_META = {
     '15':  { color:'#6b1e1e', stopMins:{ 'Altgün Dreieck':0,'Altgün-Center':2,'Altgün-Markt':4,'Vûlfja-Hüpel-Allee':6,'Sâscha-Okto-Ring':8,'Altgüner Vorstadt':10,'Regierungsviertel':12,'Falkenberger Allee':14,'ZOB Flussbezirk':16,'Westende':18 } },
     '16':  { color:'#174f17', stopMins:{ 'Altgün Dreieck':0,'Altgün-Ost':2,'Krakingerallee':4,'Burg':6,'Vélicherring':8,'Osttal':10,'Villenviertel':12,'Ostrich':14,'Hügelbezirk Süd':16 } },
     '17':  { color:'#7b3fa0', stopMins:{ 'Güntringen Hbf':0,'Südstern':4,'Südtor':7,'Technopolis':12,'Oktratal':18 } },
+    'OS11':{ color:'#b8860b', stopMins:{ 'Lixen':0,'Güntratal Süd':12,'Altgün Dreieck':26,'Güntringen Hbf':34,'Villotal Hbf':48,'Seehaven':64,'Glücksburg Hbf':78 } },
 };
 function buildGraph() {
     const G = {};
@@ -2206,7 +2456,7 @@ function buildGraph() {
         for (let i = 0; i < stops.length - 1; i++) {
             const a = stops[i], b = stops[i+1];
             const mins = Math.abs((offsets[b]||0) - (offsets[a]||0)) || 2;
-            addEdge(a, b, lineId==='S11'||lineId==='S12'?lineId:Number(lineId), meta.color, mins);
+            addEdge(a, b, lineId==='S11'||lineId==='S12'||lineId==='OS11'?lineId:Number(lineId), meta.color, mins);
         }
     }
     return G;
@@ -2423,6 +2673,104 @@ function rbStop() {
 
 // ====== GLEISPLAN ======
 const GLEISPLAN_DATA = {
+    'Altgün Dreieck': {
+        sub: 'S11 Ebene 0 · L14 Etage +1 · L15 Etage +2 · L16 Etage +3',
+        legend: [
+            { color:'#c0392b', label:'S11 (Ebene 0)' },
+            { color:'#003f8a', label:'L14 (Etage +1)' },
+            { color:'#6b1e1e', label:'L15 (Etage +2)' },
+            { color:'#174f17', label:'L16 (Etage +3)' },
+        ],
+        svg: `<svg viewBox="0 0 300 370" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans,sans-serif">
+
+  <!-- ── EBENE 0: S11 ──────────────────────────── -->
+  <rect x="8" y="8" width="284" height="72" rx="8" fill="var(--card)" stroke="#c0392b" stroke-width="1.5"/>
+  <rect x="8" y="8" width="80" height="72" rx="8" fill="#c0392b" opacity=".12"/>
+  <text x="18" y="24" font-size="9" font-weight="bold" fill="#c0392b" letter-spacing=".5">EBENE 0 · S-BAHN</text>
+  <!-- GL 4: S11 → Lixen -->
+  <rect x="100" y="20" width="7" height="52" rx="3" fill="#c0392b" opacity=".75"/>
+  <text x="104" y="82" text-anchor="middle" font-size="9" fill="#c0392b" font-weight="bold">4</text>
+  <!-- GL 5: S11 → Villotal Hbf -->
+  <rect x="140" y="20" width="7" height="52" rx="3" fill="#c0392b" opacity=".9"/>
+  <text x="144" y="82" text-anchor="middle" font-size="9" fill="#c0392b" font-weight="bold">5</text>
+  <!-- Platform edge between 4 and 5 -->
+  <rect x="97"  y="18" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="147" y="18" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="111" y="18" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="137" y="18" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <text transform="translate(108,65) rotate(-60)" font-size="8" fill="#c0392b">→ Lixen</text>
+  <text transform="translate(148,65) rotate(-60)" font-size="8" fill="#c0392b">→ Villotal Hbf</text>
+  <!-- Lift/Stairs indicator -->
+  <rect x="220" y="18" width="64" height="52" rx="5" fill="rgba(192,57,43,.07)" stroke="#c0392b" stroke-width=".8" stroke-dasharray="3,2"/>
+  <text x="252" y="40" text-anchor="middle" font-size="9" fill="#c0392b">🚇</text>
+  <text x="252" y="52" text-anchor="middle" font-size="8" fill="var(--text-dim)">Zugang</text>
+  <text x="252" y="62" text-anchor="middle" font-size="8" fill="var(--text-dim)">Hochbahn ↑</text>
+
+  <!-- ── ETAGE +1: L14 ──────────────────────────── -->
+  <rect x="8" y="98" width="284" height="72" rx="8" fill="var(--card)" stroke="#003f8a" stroke-width="1.5"/>
+  <rect x="8" y="98" width="80" height="72" rx="8" fill="#003f8a" opacity=".10"/>
+  <text x="18" y="114" font-size="9" font-weight="bold" fill="#003f8a" letter-spacing=".5">ETAGE +1 · LINIE 14</text>
+  <!-- Track Etage +1 left: → Sonnenstadt -->
+  <rect x="100" y="110" width="7" height="52" rx="3" fill="#003f8a" opacity=".8"/>
+  <text x="104" y="172" text-anchor="middle" font-size="9" fill="#003f8a" font-weight="bold">E+1a</text>
+  <!-- Track Etage +1 right: → Falkenberg -->
+  <rect x="140" y="110" width="7" height="52" rx="3" fill="#003f8a" opacity=".6"/>
+  <text x="144" y="172" text-anchor="middle" font-size="9" fill="#003f8a" font-weight="bold">E+1b</text>
+  <rect x="97"  y="108" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="147" y="108" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="111" y="108" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="137" y="108" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <text transform="translate(108,155) rotate(-60)" font-size="8" fill="#003f8a">→ Sonnenstadt</text>
+  <text transform="translate(148,155) rotate(-60)" font-size="8" fill="#003f8a">→ Falkenberg</text>
+  <rect x="220" y="108" width="64" height="52" rx="5" fill="rgba(0,63,138,.07)" stroke="#003f8a" stroke-width=".8" stroke-dasharray="3,2"/>
+  <text x="252" y="130" text-anchor="middle" font-size="9" fill="#003f8a">🚶</text>
+  <text x="252" y="143" text-anchor="middle" font-size="8" fill="var(--text-dim)">Treppe / Lift</text>
+  <text x="252" y="153" text-anchor="middle" font-size="8" fill="var(--text-dim)">↑+2 · ↓0</text>
+
+  <!-- ── ETAGE +2: L15 ──────────────────────────── -->
+  <rect x="8" y="188" width="284" height="72" rx="8" fill="var(--card)" stroke="#6b1e1e" stroke-width="1.5"/>
+  <rect x="8" y="188" width="80" height="72" rx="8" fill="#6b1e1e" opacity=".10"/>
+  <text x="18" y="204" font-size="9" font-weight="bold" fill="#6b1e1e" letter-spacing=".5">ETAGE +2 · LINIE 15</text>
+  <rect x="100" y="200" width="7" height="52" rx="3" fill="#6b1e1e" opacity=".8"/>
+  <text x="104" y="262" text-anchor="middle" font-size="9" fill="#6b1e1e" font-weight="bold">E+2a</text>
+  <rect x="140" y="200" width="7" height="52" rx="3" fill="#6b1e1e" opacity=".6"/>
+  <text x="144" y="262" text-anchor="middle" font-size="9" fill="#6b1e1e" font-weight="bold">E+2b</text>
+  <rect x="97"  y="198" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="147" y="198" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="111" y="198" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="137" y="198" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <text transform="translate(108,245) rotate(-60)" font-size="8" fill="#6b1e1e">→ Westende</text>
+  <text transform="translate(148,245) rotate(-60)" font-size="8" fill="#6b1e1e">→ Falkenberg</text>
+  <rect x="220" y="198" width="64" height="52" rx="5" fill="rgba(107,30,30,.07)" stroke="#6b1e1e" stroke-width=".8" stroke-dasharray="3,2"/>
+  <text x="252" y="220" text-anchor="middle" font-size="9" fill="#6b1e1e">🚶</text>
+  <text x="252" y="233" text-anchor="middle" font-size="8" fill="var(--text-dim)">Treppe / Lift</text>
+  <text x="252" y="243" text-anchor="middle" font-size="8" fill="var(--text-dim)">↑+3 · ↓+1</text>
+
+  <!-- ── ETAGE +3: L16 ──────────────────────────── -->
+  <rect x="8" y="278" width="284" height="72" rx="8" fill="var(--card)" stroke="#174f17" stroke-width="1.5"/>
+  <rect x="8" y="278" width="80" height="72" rx="8" fill="#174f17" opacity=".10"/>
+  <text x="18" y="294" font-size="9" font-weight="bold" fill="#174f17" letter-spacing=".5">ETAGE +3 · LINIE 16</text>
+  <rect x="100" y="290" width="7" height="52" rx="3" fill="#174f17" opacity=".8"/>
+  <text x="104" y="352" text-anchor="middle" font-size="9" fill="#174f17" font-weight="bold">E+3a</text>
+  <rect x="140" y="290" width="7" height="52" rx="3" fill="#174f17" opacity=".6"/>
+  <text x="144" y="352" text-anchor="middle" font-size="9" fill="#174f17" font-weight="bold">E+3b</text>
+  <rect x="97"  y="288" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="147" y="288" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="111" y="288" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <rect x="137" y="288" width="3" height="56" rx="1" fill="var(--map-track)"/>
+  <text transform="translate(108,335) rotate(-60)" font-size="8" fill="#174f17">→ Hügelbezirk Süd</text>
+  <text transform="translate(148,335) rotate(-60)" font-size="8" fill="#174f17">→ Altgün Dreieck</text>
+  <rect x="220" y="288" width="64" height="52" rx="5" fill="rgba(23,79,23,.07)" stroke="#174f17" stroke-width=".8" stroke-dasharray="3,2"/>
+  <text x="252" y="310" text-anchor="middle" font-size="9" fill="#174f17">🚶</text>
+  <text x="252" y="323" text-anchor="middle" font-size="8" fill="var(--text-dim)">Treppe / Lift</text>
+  <text x="252" y="333" text-anchor="middle" font-size="8" fill="var(--text-dim)">↓+2 · Dach</text>
+
+  <!-- Vertical connector line on right -->
+  <line x1="290" y1="72" x2="290" y2="98"  stroke="var(--map-track)" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <line x1="290" y1="162" x2="290" y2="188" stroke="var(--map-track)" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <line x1="290" y1="252" x2="290" y2="278" stroke="var(--map-track)" stroke-width="1.5" stroke-dasharray="3,2"/>
+</svg>`
+    },
     'Güntringen Hbf': {
         sub: 'S11 · S12 · L17 · OS11 (geplant) · 13 Gleise',
         legend: [
