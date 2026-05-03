@@ -37,17 +37,33 @@
             signOut, onAuthStateChanged, updateProfile
         };
 
-        // Central auth state listener – handles auto-login when session is still valid
+        // Defer auth state handling until after all scripts are parsed
         onAuthStateChanged(auth, user => {
             if (user) {
                 window._fbUser = user;
-                window._onLogin(user);
+                // _onLogin may not be defined yet if Firebase responds instantly;
+                // wait for DOM + scripts to be ready
+                if (typeof window._onLogin === 'function') {
+                    window._onLogin(user);
+                } else {
+                    window._pendingUser = user;
+                }
             } else {
                 window._fbUser = null;
+                window._pendingUser = null;
                 if (window.isGuestMode) return;
-                document.getElementById('login-screen').classList.remove('hidden');
-                document.getElementById('app-shell').classList.add('hidden');
-                document.getElementById('auth-splash').style.display = 'none';
+                // Show login screen once we know no session exists
+                const showLogin = () => {
+                    document.getElementById('login-screen').classList.remove('hidden');
+                    document.getElementById('app-shell').classList.add('hidden');
+                    const splash = document.getElementById('auth-splash');
+                    if (splash) splash.style.display = 'none';
+                };
+                if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                    showLogin();
+                } else {
+                    document.addEventListener('DOMContentLoaded', showLogin);
+                }
             }
         });
     </script>
@@ -1717,7 +1733,15 @@ window._onLogin = async function(user) {
     renderNotifications();
     const isAdmin = ADMIN_EMAILS.includes(user.email);
     document.getElementById('admin-panel-wrap').style.display = isAdmin?'block':'none';
+    const splash = document.getElementById('auth-splash');
+    if (splash) splash.style.display = 'none';
 };
+
+// Pick up any user that Firebase resolved before _onLogin was defined
+if (window._pendingUser) {
+    window._onLogin(window._pendingUser);
+    window._pendingUser = null;
+}
 
 // ====== RENDER USER UI ======
 function renderUserUI(user, data) {
