@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GÜN App – v9</title>
+    <title>GÜN App – v10</title>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,700;0,800;1,700&family=DM+Sans:wght@400;500;700&family=B612+Mono&display=swap" rel="stylesheet">
 
     <!-- ═══ FIREBASE ═══ -->
@@ -37,15 +37,17 @@
             signOut, onAuthStateChanged, updateProfile
         };
 
-        // Central auth state listener
+        // Central auth state listener – handles auto-login when session is still valid
         onAuthStateChanged(auth, user => {
             if (user) {
                 window._fbUser = user;
                 window._onLogin(user);
             } else {
                 window._fbUser = null;
+                if (window.isGuestMode) return;
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('app-shell').classList.add('hidden');
+                document.getElementById('auth-splash').style.display = 'none';
             }
         });
     </script>
@@ -427,7 +429,12 @@
 <body>
 
 <!-- ═══════════════ LOGIN ═══════════════ -->
-<div id="login-screen">
+<div id="auth-splash" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:14px;">
+    <div style="width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#c0392b,#8b0000);display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;font-size:26px;font-weight:800;color:#fff;box-shadow:0 8px 30px rgba(192,57,43,.35);">GVB</div>
+    <div style="font-family:'Barlow',sans-serif;font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:1px;">Güntringen ÖPNV</div>
+    <div style="font-size:12px;color:var(--text-dim);">Wird geladen…</div>
+</div>
+<div id="login-screen" class="hidden">
 <div class="login-card">
     <div class="login-logo">GVB</div>
     <div class="login-title">Güntringen ÖPNV</div>
@@ -460,6 +467,10 @@
 
     <button class="login-btn" id="auth-btn" onclick="doAuth()">Anmelden →</button>
     <div class="login-err" id="auth-err" style="color:var(--premium);font-size:12px;margin-top:8px;min-height:18px;text-align:center;"></div>
+        <div style="margin-top:14px;text-align:center;">
+        <button onclick="doGuestLogin()" style="background:none;border:none;color:var(--text-dim);font-size:12px;cursor:pointer;text-decoration:underline;padding:4px 8px;">Ohne Account fortfahren →</button>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:4px;opacity:.7;">Fahrplan, Abfahrten &amp; Routenplaner verfügbar · Kein Wallet, Tickets oder Profil</div>
+    </div>
 </div>
 </div>
 
@@ -597,6 +608,21 @@
                 <div class="autocomplete-list" id="rb-ac-to"></div>
             </div>
         </div>
+        <!-- Zwischenhalt -->
+        <div id="rb-via-wrap" style="display:none;margin-bottom:14px;position:relative;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                <div class="route-label" style="margin-bottom:0;">Zwischenhalt</div>
+                <button onclick="removeRbVia()" style="background:none;border:none;color:var(--text-dim);font-size:12px;cursor:pointer;padding:0;">✕ entfernen</button>
+            </div>
+            <div class="autocomplete-wrap">
+                <input class="route-input" id="rb-via-input" type="text" placeholder="Zwischenhalt eingeben…"
+                    oninput="rbAcSearch('via',this.value)" autocomplete="off">
+                <div class="autocomplete-list" id="rb-ac-via"></div>
+            </div>
+        </div>
+        <button onclick="addRbVia()" id="rb-add-via-btn" style="width:100%;margin-bottom:10px;padding:10px;border-radius:9px;border:1.5px dashed var(--input-border);background:transparent;color:var(--text-dim);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:border-color .2s,color .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--input-border)';this.style.color='var(--text-dim)'">
+            <span style="font-size:16px;line-height:1;">+</span> Zwischenhalt hinzufügen
+        </button>
         <button class="route-go-btn" onclick="rbStart()">Reisebegleiter starten ›</button>
     </div>
 
@@ -1295,6 +1321,23 @@ const LINE_FULL_STOPS = {
     ],
 };
 
+// ====== CANONICAL DEPARTURE HELPER ======
+// Returns [{h, m, absMin}] for the next `count` departures.
+// departures = minute-within-hour values e.g. [4, 34]
+function getNextDepartures(departures, nowH, nowM, count) {
+    const nowAbs = nowH * 60 + nowM;
+    const sorted = departures.slice().sort((a, b) => a - b);
+    const result = [];
+    for (let h = nowH; h < nowH + 48 && result.length < count; h++) {
+        for (const m of sorted) {
+            const abs = h * 60 + m;
+            if (abs >= nowAbs && result.length < count) {
+                result.push({ h: h % 24, m, absMin: abs });
+            }
+        }
+    }
+    return result;
+}
 const SCHEDULES = {
     14: {
         name:'Linie 14', color:'#003f8a',
@@ -1519,6 +1562,75 @@ function switchLoginTab(mode) {
     document.getElementById('login-register-fields').style.display = mode==='register' ? 'block' : 'none';
     document.getElementById('auth-btn').textContent = mode==='register' ? 'Konto erstellen →' : 'Anmelden →';
     document.getElementById('auth-err').textContent = '';
+}
+
+// ====== GUEST MODE ======
+let isGuestMode = false;
+window.isGuestMode = false;
+function doGuestLogin() {
+    isGuestMode = true;
+    window.isGuestMode = true;
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app-shell').classList.remove('hidden');
+    const splashEl = document.getElementById('auth-splash');
+    if (splashEl) splashEl.style.display = 'none';
+    // Guest UI: hide wallet/shop/profil tabs, show notice in header
+    document.getElementById('header-avatar').textContent = '👤';
+    document.getElementById('header-name').textContent = 'Gast';
+    document.getElementById('header-card').textContent = 'Kein Konto · eingeschränkte Ansicht';
+    document.getElementById('bal-vil').textContent = '–';
+    document.getElementById('bal-eur').textContent = '–';
+    document.getElementById('fis-station-label').textContent = 'Güntringen Hbf';
+    // Hide tabs not available for guests
+    document.querySelectorAll('.tab').forEach(t => {
+        const v = t.getAttribute('data-view');
+        if (['shop','wallet','profil'].includes(v)) {
+            t.style.opacity = '.4';
+            t.onclick = () => showToast('Diese Funktion erfordert ein Konto', 'warn');
+        }
+    });
+    // Guest banner in profil/wallet/shop views
+    const guestBannerHtml = `<div style="background:rgba(192,57,43,.08);border:1.5px solid rgba(192,57,43,.25);border-radius:14px;padding:20px;text-align:center;margin-bottom:14px;">
+        <div style="font-size:22px;margin-bottom:8px;">🔒</div>
+        <div style="font-family:'Barlow',sans-serif;font-weight:800;font-size:15px;text-transform:uppercase;margin-bottom:6px;">Konto erforderlich</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">Tickets kaufen, Wallet verwalten und dein Profil einsehen sind nur mit einem Konto möglich.</div>
+        <button onclick="exitGuestMode()" style="background:var(--accent);color:#fff;border:none;padding:12px 22px;border-radius:10px;font-weight:800;font-family:'Barlow',sans-serif;font-size:13px;text-transform:uppercase;cursor:pointer;letter-spacing:.5px;">Jetzt anmelden →</button>
+    </div>`;
+    // Prepend banner without destroying admin elements
+    ['view-shop','view-wallet'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            const banner = document.createElement('div');
+            banner.innerHTML = guestBannerHtml;
+            el.prepend(banner);
+        }
+    });
+    const profilEl = document.getElementById('view-profil');
+    if (profilEl) {
+        // Keep admin panel intact, just prepend banner before section-title
+        const banner = document.createElement('div');
+        banner.innerHTML = guestBannerHtml;
+        profilEl.prepend(banner);
+    }
+    // Start FIS without user data
+    const now = new Date();
+    document.getElementById('route-time').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    fisIntervalId = setInterval(() => updateFIS('Güntringen Hbf'), 1000);
+    renderFahrplan();
+    renderNotifications();
+    updateFIS('Güntringen Hbf');
+    const splashEl2 = document.getElementById('auth-splash');
+    if (splashEl2) splashEl2.style.display = 'none';
+    const apw = document.getElementById('admin-panel-wrap');
+    if (apw) apw.style.display = 'none';
+}
+function exitGuestMode() {
+    isGuestMode = false;
+    if (fisIntervalId) { clearInterval(fisIntervalId); fisIntervalId = null; }
+    document.getElementById('app-shell').classList.add('hidden');
+    document.getElementById('login-screen').classList.remove('hidden');
+    // Reload page to reset guest-mode DOM mutations cleanly
+    location.reload();
 }
 
 async function doAuth() {
@@ -1787,19 +1899,18 @@ function updateFIS(stationId) {
             return;
         }
         const delayMins = liveDelays[l.id] || 0;
-        let next = l.m.find(min=>min>nowM) ?? l.m[0];
-        let diff = next - nowM; if(diff<0) diff+=60;
-        const nextAbsMin = nowH*60+nowM+diff;
-        const nextHH=Math.floor(nextAbsMin/60)%24, nextMM=nextAbsMin%60;
-        const nextTime=`${String(nextHH).padStart(2,'0')}:${String(nextMM).padStart(2,'0')}`;
-        const m2idx=(l.m.indexOf(next)+1)%l.m.length;
-        const next2=l.m[m2idx];
-        let diff2=next2-nowM; if(diff2<=diff) diff2+=60;
-        const n2Abs=nowH*60+nowM+diff2;
-        const n2Time=`${String(Math.floor(n2Abs/60)%24).padStart(2,'0')}:${String(n2Abs%60).padStart(2,'0')}`;
-        const totalSec = diff*60 - nowSec;
-        const cdMin=Math.floor(totalSec/60), cdSec=Math.max(0,totalSec%60);
-        const cdStr = diff===0?'🚉 Jetzt':`${cdMin}:${String(cdSec).padStart(2,'0')} min`;
+        // Use canonical helper – same logic as renderFahrplan
+        const deps2 = getNextDepartures(l.m, nowH, nowM, 2);
+        if (!deps2.length) return;
+        const dep1 = deps2[0], dep2 = deps2[1];
+        const nextAbsMin = dep1.absMin;
+        const nextHH = dep1.h, nextMM = dep1.m;
+        const nextTime = `${String(nextHH).padStart(2,'0')}:${String(nextMM).padStart(2,'0')}`;
+        const n2Time = dep2 ? `${String(dep2.h).padStart(2,'0')}:${String(dep2.m).padStart(2,'0')}` : '–';
+        const diff = dep1.absMin - (nowH * 60 + nowM);
+        const totalSec = diff * 60 - nowSec;
+        const cdMin = Math.floor(totalSec / 60), cdSec = Math.max(0, totalSec % 60);
+        const cdStr = diff === 0 ? '🚉 Jetzt' : `${cdMin}:${String(cdSec).padStart(2,'0')} min`;
         const isS11=l.id==='S11';
         const isS12=l.id==='S12';
         const stopKey=isS11?(l.dest.includes('Villotal')?'S11_Villotal':'S11_Lixen')
@@ -1921,12 +2032,8 @@ function renderFahrplan() {
     const dir=dirs[activeDir];
     const departures = dir.departures || sched.departures;
     const now=new Date();
-    const nowM=now.getHours()*60+now.getMinutes();
-    const nextDeps=[];
-    for(let h=now.getHours();h<now.getHours()+4;h++){
-        departures.forEach(m=>{ const abs=h*60+m; if(abs>=nowM) nextDeps.push({h:h%24,m}); });
-    }
-    const shown=nextDeps.slice(0,3);
+    const nowH=now.getHours(), nowM=now.getMinutes();
+    const shown=getNextDepartures(departures, nowH, nowM, 3);
 
     // OS OctoSpeed app-link banner (shown above table for any osLink line)
     const os11Banner = sched.osLink ? `
@@ -1945,7 +2052,7 @@ function renderFahrplan() {
     let tableHtml=`<div class="fp-table"><div class="fp-header"><span>Station</span><span style="text-align:center;">Nächste</span><span style="text-align:center;">Dann</span></div>`;
     dir.stations.forEach(s=>{
         const times=shown.map(dep=>{
-            const mins=(dep.h*60+dep.m+s.offset)%(24*60);
+            const mins=(dep.absMin+s.offset)%(24*60);
             return `${String(Math.floor(mins/60)%24).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
         });
         const isOrigin=s.offset===0, isEnd=s.offset===Math.max(...dir.stations.map(x=>x.offset));
@@ -2213,7 +2320,7 @@ function calcRoute() {
 
 // ====== FAHRTENVERLAUF ======
 async function recordJourney(line, from, to) {
-    if (!uid()) return;
+    if (!uid() || isGuestMode) return;
     const now=new Date();
     const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     const dateStr=now.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
@@ -2507,11 +2614,23 @@ function buildGraph() {
 const LINE_GRAPH = buildGraph();
 
 let rbState = null;
-let rbFromVal = '', rbToVal = '';
+let rbFromVal = '', rbToVal = '', rbViaVal = '';
+
+function addRbVia() {
+    document.getElementById('rb-via-wrap').style.display = 'block';
+    document.getElementById('rb-add-via-btn').style.display = 'none';
+    document.getElementById('rb-via-input').focus();
+}
+function removeRbVia() {
+    rbViaVal = '';
+    document.getElementById('rb-via-input').value = '';
+    document.getElementById('rb-via-wrap').style.display = 'none';
+    document.getElementById('rb-add-via-btn').style.display = 'flex';
+}
 
 // ── Autocomplete ──────────────────────────────────────────────
 function rbAcSearch(field, q) {
-    const listId = field==='from' ? 'rb-ac-from' : 'rb-ac-to';
+    const listId = field==='from' ? 'rb-ac-from' : field==='via' ? 'rb-ac-via' : 'rb-ac-to';
     const list = document.getElementById(listId);
     if (!q || q.length < 1) { list.classList.remove('open'); return; }
     const matches = ALL_STATIONS.filter(s=>s.toLowerCase().includes(q.toLowerCase())).slice(0,8);
@@ -2527,6 +2646,10 @@ function rbAcSelect(field, value) {
         rbFromVal = value;
         document.getElementById('rb-from-input').value = value;
         document.getElementById('rb-ac-from').classList.remove('open');
+    } else if (field==='via') {
+        rbViaVal = value;
+        document.getElementById('rb-via-input').value = value;
+        document.getElementById('rb-ac-via').classList.remove('open');
     } else {
         rbToVal = value;
         document.getElementById('rb-to-input').value = value;
@@ -2569,14 +2692,25 @@ function rbGetLegStops(lineId, fromStn, toStn) {
 function rbStart() {
     const from = rbFromVal || document.getElementById('rb-from-input').value.trim();
     const to   = rbToVal   || document.getElementById('rb-to-input').value.trim();
+    const via  = rbViaVal  || document.getElementById('rb-via-input')?.value.trim() || '';
     if (!from || !to) { showToast('Bitte Start und Ziel eingeben','warn'); return; }
     if (from === to)  { showToast('Start = Ziel!','warn'); return; }
-    const legs = rbBuildLegs(from, to);
-    if (!legs) { showToast('Keine Verbindung gefunden','warn'); return; }
+
+    let legs;
+    if (via && via !== from && via !== to) {
+        const legs1 = rbBuildLegs(from, via);
+        const legs2 = rbBuildLegs(via, to);
+        if (!legs1 || !legs2) { showToast('Keine Verbindung über diesen Zwischenhalt','warn'); return; }
+        legs = [...legs1, ...legs2];
+    } else {
+        legs = rbBuildLegs(from, to);
+        if (!legs) { showToast('Keine Verbindung gefunden','warn'); return; }
+    }
+
     rbState = {
         legs,
-        activeLeg: 0,       // which leg we're on
-        stopIdx: 0,         // which stop in active leg
+        activeLeg: 0,
+        stopIdx: 0,
     };
     document.getElementById('rb-setup').style.display = 'none';
     document.getElementById('rb-guidance').style.display = 'block';
@@ -2706,11 +2840,13 @@ function rbJumpToLeg(li) {
 }
 
 function rbStop() {
-    rbState = null; rbFromVal = ''; rbToVal = '';
+    rbState = null; rbFromVal = ''; rbToVal = ''; rbViaVal = '';
     document.getElementById('rb-guidance').style.display = 'none';
     document.getElementById('rb-setup').style.display = 'block';
     document.getElementById('rb-from-input').value = '';
     document.getElementById('rb-to-input').value = '';
+    if (document.getElementById('rb-via-input')) document.getElementById('rb-via-input').value = '';
+    removeRbVia();
     showToast('Reise beendet');
 }
 
